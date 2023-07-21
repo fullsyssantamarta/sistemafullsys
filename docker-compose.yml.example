@@ -27,7 +27,7 @@ services:
         volumes:
             - mysqldata:/var/lib/mysql
         ports:
-            - "33056:3306"
+            - "3306:3306"
         restart: always
     redis:
         image: redis:alpine
