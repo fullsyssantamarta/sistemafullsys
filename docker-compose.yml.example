@@ -8,7 +8,7 @@ services:
             VIRTUAL_HOST: dominio, *.dominio
         volumes:
             - ./:/var/www/html
-            - path_install/proxy/fpms/facturador_directory:/etc/nginx/sites-available
+            - /proxy/fpms/facturador_directory:/etc/nginx/sites-available
         restart: always
     fpm_image:
         image: rash07/php-fpm:1.0
