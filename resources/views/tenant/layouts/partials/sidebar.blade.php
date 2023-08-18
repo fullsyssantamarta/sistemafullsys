@@ -3,7 +3,6 @@
     $path[1] = (array_key_exists(1, $path)> 0)?$path[1]:'';
     $path[2] = (array_key_exists(2, $path)> 0)?$path[2]:'';
     $path[0] = ($path[0] === '')?'documents':$path[0];
-
 @endphp
 
 <aside id="sidebar-left" class="sidebar-left">
@@ -20,7 +19,6 @@
         <div class="nano-content">
             <nav id="menu" class="nav-main" role="navigation">
                 <ul class="nav nav-main">
-
                     @if(in_array('dashboard', $vc_modules))
                     <li class="{{ ($path[0] === 'dashboard')?'nav-active':'' }}">
                         <a class="nav-link" href="{{ route('tenant.dashboard.index') }}">
@@ -58,9 +56,8 @@
                         {{ ($path[0] === 'co-clients')?'nav-active nav-expanded':'' }}
                         {{ ($path[0] === 'co-taxes')?'nav-active nav-expanded':'' }}
                         {{ ($path[0] === 'co-documents-aiu')?'nav-active nav-expanded':'' }}
+                        {{ ($path[0] === 'co-documents-health')?'nav-active nav-expanded':'' }}
                         {{ ($path[0] === 'co-remissions')?'nav-active nav-expanded':'' }}
-
-
                         ">
                         <a class="nav-link" href="#">
                             <i class="fas fa-file-invoice" aria-hidden="true"></i>
@@ -68,19 +65,16 @@
                         </a>
                         <ul class="nav nav-children" style="">
                             @if(auth()->user()->type != 'integrator' && $vc_company->soap_type_id != '03')
-
                                 @if(in_array('documents', $vc_modules))
-
                                     @if(in_array('new_document', $vc_module_levels))
-
                                         <li class="{{ ($path[0] === 'co-documents'  && $path[1] === 'create')?'nav-active':'' }}">
                                             <a class="nav-link" href="{{route('tenant.co-documents.create')}}">
                                                 Nueva Factura Electronica
                                             </a>
                                         </li>
 
-                                        <li class="{{ ($path[0] === 'co-documents'  && $path[1] === 'create')?'nav-active':'' }}">
-                                            <a class="nav-link" href="{{route('tenant.co-documents.create_health')}}">
+                                        <li class="{{ ($path[0] === 'co-documents-health'  && $path[1] === 'create')?'nav-active':'' }}">
+                                            <a class="nav-link" href="{{route('tenant.co-documents-health.create')}}">
                                                 Nueva F.E. Sector Salud
                                             </a>
                                         </li>
@@ -97,9 +91,7 @@
                                             </a>
                                         </li> --}}
                                     @endif
-
                                 @endif
-
                             @endif
 
                             @if(in_array('documents', $vc_modules) && $vc_company->soap_type_id != '03')

@@ -21,7 +21,6 @@ if($current_hostname) {
                 Route::get('record/{id}', 'Tenant\DocumentController@record');
                 Route::get('columns', 'Tenant\DocumentController@columns');
                 Route::get('create', 'Tenant\DocumentController@create')->name('tenant.co-documents.create');
-                Route::get('create-health', 'Tenant\DocumentController@create_health')->name('tenant.co-documents.create_health');
                 Route::get('search/customers', 'Tenant\DocumentController@searchCustomers');
                 Route::get('search/customer/{id}', 'Tenant\DocumentController@searchCustomerById');
                 Route::get('tables', 'Tenant\DocumentController@tables');
@@ -40,6 +39,10 @@ if($current_hostname) {
                 Route::get('downloadFile/{filename}', 'Tenant\DocumentController@downloadFile');
                 Route::post('query-zipkey', 'Tenant\DocumentController@queryZipkey');
                 Route::post('import', 'Tenant\DocumentController@co_import');
+            });
+
+            Route::prefix('co-documents-health')->group(function () {
+                Route::get('create', 'Tenant\DocumentController@create_health')->name('tenant.co-documents-health.create');
             });
 
             Route::prefix('co-documents-aiu')->group(function () {

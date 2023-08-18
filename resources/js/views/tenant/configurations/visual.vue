@@ -81,7 +81,7 @@
                     </div>
                 </div>
 
-                <div class="pt-3">
+<!--                <div class="pt-3">
                     <h5>Ver icono de soporte</h5>
                     <div :class="{'has-danger': errors.enable_whatsapp}">
                         <el-switch
@@ -94,7 +94,7 @@
                         <br>
                         <small class="form-control-feedback">Se mostrará si el administrador ha añadido número de soporte</small>
                     </div>
-                </div>
+                </div>      -->
 
             </div>
         </form>

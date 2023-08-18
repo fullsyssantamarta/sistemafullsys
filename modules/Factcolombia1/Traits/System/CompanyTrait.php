@@ -101,7 +101,6 @@ trait CompanyTrait
         curl_close($ch);
 
         return json_decode($response);
-
     }
 
 

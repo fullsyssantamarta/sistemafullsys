@@ -7,9 +7,9 @@
                 <p><strong>Teléfono: </strong>{{$establishment->telephone}} - <strong>Email: </strong>{{$establishment->email}}</p>
                 <p><strong>Dirección: </strong>{{$establishment->address}}</p>
             </td>
-            <td width="15%">
+            <td width="45%; text-align: right;" class="vertical-align-top">
                 @if($company->logo)
-                    <img src="data:{{mime_content_type(public_path("storage/uploads/logos/{$company->logo}"))}};base64, {{base64_encode(file_get_contents(public_path("storage/uploads/logos/{$company->logo}")))}}" alt="{{$company->name}}" alt="{{ $company->name }}"  class="company_logo" style="max-width: 300px">
+                    <img src="data:{{mime_content_type(public_path("storage/uploads/logos/{$company->logo}"))}};base64, {{base64_encode(file_get_contents(public_path("storage/uploads/logos/{$company->logo}")))}}" alt="{{$company->name}}" alt="{{ $company->name }}"  class="company_logo" style="width: auto; height: auto;">
                 @endif
             </td>
         </tr>

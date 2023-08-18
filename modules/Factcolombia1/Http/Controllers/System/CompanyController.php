@@ -237,6 +237,16 @@ class CompanyController extends Controller
      */
     public function update(CompanyUpdateRequest $request) {
 
+        $response = $this->createCompanyApiDian($request);
+
+        if(!property_exists( $response, 'password' ) || !property_exists( $response, 'token' )){
+            return [
+                'message' => "Error al actualizar compañía en ApiDian",
+                'response' => $response,
+                'success' => false
+            ];
+        }
+
         $company = Company::findOrFail($request->id);
 
         $company->update([
