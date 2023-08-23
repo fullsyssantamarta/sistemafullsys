@@ -25,7 +25,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     protected $hidden = [
         'password', 'remember_token',
     ];
-    
+
 
     /**
      * Retorna un arreglo con los ids de los modulos permitidos por el sistema
@@ -44,8 +44,10 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         // 10 - Ecommerce
         // 12 - Finanzas
         // 13 - Nóminas
+        // 14 - Factura del sector salud
+        // 15 - RADIAN
 
-        return [1,2,4,5,6,7,8,10,12,13];
+        return [1,2,4,5,6,7,8,10,12,13,14,15];
     }
 
 }

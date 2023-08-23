@@ -32,7 +32,7 @@ class TypeDocument extends Model
      *
      * @var array
      */
-    protected $fillable = ['name', 'code', 'template', 'resolution_number', 'resolution_date', 'resolution_date_end', 'technical_key', 'prefix', 'from', 'to', 'generated'];
+    protected $fillable = ['name', 'code', 'template', 'resolution_number', 'resolution_date', 'resolution_date_end', 'technical_key', 'prefix', 'from', 'to', 'generated', 'description'];
 
     /**
      * The attributes that should be mutated to dates.
@@ -41,9 +41,9 @@ class TypeDocument extends Model
      */
     protected $dates = ['deleted_at'];
 
-    
+
     /**
-     * 
+     *
      * Obtener resoluciones
      *
      * @param  string $code

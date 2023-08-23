@@ -73,15 +73,17 @@
                                             </a>
                                         </li>
 
-                                        <li class="{{ ($path[0] === 'co-documents-health'  && $path[1] === 'create')?'nav-active':'' }}">
-                                            <a class="nav-link" href="{{route('tenant.co-documents-health.create')}}">
-                                                Nueva F.E. Sector Salud
-                                            </a>
-                                        </li>
+                                        @if(in_array('invoicehealth', $vc_modules))
+                                            <li class="{{ ($path[0] === 'co-documents-health'  && $path[1] === 'create')?'nav-active':'' }}">
+                                                <a class="nav-link" href="{{route('tenant.co-documents-health.create')}}">
+                                                    Nueva F.E. Sector Salud
+                                                </a>
+                                            </li>
+                                        @endif
 
                                         <li class="{{ ($path[0] === 'co-documents-aiu'  && $path[1] === 'create')?'nav-active':'' }}">
                                             <a class="nav-link" href="{{route('tenant.co-documents-aiu.create')}}">
-                                                Nuevo Factura Electronica AIU
+                                                Nueva Factura Electronica AIU
                                             </a>
                                         </li>
 
@@ -1020,41 +1022,41 @@
                     </li>
                     @endif
 
+                    @if(in_array('radian', $vc_modules))
+                        <li class="nav-parent {{in_array($path[0], ['co-radian-events', 'co-email-reading']) ? 'nav-active nav-expanded' : ''}}">
+                            <a class="nav-link" href="#">
+                                <i class="fas fa-calendar-check" aria-hidden="true"></i>
+                                {{-- <i class="fas fa-calendar-check"></i> --}}
+                                <span>Eventos RADIAN</span>
+                            </a>
+                            <ul class="nav nav-children">
 
-                    <li class="nav-parent {{in_array($path[0], ['co-radian-events', 'co-email-reading']) ? 'nav-active nav-expanded' : ''}}">
-                        <a class="nav-link" href="#">
-                            <i class="fas fa-calendar-check" aria-hidden="true"></i>
-                            {{-- <i class="fas fa-calendar-check"></i> --}}
-                            <span>Eventos RADIAN</span>
-                        </a>
-                        <ul class="nav nav-children">
+                                <li class="{{($path[0] === 'co-email-reading' && $path[1] == 'process-emails') ? 'nav-active' : ''}}">
+                                    <a class="nav-link" href="{{route('tenant.co-email-reading-process-emails.index')}}">
+                                        Procesar correos
+                                    </a>
+                                </li>
 
-                            <li class="{{($path[0] === 'co-email-reading' && $path[1] == 'process-emails') ? 'nav-active' : ''}}">
-                                <a class="nav-link" href="{{route('tenant.co-email-reading-process-emails.index')}}">
-                                    Procesar correos
-                                </a>
-                            </li>
+                                <li class="{{($path[0] === 'co-radian-events' && $path[1] == 'reception') ? 'nav-active' : ''}}">
+                                    <a class="nav-link" href="{{route('tenant.co-radian-events-reception.index')}}">
+                                        Recepción de documentos
+                                    </a>
+                                </li>
 
-                            <li class="{{($path[0] === 'co-radian-events' && $path[1] == 'reception') ? 'nav-active' : ''}}">
-                                <a class="nav-link" href="{{route('tenant.co-radian-events-reception.index')}}">
-                                    Recepción de documentos
-                                </a>
-                            </li>
+                                <li class="{{($path[0] === 'co-radian-events' && $path[1] == 'manage') ? 'nav-active' : ''}}">
+                                    <a class="nav-link" href="{{route('tenant.co-radian-events-manage.index')}}">
+                                        Gestionar eventos
+                                    </a>
+                                </li>
 
-                            <li class="{{($path[0] === 'co-radian-events' && $path[1] == 'manage') ? 'nav-active' : ''}}">
-                                <a class="nav-link" href="{{route('tenant.co-radian-events-manage.index')}}">
-                                    Gestionar eventos
-                                </a>
-                            </li>
-
-                            {{-- <li class="{{($path[0] === 'co-advanced-configuration') ? 'nav-active' : ''}}">
-                                <a class="nav-link" href="{{route('tenant.co-advanced-configuration.index')}}">
-                                    Avanzado
-                                </a>
-                            </li> --}}
-
-                        </ul>
-                    </li>
+                                {{-- <li class="{{($path[0] === 'co-advanced-configuration') ? 'nav-active' : ''}}">
+                                    <a class="nav-link" href="{{route('tenant.co-advanced-configuration.index')}}">
+                                        Avanzado
+                                    </a>
+                                </li> --}}
+                            </ul>
+                        </li>
+                    @endif
 
 
                     {{-- @if(in_array('cuenta', $vc_modules))

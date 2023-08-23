@@ -77,7 +77,7 @@ class ConfigurationController extends Controller
         return [
             'typeIdentityDocuments' => TypeIdentityDocument::all(),
             'typeObligations' => TypeObligation::all(),
-            'typeDocuments' => TypeDocument::all(),
+            'typeDocuments' => TypeDocument::where('name', '!=', 'Factura Electronica de venta')->get(),
             'typeRegimes' => TypeRegime::all(),
             'versionUbls' => VersionUbl::all(),
             'currencies' => Currency::all(),
@@ -208,7 +208,8 @@ class ConfigurationController extends Controller
             'prefix' => mb_strtoupper($request->prefix),
             'from' => $request->from,
             'to' => $request->to,
-            'generated' => $request->generated
+            'generated' => $request->generated,
+            'desctiption' => $request->description
         ]);
 
         $ch = curl_init("{$base_url}ubl2.1/config/generateddocuments");
@@ -818,7 +819,7 @@ class ConfigurationController extends Controller
                 "from"=> $request->from,
                 "to"=> $request->to,
                 'date_from' => $request->date_from,
-                'date_to' => $request->date_to
+                'date_to' => $request->date_to,
             ];
             $data_resolution = json_encode($data);
             curl_setopt($ch3, CURLOPT_RETURNTRANSFER, true);
@@ -866,7 +867,8 @@ class ConfigurationController extends Controller
                     'from' => $request->from,
                     'to' => $request->to,
                     'name' => $request->name,
-                    'template' => 'face_f   '
+                    'template' => 'face_f   ',
+                    'description' => $request->description
                 ]);
 
                 $response_redit_debit =  $this->storeResolutionNote();

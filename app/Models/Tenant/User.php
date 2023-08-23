@@ -156,12 +156,12 @@ class User extends Authenticatable
         }
         return false;
     }
-    
+
     public function user_commission()
     {
         return $this->hasOne(UserCommission::class);
     }
-    
+
     /**
      * Retorna un arreglo con los ids de los modulos permitidos por el sistema
      *
@@ -179,8 +179,10 @@ class User extends Authenticatable
         // 10 - Ecommerce
         // 12 - Finanzas
         // 13 - Nóminas
+        // 14 - Factura del sector salud
+        // 15 - RADIAN
 
-        return [1,2,4,5,6,7,8,10,12,13];
+        return [1,2,4,5,6,7,8,10,12,13,14,15];
     }
 
 
@@ -189,9 +191,9 @@ class User extends Authenticatable
         return $query->withOut(['establishment']);
     }
 
-        
+
     /**
-     * 
+     *
      * Data para componente filtros
      *
      * @return array

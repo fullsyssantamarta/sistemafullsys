@@ -1322,11 +1322,8 @@ class DocumentController extends Controller
 
     public function tables()
     {
-
         $customers = $this->table('customers');
         // $customers = Client::all();
-
-
         $type_documents = TypeDocument::query()
                             ->get()
                             ->each(function($typeDocument) {
@@ -1334,25 +1331,15 @@ class DocumentController extends Controller
                                     ->hasPrefix($typeDocument->prefix)
                                     ->whereBetween('number', [$typeDocument->from, $typeDocument->to])
                                     ->max('number') ?? $typeDocument->from));
-
                                 $typeDocument->alert_date = ($typeDocument->resolution_date_end == null) ? false : Carbon::parse($typeDocument->resolution_date_end)->subMonth(1)->lt(Carbon::now());
                             });
-
         $payment_methods = PaymentMethod::all();
-
         $payment_forms = PaymentForm::all();
-
         $type_invoices = TypeInvoice::all();
-
         $currencies = Currency::all();
-
         $taxes = $this->table('taxes');
-
-        $resolutions = TypeDocument::select('id','prefix', 'resolution_number', 'from', 'to')->whereNotNull('resolution_number')->whereIn('code', [1,2,3])->get();
-
-        return compact('customers','payment_methods','payment_forms','type_invoices','currencies'
-                        , 'taxes', 'type_documents', 'resolutions');
-
+        $resolutions = TypeDocument::select('id','prefix', 'resolution_number', 'from', 'to', 'description', 'resolution_date_end')->whereNotNull('resolution_number')->whereIn('code', [1,2,3])->where('resolution_date_end', '>', Carbon::now())->get();
+        return compact('customers','payment_methods','payment_forms','type_invoices','currencies', 'taxes', 'type_documents', 'resolutions');
     }
 
     public function item_tables()

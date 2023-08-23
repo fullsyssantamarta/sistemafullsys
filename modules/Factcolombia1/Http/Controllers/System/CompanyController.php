@@ -416,7 +416,6 @@ class CompanyController extends Controller
             'modules' => Module::whereIn('id', auth()->user()->getAllowedModulesForSystem())->orderBy('description')->get(),
             'url_base' => '.'.config('tenant.app_url_base'),
             'type_liabilities' => ServiceTypeLiability::all()
-
         ];
     }
 

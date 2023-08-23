@@ -40,7 +40,8 @@ class ConfigurationTypeDocumentRequest extends FormRequest
             'prefix' => 'nullable|alpha_dash|max:5',
             'from' => 'required|numeric|digits_between:1,15',
             'to' => 'required|numeric|digits_between:1,15',
-            'generated' => 'required|numeric|digits_between:1,15'
+            'generated' => 'required|numeric|digits_between:1,15',
+            'description' => 'nullable|string'
         ];
     }
 }

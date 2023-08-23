@@ -7,7 +7,7 @@
                     <div class="col-md-12">
                         <div class="form-group" :class="{'has-danger': errors.resolution_number}">
                             <label class="control-label">Número de resolución<span class="text-danger">*</span></label>
-                            <el-input v-model="form.resolution_number" ></el-input>
+                            <el-input v-model="form.resolution_number" :disabled="true"></el-input>
                             <small class="form-control-feedback" v-if="errors.resolution_number" v-text="errors.resolution_number[0]"></small>
                         </div>
                     </div>
@@ -25,6 +25,7 @@
                             <small class="form-control-feedback" v-if="errors.resolution_date" v-text="errors.resolution_date[0]"></small>
                         </div>
                     </div>
+
                     <div class="col-md-6">
                         <div class="form-group" :class="{'has-danger': errors.resolution_date_end}">
                             <label class="control-label">Fecha resolución hasta<span class="text-danger">*</span></label>
@@ -38,6 +39,7 @@
                             <small class="form-control-feedback" v-if="errors.resolution_date_end" v-text="errors.resolution_date_end[0]"></small>
                         </div>
                     </div>
+
                     <div class="col-md-8">
                         <div class="form-group" :class="{'has-danger': errors.technical_key}">
                             <label class="control-label">Clave técnica<span class="text-danger">*</span></label>
@@ -45,20 +47,23 @@
                             <small class="form-control-feedback" v-if="errors.technical_key" v-text="errors.technical_key[0]"></small>
                         </div>
                     </div>
+
                     <div class="col-md-4">
                         <div class="form-group" :class="{'has-danger': errors.name}">
                             <label class="control-label">Nombre<span class="text-danger">*</span></label>
-                            <el-input v-model="form.name" ></el-input>
+                            <el-input v-model="form.name" :disabled="true"></el-input>
                             <small class="form-control-feedback" v-if="errors.name" v-text="errors.name[0]"></small>
                         </div>
                     </div>
+
                     <div class="col-md-4">
                         <div class="form-group" :class="{'has-danger': errors.prefix}">
                             <label class="control-label">Prefijo<span class="text-danger">*</span></label>
-                            <el-input v-model="form.prefix" ></el-input>
+                            <el-input v-model="form.prefix" :disabled="true"></el-input>
                             <small class="form-control-feedback" v-if="errors.prefix" v-text="errors.prefix[0]"></small>
                         </div>
                     </div>
+
                     <div class="col-md-4">
                         <div class="form-group" :class="{'has-danger': errors.from}">
                             <label class="control-label">Desde<span class="text-danger">*</span></label>
@@ -66,6 +71,7 @@
                             <small class="form-control-feedback" v-if="errors.from" v-text="errors.from[0]"></small>
                         </div>
                     </div>
+
                     <div class="col-md-4">
                         <div class="form-group" :class="{'has-danger': errors.to}">
                             <label class="control-label">Hasta<span class="text-danger">*</span></label>
@@ -73,6 +79,7 @@
                             <small class="form-control-feedback" v-if="errors.to" v-text="errors.to[0]"></small>
                         </div>
                     </div>
+
                     <div class="col-md-4">
                         <div class="form-group" :class="{'has-danger': errors.generated}">
                             <label class="control-label">Generadas<span class="text-danger">*</span></label>
@@ -81,8 +88,16 @@
                         </div>
                     </div>
 
+                    <div class="col-md-4">
+                        <div class="form-group" :class="{'has-danger': errors.description}">
+                            <label class="control-label">Descripcion<span class="text-danger">*</span></label>
+                            <el-input v-model="form.description" ></el-input>
+                            <small class="form-control-feedback" v-if="errors.description" v-text="errors.description[0]"></small>
+                        </div>
+                    </div>
                 </div>
             </div>
+
             <div class="form-actions text-right pt-2">
                 <el-button @click.prevent="close()">Cancelar</el-button>
                 <el-button type="primary" native-type="submit" :loading="loading_submit">Guardar</el-button>
@@ -100,7 +115,6 @@
             :lots="form.lots"
             @addRowLot="addRowLot">
         </lots-form> -->
-
     </el-dialog>
 </template>
 
@@ -129,6 +143,7 @@
                 affectation_igv_types: [],
             }
         },
+
         async created() {
             //await this.initForm()
             /*await this.$http.get(`/${this.resource}/tables`)
@@ -144,7 +159,6 @@
             })*/
 
             // await this.setDefaultConfiguration()
-
         },
 
         methods: {
@@ -195,7 +209,6 @@
                 // this.setDefaultConfiguration()
             },
             create() {
-
                 this.titleDialog =  'Editar'
                 this.form = this.record
                 /*if (this.recordId) {
@@ -222,6 +235,7 @@
                 this.form_clone.date_to = this.form.resolution_date_end
                 this.form_clone.resolution = this.form.resolution_number
                 this.form_clone.type_document_id = this.form.code
+                this.form_clone.description = this.form.description
                 await this.$http.post(`/${this.resource}/type_document/${this.form.id}`, this.form)
                     .then(response => {
                         if (response.data.success) {
@@ -267,6 +281,7 @@
 
             close() {
                 this.$emit('update:showDialog', false)
+                this.$emit('refresh')
                 this.resetForm()
             },
 

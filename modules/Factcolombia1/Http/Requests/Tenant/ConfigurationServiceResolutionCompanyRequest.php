@@ -36,6 +36,7 @@ class ConfigurationServiceResolutionCompanyRequest extends FormRequest
             'to'                => 'required|integer|min:'.((int) ($this->from + 1)),
             'date_from'         => 'nullable|required_if:type_document_id,=,1|date_format:Y-m-d',
             'date_to'           => 'nullable|required_if:type_document_id,=,1|date_format:Y-m-d|after:date_from',
+            'description'       => 'nullable|string',
         ];
     }
 }

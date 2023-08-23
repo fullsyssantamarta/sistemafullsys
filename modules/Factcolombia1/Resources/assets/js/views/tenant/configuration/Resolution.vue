@@ -40,27 +40,31 @@
                         label="Hasta">
                     </el-table-column>
                     <el-table-column
+                        prop="description"
+                        label="Descripcion">
+                    </el-table-column>
+                    <el-table-column
                         fixed="right"
-                        label="Operaciones"
-                        width="140">
+                        label="Seleccionar"
+                        width="100">
                         <template slot-scope="scope">
                             <el-button
                             icon="el-icon-check"
                             @click.native.prevent="selection(scope.row)"
                             size="mini">
                             </el-button>
-                            <el-button
+<!--                            <el-button
                             type="danger"
                             plain
                             icon="el-icon-close"
                             @click.native.prevent="deleter(scope.row.id)"
                             size="mini">
-                            </el-button>
+                            </el-button>        -->
                         </template>
                     </el-table-column>
                 </el-table>
-
             </div>
+
             <div class="resolution">
                 <form autocomplete="off">
                     <div class="form-body">
@@ -74,7 +78,8 @@
                                         filterable
                                         remote class="border-left rounded-left border-info"
                                         popper-class="el-select-type-document"
-                                        placeholder="Seleccione el tipo de documento.">
+                                        placeholder="Seleccione el tipo de documento."
+                                        :disabled="disableIndexFieldsResolution">
                                         <el-option
                                             v-for="option in typeDocuments"
                                             :key="option.id"
@@ -93,7 +98,7 @@
                                         v-model="resolution.prefix"
                                         placeholder="Digite el prefijo de la resolucion"
                                         maxlength="4"
-                                        :disabled="false">
+                                        :disabled="disableIndexFieldsResolution">
                                     </el-input>
                                     <small class="form-control-feedback" v-if="errors.prefix" v-text="errors.prefix[0]"></small>
                                 </div>
@@ -105,7 +110,7 @@
                                     <el-input
                                         v-model="resolution.resolution"
                                         placeholder="Digite el numero de resolucion."
-                                        :disabled="false">
+                                        :disabled="disableIndexFieldsResolution">
                                     </el-input>
                                     <small class="form-control-feedback" v-if="errors.resolution" v-text="errors.resolution[0]"></small>
                                 </div>
@@ -193,11 +198,24 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="row mt-4">
+                            <div class="col-lg-4">
+                                <div class="form-group" :class="{'has-danger': errors.description}">
+                                    <label class="control-label">Descripcion</label>
+                                    <el-input
+                                        v-model="resolution.description"
+                                        placeholder="Cadena descriptiva de la resolucion."
+                                        :disabled="false">
+                                    </el-input>
+                                    <small class="form-control-feedback" v-if="errors.description" v-text="errors.description[0]"></small>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="form-actions text-right mt-4">
-                            <el-button
-                                type="primary"
-                                :loading="loadingResolution"
-                                @click="validateResolution()">Guardar</el-button>
+                            <el-button type="default " @click="clearFields()">Limpiar campos</el-button>
+                            <el-button type="primary" :loading="loadingResolution" @click="validateResolution()">Guardar</el-button>
                         </div>
                     </div>
                 </form>
@@ -233,12 +251,15 @@
             resolution: {
             },
             loadingResolution: false,
+            disableIndexFieldsResolution: false,
             records: []
         }),
+
         async created(){
             await this.getRecords()
             await this.initForm()
         },
+
         mounted() {
             this.errors = {
             }
@@ -258,12 +279,14 @@
                     this.resolution.name = type.name
                 }
             },
+
             getRecords()
             {
                 this.$http.get(`/client/configuration/co_type_documents`).then(response=>{
                     this.records = response.data.data
                 })
             },
+
             initForm() {
                 this.resolution = {
                     type_document_id : null,
@@ -276,8 +299,15 @@
                     to : null,
                     technical_key : null,
                     code : null,
-                    name : null
+                    name : null,
+                    description: null
                 }
+                this.disableIndexFieldsResolution = false
+            },
+
+            clearFields(){
+                this.disableIndexFieldsResolution = false
+                this.initForm()
             },
 
             validateResolution(scope, model = null, models = null, modelObject = null) {
@@ -318,10 +348,12 @@
                     to : row.to,
                     technical_key : row.technical_key,
                     code : type_doc.code,
-                    name : type_doc.name
+                    name : type_doc.name,
+                    description: row.description
                 }
-
+                this.disableIndexFieldsResolution = true
             },
+
             deleter(id)
             {
                 this.$confirm('¿Desea eliminar el registro?', 'Eliminar', {
@@ -352,8 +384,6 @@
                 }).catch(error => {
                     console.log(error)
                 });
-
-
             }
         }
     };
