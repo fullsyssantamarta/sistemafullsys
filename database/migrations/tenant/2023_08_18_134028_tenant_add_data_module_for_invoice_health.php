@@ -14,7 +14,7 @@ class TenantAddDataModuleForInvoiceHealth extends Migration
     public function up()
     {
         DB::table('modules')->insert([
-            ['id'=> 14, 'value' => 'invoicehealth', 'description' => 'Factura sector salud']
+            ['id'=> 20, 'value' => 'invoicehealth', 'description' => 'Factura sector salud']
         ]);
     }
 
@@ -25,7 +25,7 @@ class TenantAddDataModuleForInvoiceHealth extends Migration
      */
     public function down()
     {
-        DB::table('modules')->where('id', 14)->delete();
+        DB::table('modules')->where('id', 20)->delete();
     }
 
 }

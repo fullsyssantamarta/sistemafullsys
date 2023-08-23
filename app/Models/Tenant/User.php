@@ -179,10 +179,10 @@ class User extends Authenticatable
         // 10 - Ecommerce
         // 12 - Finanzas
         // 13 - Nóminas
-        // 14 - Factura del sector salud
-        // 15 - RADIAN
+        // 20 - Factura del sector salud
+        // 21 - RADIAN
 
-        return [1,2,4,5,6,7,8,10,12,13,14,15];
+        return [1,2,4,5,6,7,8,10,12,13,20,21];
     }
 
 

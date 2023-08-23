@@ -14,7 +14,7 @@ class TenantAddDataModuleForRadian extends Migration
     public function up()
     {
         DB::table('modules')->insert([
-            ['id'=> 15, 'value' => 'radian', 'description' => 'Acuses RADIAN']
+            ['id'=> 21, 'value' => 'radian', 'description' => 'Acuses RADIAN']
         ]);
     }
 
@@ -25,7 +25,7 @@ class TenantAddDataModuleForRadian extends Migration
      */
     public function down()
     {
-        DB::table('modules')->where('id', 15)->delete();
+        DB::table('modules')->where('id', 21)->delete();
     }
 
 }
