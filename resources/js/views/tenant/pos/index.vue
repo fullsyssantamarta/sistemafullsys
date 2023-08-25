@@ -244,13 +244,13 @@
                                     </td>
                                     <td width="20%">
                                         <p class="font-weight-semibold m-0 text-center">
-                                            <el-input v-model="item.sale_unit_price_with_tax" class @input="clickAddItem(item,index,true)" @blur="blurCalculateQuantity(index)" :readonly="item.item.calculate_quantity">
+                                            <el-input v-model="item.sale_unit_price_with_tax" class @input="clickAddItem(item,index,true)" :readonly="item.item.calculate_quantity">
                                             </el-input>
                                         </p>
                                     </td>
                                     <td width="30%">
                                         <p class="font-weight-semibold m-0 text-center">
-                                            <el-input v-model="item.total" @input="calculateQuantity(index)" @blur="blurCalculateQuantity(index)" :readonly="!item.item.calculate_quantity">
+                                            <el-input v-model="item.total" @input="calculateQuantity(index)" :readonly="!item.item.calculate_quantity">
                                             </el-input>
                                         </p>
                                     </td>
@@ -707,25 +707,7 @@ export default {
             }
 
         },
-        blurCalculateQuantity(index) {
-            // this.row = calculateRowItem(
-            //   this.form.items[index],
-            //   this.form.currency_id,
-            //   1
-            // );
-            // this.form.items[index] = this.row;
-            // this.calculateTotal();
-            // this.setFormPosLocalStorage()
-        },
-        blurCalculateQuantity2(index) {
-            // this.row = calculateRowItem(
-            //   this.form.items[index],
-            //   this.form.currency_id,
-            //   1
-            // );
-            // this.form.items[index] = this.row;
-            // this.calculateTotal();
-        },
+
         changeCustomer() {
             let customer = _.find(this.all_customers, {
                 id: this.form.customer_id
@@ -884,12 +866,9 @@ export default {
             this.setFormPosLocalStorage()
         },
         async clickAddItem(item, index, input = false) {
-
             const presentation = item.presentation
             // console.log(item)
-
             if (this.type_refund) {
-
                 this.form_item.item = item;
                 this.form_item.unit_price_value = this.form_item.item.sale_unit_price;
                 this.form_item.quantity = 1;
@@ -913,10 +892,8 @@ export default {
 
                 this.items_refund.push(this.form_item);
                 //item.aux_quantity = 1;
-
             } else {
                 this.loading = true;
-
                 // let exchangeRateSale = this.form.exchange_rate_sale;
                 // let exist_item = _.find(this.form.items, {
                 //     item_id: item.item_id
@@ -1081,7 +1058,6 @@ export default {
 
         },
         setDataTotals() {
-
             let val = this.form
             val.taxes = this.taxes;
             val.taxes.forEach(tax => {
@@ -1123,7 +1099,13 @@ export default {
                         }
                         else{
 //                            console.log("Aquui 2");
-//                            console.log(item)
+                            console.log(item.unit_price)
+                            console.log(item.sale_unit_price_with_tax)
+                            console.log(item.tax.rate)
+                            console.log(item.tax.conversion)
+                            console.log(1 + (item.tax.rate / item.tax.conversion))
+                            item.unit_price = (item.sale_unit_price_with_tax / (1 + (item.tax.rate / item.tax.conversion)))
+                            console.log(item.unit_price)
                             item.total_tax = (
                                 (item.unit_price * item.quantity -
                                     (item.discount < item.sale_unit_price_with_tax * item.quantity ?
