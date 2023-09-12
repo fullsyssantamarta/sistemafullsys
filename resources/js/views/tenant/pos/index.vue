@@ -88,8 +88,6 @@
                             <div class="card-footer pointer text-center bg-primary">
                                 <template v-if="!item.edit_unit_price">
                                     <h5 class="font-weight-semibold text-right text-white">
-                                        <!--<button v-if="configuration.options_pos" type="button" class="btn btn-xs btn-primary-pos" @click="clickOpenInputEditUP(index)"><span style='font-size:16px;'>&#9998;</span> </button>-->
-                                        <!-- {{currency.symbol}} {{item.sale_unit_price * 1.19}} -->
                                         {{currency.symbol}} {{ item.sale_unit_price_with_tax }}
                                     </h5>
                                 </template>
@@ -99,7 +97,6 @@
                                         <el-button slot="append" icon="el-icon-close" type="danger" @click="clickCancelUnitPriceItem(index)"></el-button>
                                     </el-input>
                                 </template>
-
                             </div>
 
                             <div v-if="configuration.options_pos" class=" card-footer  bg-primary btn-group flex-wrap" style="width:100% !important; padding:0 !important; ">
@@ -263,7 +260,8 @@
                             </template>
                             <template v-for="(item,index) in items_refund">
                                 <tr :key="index + 'R'">
-                                    <td width="5%">
+                                    <td width="5%" style="text-align: center;" class="pos-list-label" v-if="item.unit_type">
+                                        {{ item.unit_type.name }}
                                     </td>
                                     <td width="20%">
                                         <el-input :value=" '-' +item.quantity" :readonly="true" class></el-input>
@@ -274,6 +272,12 @@
                                     </td>
                                     <td>
                                         <p class="font-weight-semibold m-0 text-center">{{currency.symbol}}</p>
+                                    </td>
+                                    <td width="20%">
+                                        <p class="font-weight-semibold m-0 text-center">
+                                            <el-input v-model="item.sale_unit_price_with_tax" class @input="clickAddItem(item,index,true)" :readonly="item.item.calculate_quantity">
+                                            </el-input>
+                                        </p>
                                     </td>
                                     <td width="30%">
                                         <p class="font-weight-semibold m-0 text-center">
@@ -829,6 +833,7 @@ export default {
                 unit_type_id: null,
                 item_unit_types: [],
                 IdLoteSelected: null,
+                sale_unit_price_with_tax: 0,
                 refund: false
             };
 
@@ -869,6 +874,7 @@ export default {
             const presentation = item.presentation
             // console.log(item)
             if (this.type_refund) {
+//                console.log("Aqui devolucion...")
                 this.form_item.item = item;
                 this.form_item.unit_price_value = this.form_item.item.sale_unit_price;
                 this.form_item.quantity = 1;
@@ -889,7 +895,7 @@ export default {
                 })
                 this.form_item.unit_type = this.form_item.item.unit_type
                 this.form_item.refund = true
-
+                this.form_item.sale_unit_price_with_tax = -1 * item.sale_unit_price_with_tax
                 this.items_refund.push(this.form_item);
                 //item.aux_quantity = 1;
             } else {
@@ -1099,13 +1105,13 @@ export default {
                         }
                         else{
 //                            console.log("Aquui 2");
-                            console.log(item.unit_price)
-                            console.log(item.sale_unit_price_with_tax)
-                            console.log(item.tax.rate)
-                            console.log(item.tax.conversion)
-                            console.log(1 + (item.tax.rate / item.tax.conversion))
+//                            console.log(item.unit_price)
+//                            console.log(item.sale_unit_price_with_tax)
+//                            console.log(item.tax.rate)
+//                            console.log(item.tax.conversion)
+//                            console.log(1 + (item.tax.rate / item.tax.conversion))
                             item.unit_price = (item.sale_unit_price_with_tax / (1 + (item.tax.rate / item.tax.conversion)))
-                            console.log(item.unit_price)
+//                            console.log(item.unit_price)
                             item.total_tax = (
                                 (item.unit_price * item.quantity -
                                     (item.discount < item.sale_unit_price_with_tax * item.quantity ?
@@ -1177,7 +1183,7 @@ export default {
                         tax.total = Number(0).toFixed(2);
                     }
 
-                    tax.total = (Number(tax.total) + Number(item.total_tax)).toFixed(2);
+                    tax.total = (Number(tax.total) - Number(item.total_tax)).toFixed(2);
                 }
 
                 item.subtotal = (
@@ -1198,9 +1204,16 @@ export default {
 //            console.log(val.items)
 //            console.log(val.items.reduce((p, c) => Number(p) + ((Number(c.sale_unit_price_with_tax) *  Number(c.quantity))) - Number(c.total_tax) - Number(c.discount), 0))
             const sale = !val.items.edited_price ? val.items.reduce((p, c) => Number(p) + Number((c.sale_unit_price_with_tax * c.quantity) - c.total_tax) - Number(c.discount), 0) : val.items.reduce((p, c) => Number(p) + Number(c.unit_price * c.quantity) - Number(c.discount), 0);
-            const sale_refund = !val.items.edited_price ? this.items_refund.reduce((p, c) => Number(p) + Number((c.sale_unit_price_with_tax  * c.quantity) - c.total_tax) - Number(c.discount), 0) : this.items_refund.reduce((p, c) => Number(p) + Number(c.unit_price * c.quantity) - Number(c.discount), 0);
+//            console.log(this.items_refund)
+//            console.log(!val.items.edited_price)
 
-            val.sale = (sale - sale_refund).toFixed(2)
+//            const sale_refund = !val.items.edited_price ? this.items_refund.reduce((p, c) => Number(p) - Number((c.sale_unit_price_with_tax  * c.quantity) + c.total_tax) - Number(c.discount), 0) : this.items_refund.reduce((p, c) => Number(p) - Number(c.unit_price * c.quantity) - Number(c.discount), 0);
+//            const s1 = this.items_refund.reduce((p, c) => Number(p) - Number((c.sale_unit_price_with_tax  * c.quantity) + c.total_tax) - Number(c.discount), 0)
+            const sale_refund = this.items_refund.reduce((p, c) => Number(p) - Number(c.unit_price * c.quantity) - Number(c.discount), 0)
+//            console.log(sale)
+//            console.log(sale_refund)
+            val.sale = (sale + sale_refund).toFixed(2)
+//            console.log(val.sale)
             val.total_discount = val.items
                 .reduce((p, c) => Number(p) + Number(c.discount), 0)
                 .toFixed(2);
