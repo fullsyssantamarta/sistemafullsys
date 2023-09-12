@@ -175,9 +175,15 @@
                     this.loading = false
                 })
             },
+
             clickImport() {
                 this.showImportDialog = true;
             },
+
+            clickSincronize() {
+
+            },
+
             clickPayment(recordId) {
                 this.recordId = recordId;
                 this.showDialogPayments = true;

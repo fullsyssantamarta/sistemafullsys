@@ -14,6 +14,8 @@ use Carbon\Carbon;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use Modules\Factcolombia1\Http\Controllers\Tenant\DocumentController;
 use Modules\Factcolombia1\Http\Requests\Tenant\DocumentRequest;
+use Modules\Factcolombia1\Models\Tenant\PaymentForm;
+use Modules\Factcolombia1\Models\Tenant\PaymentMethod;
 use Exception;
 
 class CoDocumentsImport implements ToCollection
@@ -73,7 +75,7 @@ class CoDocumentsImport implements ToCollection
         foreach ($rows as $row){
             if($row[4].$row[0] != $previos_prefix_number){
                 if($previos_prefix_number != ""){
-                    \Log::debug(json_encode($json));
+//                    \Log::debug(json_encode($json));
                     $send->store($request, json_encode($json));
                     sleep(5);
                 }
@@ -108,8 +110,8 @@ class CoDocumentsImport implements ToCollection
                     'merchant_registration' => "00000000",
                 ];
                 $payment_form = [
-                    'payment_form_id' => $row[11],
-                    'payment_method_id' => $row[12],
+                    'payment_form_id' => is_string($row[11]) ? PaymentForm::where('name', 'like', '%'.str_replace('_x000D_', '', $row[11]).'%')->firstOrFail()->id : $row[11],
+                    'payment_method_id' => is_string($row[12]) ? PaymentMethod::where('name', 'like', '%'.str_replace('_x000D_', '', $row[12]).'%')->firstOrFail()->id : $row[12],
                     'payment_due_date' => $this->ExcelDateToPHP($row[13]),
                     'duration_measure' => $row[14],
                 ];
