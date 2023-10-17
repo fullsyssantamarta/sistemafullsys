@@ -1131,7 +1131,7 @@ class DocumentController extends Controller
 //        \Log::debug($prefix);
 //        \Log::debug($number);
         $send= (object)['prefix' => $prefix, 'number' => $number, 'alternate_email'=> $request->email];
-        \Log::debug(json_encode($send));
+//        \Log::debug(json_encode($send));
         $data_send = json_encode($send);
 
         $base_url = config('tenant.service_fact');
