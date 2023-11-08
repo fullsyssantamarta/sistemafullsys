@@ -21,7 +21,7 @@ class ReportCustomerController extends Controller
     use ReportTrait;
 
     public function filter() {
-        $document_types = TypeDocument::where('name', '!=', 'Factura Electronica de venta')->get();
+        $document_types = TypeDocument::where('name', '=', 'Factura de Venta Nacional')->get();
         $persons = $this->getPersons('customers');
         $establishments = Establishment::all()->transform(function($row) {
             return [

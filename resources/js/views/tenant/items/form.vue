@@ -75,6 +75,7 @@
                     <div class="col-md-6">
                         <div class="form-group" :class="{'has-danger': errors.tax_id}">
                             <label class="control-label">Impuesto (Venta)</label>
+                            <a href="#" class="control-label font-weight-bold text-info" @click="form.tax_id = null"> [ * Excluido]</a>
                             <el-select v-model="form.tax_id" filterable>
                                 <el-option v-for="option in taxes" :key="option.id" :value="option.id" :label="option.name"></el-option>
                             </el-select>
@@ -150,7 +151,7 @@
                             <small class="form-control-feedback" v-if="errors.internal_id" v-text="errors.internal_id[0]"></small>
                         </div>
                     </div>
-                    
+
                     <div v-show="form.unit_type_id !=1" class="col-md-3 center-el-checkbox">
                         <div class="form-group" :class="{'has-danger': errors.calculate_quantity}">
                             <el-checkbox v-model="form.calculate_quantity">Calcular cantidad por precio</el-checkbox><br>

@@ -23,10 +23,10 @@ class ItemRequest extends FormRequest
             // 'description' => [
             //     'required',
             // ],
-            // 'name' => [                
+            // 'name' => [
             //     'required',
             // ],
-            // 'second_name' => [                
+            // 'second_name' => [
             //     'required',
             // ],
             'name' => [
@@ -68,9 +68,9 @@ class ItemRequest extends FormRequest
             // 'brand_id' => [
             //     'required_if:is_set,false',
             // ],
-            'tax_id' => 'required|exists:tenant.co_taxes,id',
+            'tax_id' => 'nullable|exists:tenant.co_taxes,id',
             'purchase_tax_id' => 'required|exists:tenant.co_taxes,id',
-            
+
         ];
     }
 

@@ -28,7 +28,7 @@
                                         <el-tooltip v-for="option in items"  :key="option.id" placement="top">
 
                                             <div slot="content">
-                                                Marca: {{option.brand}} <br>
+                                                Marca A: {{option.brand}} <br>
                                                 Categoria: {{option.category}} <br>
                                                 Stock: {{option.stock}} <br>
                                                 Precio: {{option.currency_type_symbol}} {{option.sale_unit_price}} <br>
@@ -85,6 +85,7 @@
                     <div class="col-md-5">
                         <div class="form-group" :class="{'has-danger': errors.tax_id}">
                             <label class="control-label">Impuesto</label>
+                            <a href="#" class="control-label font-weight-bold text-info" @click="form.tax_id = null"> [ * Excluido]</a>
                             <el-select v-model="form.tax_id"  filterable>
                                 <el-option v-for="option in itemTaxes" :key="option.id" :value="option.id" :label="option.name"></el-option>
                             </el-select>
@@ -465,29 +466,23 @@
                 this.initForm()
                 this.$emit('update:showDialog', false)
             },
+
             async changeItem() {
-
-
                 this.form.item = _.find(this.items, {'id': this.form.item_id});
                 this.form.item_unit_types = _.find(this.items, {'id': this.form.item_id}).item_unit_types
                 this.form.id = this.form.item_id
                 this.form.unit_type_id = this.form.item.unit_type_id
-
                 this.lots = this.form.item.lots
-
-                this.form.tax_id = (this.taxes.length > 0) ? this.form.item.tax.id: null
-
+                this.form.tax_id = (this.taxes.length > 0 && this.form.item.tax !== null) ? this.form.item.tax.id: null
                 this.form.price = this.form.item.sale_unit_price;
-
                 // this.form.has_igv = this.form.item.has_igv;
                 // this.form.affectation_igv_type_id = this.form.item.sale_affectation_igv_type_id;
-
                 this.form.quantity = 1;
                 this.cleanTotalItem();
                 this.showListStock = true
                 this.form.lots_group = this.form.item.lots_group
-
             },
+
             getItemsAiu(detailAiu)
             {
                 const context = this
@@ -584,11 +579,12 @@
 
                 if (this.validateTotalItem().total_item) return;
 
-                this.form.tax = _.find(this.taxes, {'id': this.form.tax_id})
+                if(null === this.form.tax_id)
+                    this.form.tax = {'code': "ZZ", 'conversion': "100.00", 'id': 0, 'in_base': false, 'in_tax': null, 'is_fixed_value': false, 'is_percentage': true, 'is_retention': false, 'name': "EXCLUIDO", 'rate': "0.00", 'retention': 0, 'total': 0, 'type_tax': {'code': "ZZ", 'description': "Articulos Excluidos de Impuesto", 'id': 99, 'name': "EXCLUIDO"}}
+                else
+                    this.form.tax = _.find(this.taxes, {'id': this.form.tax_id})
                 this.form.type_unit = this.form.item.type_unit
-                // console.log(this.form)
                 this.form.item.presentation = this.item_unit_type;
-
 
                 if (this.recordItem){
                     this.form.indexi = this.recordItem.indexi
@@ -603,9 +599,9 @@
                     if(select_lots.length != this.form.quantity)
                         return this.$message.error('La cantidad de series seleccionadas son diferentes a la cantidad a vender');
                 }
-
                 this.form.IdLoteSelected = IdLoteSelected
 
+//                console.log(this.form)
                 this.$emit('add', this.form);
 
 

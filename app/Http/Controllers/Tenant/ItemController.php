@@ -9,9 +9,7 @@ use App\Models\Tenant\Catalogs\SystemIscType;
 use App\Models\Tenant\Catalogs\UnitType;
 use App\Models\Tenant\Item;
 use App\Models\Tenant\ItemImage;
-
 use Modules\Item\Models\ItemLot;
-
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -348,7 +346,7 @@ class ItemController extends Controller
 
     }
 
-        
+
     /**
      * Eliminar todos los productos que no tienen registros asociados
      *
@@ -364,16 +362,16 @@ class ItemController extends Controller
 
             // si los productos tienen registros asociados no se eliminan
             try {
-    
+
                 $this->deleteRecordInitialKardex($item);
                 $item->delete();
                 $quantity_deleted++;
-    
-            } catch (Exception $e) 
+
+            } catch (Exception $e)
             {
                 // Log::info("El producto {$item->name} no pudo ser eliminado: Code - {$e->getCode()} | Message - {$e->getMessage()} | Line - {$e->getLine()}");
             }
-            
+
         }
 
         return [
@@ -382,7 +380,7 @@ class ItemController extends Controller
         ];
 
     }
-    
+
 
     public function destroyItemUnitType($id)
     {
@@ -581,7 +579,7 @@ class ItemController extends Controller
 
     /**
      * Busqueda de producto por id
-     *  
+     *
      * @param  int $id
      * @return array
      */
@@ -605,7 +603,7 @@ class ItemController extends Controller
      *
      * Usado en:
      * RemissionController
-     *  
+     *
      * @param  Request $request
      * @return array
     */
@@ -634,7 +632,7 @@ class ItemController extends Controller
 
 
     /**
-     * 
+     *
      * Busqueda de registros por coincidencia o id, data inicial,  para componente
      *
      * @param  Request $request
@@ -648,7 +646,7 @@ class ItemController extends Controller
         $filter_warehouse = $request->has('filter_warehouse') && (bool) $request->filter_warehouse;
 
         $warehouse = WarehouseModule::where('establishment_id', auth()->user()->establishment_id)->first();
-        
+
         $records = Item::query();
 
         if($id)

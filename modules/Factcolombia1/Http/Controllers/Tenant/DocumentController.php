@@ -923,6 +923,8 @@ class DocumentController extends Controller
                 'Accept: application/json',
                 "Authorization: Bearer {$company->api_token}"
             ));
+//            \Log::debug($data_document);
+//            return "";
             $response = curl_exec($ch);
             curl_close($ch);
             // return $response;

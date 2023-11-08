@@ -9,13 +9,13 @@ use Illuminate\Validation\Rule;
 class ItemRequest extends FormRequest
 {
     use RequestsTrait;
-    
+
     /**
      * Form
      * @var string
      */
     public $form = 'item';
-    
+
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -24,7 +24,7 @@ class ItemRequest extends FormRequest
     public function authorize() {
         return true;
     }
-    
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -32,7 +32,6 @@ class ItemRequest extends FormRequest
      */
     public function rules() {
         $id = $this->input('id');
-
         return [
             'name' => [
                 // 'required|unique:tenant.co_items,name|max:50'
@@ -46,7 +45,7 @@ class ItemRequest extends FormRequest
             ],
             'type_unit_id' => 'required|exists:tenant.co_type_units,id',
             'price' => 'required|numeric|between:0.00,9999999999.99',
-            'tax_id' => 'required|exists:tenant.co_taxes,id'
+            'tax_id' => 'nullable|exists:tenant.co_taxes,id'
         ];
     }
 }

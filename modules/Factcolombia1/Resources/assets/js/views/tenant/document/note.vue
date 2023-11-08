@@ -102,7 +102,7 @@
                                                 <td>{{row.item.name}}
                                                     {{row.item.presentation.hasOwnProperty('description') ? row.item.presentation.description : ''}}
                                                     <br/>
-                                                    <small>{{row.tax.name}}</small>
+                                                    <small>{{row.tax ? row.tax.name : 'EXCLUIDO'}}</small>
                                                 </td>
                                                 <td class="text-center">{{row.item.unit_type.name}}</td>
                                                 <!-- <td class="text-center">{{(row.item.hasOwnProperty('unit_type') ) ? row.item.unit_type.name : row.item.item.unit_type.name}}</td> -->
@@ -840,10 +840,9 @@
             // },
 
             getTaxTotal() {
-
                 let tax = [];
                 this.form.items.forEach(element => {
-                    let find = tax.find(x => x.tax_id == element.tax.type_tax_id && x.percent == element.tax.rate);
+                    let find = tax.find(x => element.tax !== undefined && x.tax_id == element.tax.type_tax_id && x.percent == element.tax.rate);
                     if(find)
                     {
                         let indexobj = tax.findIndex(x => x.tax_id == element.tax.type_tax_id && x.percent == element.tax.rate);
@@ -856,26 +855,26 @@
                         });
                     }
                     else {
-                        tax.push({
-                            tax_id: element.tax.type_tax_id,
-                            tax_amount: this.cadenaDecimales(Number(element.total_tax)),
-                            percent: this.cadenaDecimales(Number(element.tax.rate)),
-                            taxable_amount: this.cadenaDecimales((Number(element.price) * Number(element.quantity)) - Number(element.discount))
-                        });
+                        if(element.tax !== undefined){
+                            tax.push({
+                                tax_id: element.tax.type_tax_id,
+                                tax_amount: this.cadenaDecimales(Number(element.total_tax)),
+                                percent: this.cadenaDecimales(Number(element.tax.rate)),
+                                taxable_amount: this.cadenaDecimales((Number(element.price) * Number(element.quantity)) - Number(element.discount))
+                            });
+                        }
                     }
                 });
-            //      console.log(tax);
                 this.tax_amount_calculate = tax;
                 return tax;
             },
 
             getLegacyMonetaryTotal() {
-
                 let line_ext_am = 0;
                 let tax_incl_am = 0;
                 let allowance_total_amount = 0;
                 this.form.items.forEach(element => {
-                    line_ext_am += (Number(element.price) * Number(element.quantity)) - Number(element.discount);
+                    line_ext_am += (Number(element.price) * Number(element.quantity)) - Number(element.discount) ;
                     allowance_total_amount += Number(element.discount);
                 });
 
@@ -884,18 +883,20 @@
                     total_tax_amount += Number(element.tax_amount);
                 });
 
+                let tax_excl_am = 0;
+                this.tax_amount_calculate.forEach(element => {
+                    tax_excl_am += Number(element.taxable_amount);
+                });
                 tax_incl_am = line_ext_am + total_tax_amount;
 
                 return {
                     line_extension_amount: this.cadenaDecimales(line_ext_am),
-                    tax_exclusive_amount: this.cadenaDecimales(line_ext_am),
+                    tax_exclusive_amount: this.cadenaDecimales(tax_excl_am),
                     tax_inclusive_amount: this.cadenaDecimales(tax_incl_am),
                     allowance_total_amount: this.cadenaDecimales(allowance_total_amount),
                     charge_total_amount: "0.00",
                     payable_amount: this.cadenaDecimales(tax_incl_am - allowance_total_amount)
-                    // payable_amount: _.round(tax_incl_am - allowance_total_amount, 2)
                 };
-
             },
 
             createAllowanceCharge(amount, base) {
@@ -911,39 +912,59 @@
             },
 
             getCreditNoteLines() {
-
                 let data = this.form.items.map(x => {
-                    return {
-
-                        unit_measure_id: x.item.unit_type.code, //codigo api dian de unidad
-                        invoiced_quantity: x.quantity,
-                        line_extension_amount: this.cadenaDecimales((Number(x.price) * Number(x.quantity)) - x.discount),
-                        free_of_charge_indicator: false,
-                        allowance_charges: [
-                            {
-                                charge_indicator: false,
-                                allowance_charge_reason: "DESCUENTO GENERAL",
-                                amount: this.cadenaDecimales(x.discount),
-                                base_amount: this.cadenaDecimales(Number(x.price) * Number(x.quantity))
-                            }
-                        ],
-                        tax_totals: [
-                            {
-                                tax_id: x.tax.type_tax_id,
-                                tax_amount: this.cadenaDecimales(x.total_tax),
-                                taxable_amount: this.cadenaDecimales((Number(x.price) * Number(x.quantity)) - x.discount),
-                                percent: this.cadenaDecimales(x.tax.rate)
-                            }
-                        ],
-                        description: x.item.name,
-                        code: x.item.internal_id,
-                        type_item_identification_id: 4,
-                        price_amount: this.cadenaDecimales(Number(x.price) + (Number(x.total_tax) / Number(x.quantity))),
-                        base_quantity: x.quantity
-                    };
-
+                    if(x.tax !== undefined){
+                        return {
+                            unit_measure_id: x.item.unit_type.code, //codigo api dian de unidad
+                            invoiced_quantity: x.quantity,
+                            line_extension_amount: this.cadenaDecimales((Number(x.price) * Number(x.quantity)) - x.discount),
+                            free_of_charge_indicator: false,
+                            allowance_charges: [
+                                {
+                                    charge_indicator: false,
+                                    allowance_charge_reason: "DESCUENTO GENERAL",
+                                    amount: this.cadenaDecimales(x.discount),
+                                    base_amount: this.cadenaDecimales(Number(x.price) * Number(x.quantity))
+                                }
+                            ],
+                            tax_totals: [
+                                {
+                                    tax_id: x.tax.type_tax_id,
+                                    tax_amount: this.cadenaDecimales(x.total_tax),
+                                    taxable_amount: this.cadenaDecimales((Number(x.price) * Number(x.quantity)) - x.discount),
+                                    percent: this.cadenaDecimales(x.tax.rate)
+                                }
+                            ],
+                            description: x.item.name,
+                            code: x.item.internal_id,
+                            type_item_identification_id: 4,
+                            price_amount: this.cadenaDecimales(Number(x.price) + (Number(x.total_tax) / Number(x.quantity))),
+                            base_quantity: x.quantity
+                        };
+                    }
+                    else
+                    {
+                        return {
+                            unit_measure_id: x.item.unit_type.code, //codigo api dian de unidad
+                            invoiced_quantity: x.quantity,
+                            line_extension_amount: this.cadenaDecimales((Number(x.price) * Number(x.quantity)) - x.discount),
+                            free_of_charge_indicator: false,
+                            allowance_charges: [
+                                {
+                                    charge_indicator: false,
+                                    allowance_charge_reason: "DESCUENTO GENERAL",
+                                    amount: this.cadenaDecimales(x.discount),
+                                    base_amount: this.cadenaDecimales(Number(x.price) * Number(x.quantity))
+                                }
+                            ],
+                            description: x.item.name,
+                            code: x.item.internal_id,
+                            type_item_identification_id: 4,
+                            price_amount: this.cadenaDecimales(Number(x.price) + (Number(x.total_tax) / Number(x.quantity))),
+                            base_quantity: x.quantity
+                        };
+                    }
                 });
-
                 return data;
             },
 
