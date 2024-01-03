@@ -214,13 +214,13 @@
                                                 <td class="text-right">{{row.quantity}}</td>
                                                 <!--<td class="text-right" v-else ><el-input-number :min="0.01" v-model="row.quantity"></el-input-number> </td> -->
 
-                                                <td class="text-right">{{ratePrefix()}} {{getFormatUnitPriceRow(row.price)}}</td>
+                                                <td class="text-right">{{ratePrefix()}} {{getFormatDecimal(row.price)}}</td>
                                                 <!--<td class="text-right" v-else ><el-input-number :min="0.01" v-model="row.unit_price"></el-input-number> </td> -->
 
 
-                                                <td class="text-right">{{ratePrefix()}} {{row.subtotal}}</td>
-                                                <td class="text-right">{{ratePrefix()}} {{ row.discount }}</td>
-                                                <td class="text-right">{{ratePrefix()}} {{row.total}}</td>
+                                                <td class="text-right">{{ratePrefix()}} {{getFormatDecimal(row.subtotal)}}</td>
+                                                <td class="text-right">{{ratePrefix()}} {{getFormatDecimal(row.discount)}}</td>
+                                                <td class="text-right">{{ratePrefix()}} {{getFormatDecimal(row.total)}}</td>
                                                 <td class="text-right">
                                                     <button type="button" class="btn waves-effect waves-light btn-xs btn-danger" @click.prevent="clickRemoveItem(index)">x</button>
                                                     <button type="button" class="btn waves-effect waves-light btn-xs btn-info" @click="clickEditItem(row, index)" ><span style='font-size:10px;'>&#9998;</span> </button>
@@ -249,12 +249,12 @@
                                     <tr>
                                         <td>TOTAL VENTA</td>
                                         <td>:</td>
-                                        <td class="text-right">{{ratePrefix()}} {{ form.sale }}</td>
+                                        <td class="text-right">{{ratePrefix()}} {{ getFormatDecimal(form.sale) }}</td>
                                     </tr>
                                     <tr >
                                         <td>TOTAL DESCUENTO (-)</td>
                                         <td>:</td>
-                                        <td class="text-right">{{ratePrefix()}} {{ form.total_discount }}</td>
+                                        <td class="text-right">{{ratePrefix()}} {{ getFormatDecimal(form.total_discount) }}</td>
                                     </tr>
                                     <template v-for="(tax, index) in form.taxes">
                                         <tr v-if="((tax.total > 0) && (!tax.is_retention))" :key="index">
@@ -262,13 +262,13 @@
                                                 {{tax.name}}(+)
                                             </td>
                                             <td>:</td>
-                                            <td class="text-right">{{ratePrefix()}} {{Number(tax.total).toFixed(2)}}</td>
+                                            <td class="text-right">{{ratePrefix()}} {{ getFormatDecimal(Number(tax.total).toFixed(2)) }}</td>
                                         </tr>
                                     </template>
                                     <tr>
                                         <td>SUBTOTAL</td>
                                         <td>:</td>
-                                        <td class="text-right">{{ratePrefix()}} {{ form.subtotal }}</td>
+                                        <td class="text-right">{{ratePrefix()}} {{ getFormatDecimal(form.subtotal) }}</td>
                                     </tr>
 
                                     <template v-for="(tax, index) in form.taxes">
@@ -288,18 +288,14 @@
                                             </td>
                                         </tr>
                                     </template>
-
                                 </table>
 
                                 <template>
-                                    <h3 class="text-right"><b>TOTAL: </b>{{ratePrefix()}} {{ form.total }}</h3>
+                                    <h3 class="text-right"><b>TOTAL: </b>{{ratePrefix()}} {{ getFormatDecimal(form.total) }}</h3>
                                 </template>
                             </div>
-
                         </div>
-
                     </div>
-
 
                     <div class="form-actions text-right mt-4">
                         <el-button @click.prevent="preeliminarview()" :loading="loading_preeliminar_view" v-if="form.items.length > 0">Vista Preeliminar</el-button>
@@ -606,6 +602,26 @@
                 return _.round(unit_price, 6)
                 // return unit_price.toFixed(6)
             },
+
+            getFormatDecimal(value){
+                // Convierte la cadena a un número (si es posible)
+                const numericPrice = parseFloat(value);
+                if (isNaN(numericPrice)) {
+                    // En caso de que la conversión no sea exitosa, maneja el error como desees
+                    console.error('No se pudo convertir la cadena a un número.');
+                    return value;
+                }
+
+                // Asumiendo que numericPrice es un número
+                const formattedPrice = numericPrice.toLocaleString('en-US', {
+                    style: 'decimal',  // Estilo 'decimal' para separadores de mil y dos decimales
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+
+                return formattedPrice;
+            },
+
             clickEditItem(row, index)
             {
                 row.indexi = index
@@ -1274,7 +1290,7 @@
                 let allowance_total_amount = 0;
                 this.form.items.forEach(element => {
                     line_ext_am += (Number(element.price) * Number(element.quantity)) - Number(element.discount) ;
-                    allowance_total_amount += Number(element.discount);
+//                    allowance_total_amount += Number(element.discount);
                 });
 
                 let total_tax_amount = 0;
@@ -1294,7 +1310,8 @@
                     tax_inclusive_amount: this.cadenaDecimales(tax_incl_am),
                     allowance_total_amount: this.cadenaDecimales(allowance_total_amount),
                     charge_total_amount: "0.00",
-                    payable_amount: this.cadenaDecimales(tax_incl_am - allowance_total_amount)
+                    payable_amount: this.cadenaDecimales(tax_incl_am)
+//                    payable_amount: this.cadenaDecimales(tax_incl_am - allowance_total_amount)
                 };
             },
 
