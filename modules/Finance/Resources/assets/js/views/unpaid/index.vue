@@ -4,10 +4,10 @@
             <h3 class="my-0">Cuentas por cobrar</h3>
         </div>
         <div class="card mb-0">
-            <div class="card-body"> 
+            <div class="card-body">
 
                 <div class="row">
-                
+
                     <div class="col-xl-12">
                         <section >
                         <div>
@@ -69,6 +69,7 @@
                                     <label class="control-label">Cliente</label>
                                     <el-select
                                         @change="changeCustomerUnpaid"
+                                        @clear="loadUnpaid"
                                         filterable
                                         clearable
                                         v-model="form.customer_id"
@@ -84,13 +85,13 @@
                                 </div>
 
                                 <div class="col-md-6" style="margin-top:29px">
-                                    <el-button
+<!--                                    <el-button
                                         class="submit"
                                         type="success"
                                         @click.prevent="clickOpen()"
                                         >
                                         <i class="fa fa-file-excel"></i> Exportar Todo
-                                    </el-button>
+                                    </el-button>    -->
 
                                     <el-button
                                         v-if="records.length > 0"
@@ -174,7 +175,7 @@
                                                     class="custom-badge"
                                                     >{{ row.date_payment_last ? row.date_payment_last : 'No registra pagos.' }}</span>
                                                 </p>
- 
+
                                                 <el-button icon="el-icon-view" slot="reference"></el-button>
                                                 </el-popover>
                                             </td>
@@ -285,21 +286,18 @@
                 showDialogRemissionPayments: false,
             }
         },
+
         async created() {
-            
             this.$eventHub.$on("reloadDataUnpaid", () => {
                 this.loadUnpaid();
             });
-
             await this.initForm()
             await this.filter()
             await this.changePeriod()
-
         },
+
         computed: {
-
             getCurrentBalance() {
-
                 const self = this;
                 let source = [];
                 if (self.form.customer_id) {
@@ -318,8 +316,8 @@
                     return parseFloat(item.total_to_pay);
                 }).toFixed(2);
             },
-            getCurrentBalanceUsd() {
 
+            getCurrentBalanceUsd() {
                 const self = this;
                 let source = [];
                 if (self.form.customer_id) {
@@ -338,6 +336,7 @@
                     return  parseFloat(item.total_to_pay);
                 }).toFixed(2);
             },
+
             getTotalRowsUnpaid() {
                 const self = this;
 
@@ -353,6 +352,7 @@
                     }).length;
                 }
             },
+
             getTotalAmountUnpaid() {
                 const self = this;
                 let source = [];
@@ -372,6 +372,7 @@
                     return  parseFloat(item.total)
                 }).toFixed(2)
             },
+
             getTotalAmountUnpaidUsd() {
                 const self = this;
                 let source = [];
@@ -394,9 +395,8 @@
         },
 
         methods: {
-            
             initForm() {
-                this.form = { 
+                this.form = {
                     establishment_id: null,
                     period: 'between_dates',
                     date_start: moment().format('YYYY-MM-DD'),
@@ -405,7 +405,9 @@
                     month_end: moment().format('YYYY-MM'),
                     customer_id: null
                 };
+                this.loadUnpaid();
             },
+
             filter() {
                 this.$http.get(`/${this.resource}/filter`, this.form).then(response => {
                     this.establishments = response.data.establishments;
@@ -413,17 +415,16 @@
                     this.form.establishment_id = this.establishments.length > 0 ? this.establishments[0].id : null;
                 });
             },
+
             loadUnpaid() {
-
-                if(this.form.customer_id){
-
+//                if(this.form.customer_id){
                     this.$http.post(`/${this.resource}/records`, this.form).then(response => {
                         this.records = response.data.records;
                         //this.records_base = response.data.records;
                     });
-
-                }
+//                }
             },
+
             clickRemissionPayment(recordId) {
                 this.recordId = recordId;
                 this.showDialogRemissionPayments = true;
@@ -436,9 +437,11 @@
                 this.recordId = recordId;
                 this.showDialogSaleNotePayments = true;
             },
+
             clickDownloadDispatch(download) {
                 window.open(download, "_blank");
             },
+
             clickDownload(type) {
                 let query = queryString.stringify({
                     ...this.form
@@ -448,9 +451,9 @@
             clickOpen(){
                 window.open(`/${this.resource}/unpaidall`, "_blank");
             },
+
             changeCustomerUnpaid() {
                 if (this.form.customer_id) {
-
                     this.loadUnpaid()
                     /*this.records = _.filter(this.records_base, {
                     customer_id: this.selected_customer
@@ -459,6 +462,7 @@
                     this.records = []
                 }
             },
+
             changeDisabledDates() {
                 if (this.form.date_end < this.form.date_start) {
                     this.form.date_end = this.form.date_start
@@ -477,7 +481,8 @@
                     this.form.month_end = moment().format('YYYY-MM');
                 }
                 if(this.form.period === 'between_months') {
-                    this.form.month_start = moment().startOf('year').format('YYYY-MM'); //'2019-01';
+                    this.form.month_start = '2020-01';
+//                    this.form.month_start = moment().startOf('year').format('YYYY-MM'); //'2019-01';
                     this.form.month_end = moment().endOf('year').format('YYYY-MM');;
                 }
                 if(this.form.period === 'date') {
@@ -485,7 +490,8 @@
                     this.form.date_end = moment().format('YYYY-MM-DD');
                 }
                 if(this.form.period === 'between_dates') {
-                    this.form.date_start = moment().startOf('month').format('YYYY-MM-DD');
+                    this.form.date_start = '2020-01-01';
+//                    this.form.date_start = moment().startOf('month').format('YYYY-MM-DD');
                     this.form.date_end = moment().endOf('month').format('YYYY-MM-DD');
                 }
                 this.loadUnpaid();

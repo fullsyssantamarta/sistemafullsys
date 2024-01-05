@@ -41,7 +41,6 @@ class DashboardView
         $month_end = $request['month_end'];
         $customer_id = $request['customer_id'];
 
-
         $d_start = null;
         $d_end = null;
 
@@ -72,16 +71,17 @@ class DashboardView
             ->groupBy('document_id');
 
         if($d_start && $d_end){
-
             $documents = DB::connection('tenant')
                 ->table('documents')
-                ->where('customer_id', $customer_id)
+//                ->where('customer_id', $customer_id)
                 ->join('persons', 'persons.id', '=', 'documents.customer_id')
                 ->leftJoinSub($document_payments, 'payments', function ($join) {
                     $join->on('documents.id', '=', 'payments.document_id');
                 })
-                ->whereIn('state_document_id', [1, 2, 3, 4, 5])
-                ->whereIn('type_document_id', [1, 2, 4])
+//                ->whereIn('state_document_id', [1, 2, 3, 4, 5])
+                ->whereIn('state_document_id', [5])
+//                ->whereIn('type_document_id', [1, 2, 4])
+                ->whereIn('type_invoice_id', [1, 2, 3])
                 // ->whereIn('type_document_id', [1, 2])
                 ->select(DB::raw("documents.id as id, ".
                                     "DATE_FORMAT(documents.date_of_issue, '%Y-%m-%d') as date_of_issue, ".
@@ -90,20 +90,26 @@ class DashboardView
                                     "documents.total as total, ".
                                     "IFNULL(payments.total_payment, 0) as total_payment, ".
                                     "'document' AS 'type', ". "documents.currency_id, ". "documents.date_expiration"))
-                ->where('documents.establishment_id', $establishment_id)
-                ->whereBetween('documents.date_of_issue', [$d_start, $d_end]);
-
+//                ->where('documents.establishment_id', $establishment_id)
+                ->whereBetween('documents.date_of_issue', [$d_start, $d_end])
+                ->when($establishment_id !== null, function ($query) use ($establishment_id){
+                    return $query->where('documents.establishment_id', $establishment_id);
+                })
+                ->when($customer_id !== null, function ($query) use ($customer_id){
+                    return $query->where('documents.customer_id', $customer_id);
+                });
         }else{
-
             $documents = DB::connection('tenant')
                 ->table('documents')
-                ->where('customer_id', $customer_id)
+//                ->where('customer_id', $customer_id)
                 ->join('persons', 'persons.id', '=', 'documents.customer_id')
                 ->leftJoinSub($document_payments, 'payments', function ($join) {
                     $join->on('documents.id', '=', 'payments.document_id');
                 })
-                ->whereIn('state_document_id', [1, 2, 3, 4, 5])
-                ->whereIn('type_document_id', [1, 2])
+//                ->whereIn('state_document_id', [1, 2, 3, 4, 5])
+                ->whereIn('state_document_id', [5])
+                ->whereIn('type_invoice_id', [1, 2, 3])
+//                ->whereIn('type_document_id', [1, 2, 4])
                 ->select(DB::raw("documents.id as id, ".
                                     "DATE_FORMAT(documents.date_of_issue, '%Y-%m-%d') as date_of_issue, ".
                                     "persons.name as customer_name, persons.id as customer_id, documents.type_document_id, ".
@@ -111,8 +117,13 @@ class DashboardView
                                     "documents.total as total, ".
                                     "IFNULL(payments.total_payment, 0) as total_payment, ".
                                     "'document' AS 'type', ". "documents.currency_id, ". "documents.date_expiration"))
-                ->where('documents.establishment_id', $establishment_id);
-
+//                ->where('documents.establishment_id', $establishment_id)
+                ->when($establishment_id !== null, function ($query) use ($establishment_id){
+                    return $query->where('documents.establishment_id', $establishment_id);
+                })
+                ->when($customer_id !== null, function ($query) use ($customer_id){
+                    return $query->where('documents.customer_id', $customer_id);
+                });
         }
 
         /*
@@ -123,10 +134,9 @@ class DashboardView
             ->groupBy('sale_note_id');
 
         if($d_start && $d_end){
-
             $sale_notes = DB::connection('tenant')
                 ->table('sale_notes')
-                ->where('customer_id', $customer_id)
+//                ->where('customer_id', $customer_id)
                 ->join('persons', 'persons.id', '=', 'sale_notes.customer_id')
                 ->leftJoinSub($sale_note_payments, 'payments', function ($join) {
                     $join->on('sale_notes.id', '=', 'payments.sale_note_id');
@@ -139,16 +149,20 @@ class DashboardView
                                 "sale_notes.total as total, ".
                                 "IFNULL(payments.total_payment, 0) as total_payment, ".
                                 "'sale_note' AS 'type', " . "sale_notes.currency_id, ". "null as date_expiration"))
-                ->where('sale_notes.establishment_id', $establishment_id)
+//                ->where('sale_notes.establishment_id', $establishment_id)
                 ->where('sale_notes.changed', false)
                 ->whereBetween('sale_notes.date_of_issue', [$d_start, $d_end])
-                ->where('sale_notes.total_canceled', false);
-
+                ->where('sale_notes.total_canceled', false)
+                ->when($establishment_id !== null, function ($query) use ($establishment_id){
+                    return $query->where('sale_notes.establishment_id', $establishment_id);
+                })
+                ->when($customer_id !== null, function ($query) use ($customer_id){
+                    return $query->where('sale_notes.customer_id', $customer_id);
+                });
         }else{
-
             $sale_notes = DB::connection('tenant')
                 ->table('sale_notes')
-                ->where('customer_id', $customer_id)
+//                ->where('customer_id', $customer_id)
                 ->join('persons', 'persons.id', '=', 'sale_notes.customer_id')
                 ->leftJoinSub($sale_note_payments, 'payments', function ($join) {
                     $join->on('sale_notes.id', '=', 'payments.sale_note_id');
@@ -163,8 +177,13 @@ class DashboardView
                                 "'sale_note' AS 'type', " . "sale_notes.currency_id, ". "null as date_expiration"))
                 ->where('sale_notes.establishment_id', $establishment_id)
                 ->where('sale_notes.changed', false)
-                ->where('sale_notes.total_canceled', false);
-
+//                ->where('sale_notes.total_canceled', false)
+                ->when($establishment_id !== null, function ($query) use ($establishment_id){
+                    return $query->where('sale_notes.establishment_id', $establishment_id);
+                })
+                ->when($customer_id !== null, function ($query) use ($customer_id){
+                    return $query->where('sale_notes.customer_id', $customer_id);
+                });
         }
 
         $remissions  = self::getRecordsRemissions($customer_id, $establishment_id, $d_start, $d_end);
@@ -172,7 +191,6 @@ class DashboardView
         $records = ($documents->union($sale_notes))->union($remissions)->get();
 
         return collect($records)->transform(function($row) {
-
                 $total_to_pay = (float)$row->total - (float)$row->total_payment;
                 $delay_payment = null;
                 $date_of_due = null;
@@ -197,7 +215,7 @@ class DashboardView
 
                 $date_payment_last = '';
 
-                // if($row->type_document_id){ 
+                // if($row->type_document_id){
 
                 //     $date_payment_last = DocumentPayment::where('document_id', $row->id)->orderBy('date_of_payment', 'desc')->first();
                 // }
@@ -219,26 +237,25 @@ class DashboardView
                     'date_payment_last' => ($date_payment_last) ? $date_payment_last->date_of_payment->format('Y-m-d') : null,
                     'delay_payment' => $delay_payment,
                     'date_of_due' =>  $date_of_due,
-                    'currency_id' => Currency::select('name')->find($row->currency_id)->name, 
+                    'currency_id' => Currency::select('name')->find($row->currency_id)->name,
                 ];
 //            }
         });
     }
 
-
     private static function getDatePaymentLast($row)
     {
-        
+
         $date_payment_last = null;
 
         if($row->type == 'document')
         {
             $date_payment_last = DocumentPayment::where('document_id', $row->id)->orderBy('date_of_payment', 'desc')->first();
-        
+
         }elseif($row->type == 'remission')
         {
             $date_payment_last = RemissionPayment::where('remission_id', $row->id)->orderBy('date_of_payment', 'desc')->first();
-        
+
         }else
         {
             $date_payment_last = SaleNotePayment::where('sale_note_id', $row->id)->orderBy('date_of_payment', 'desc')->first();
@@ -248,7 +265,7 @@ class DashboardView
 
     }
 
-    
+
     /**
      * Filtrar remisiones
      *
@@ -259,15 +276,13 @@ class DashboardView
      */
     private static function getRecordsRemissions($customer_id, $establishment_id, $d_start, $d_end)
     {
-
         $remission_payments = DB::table('co_remission_payments')
                                 ->select('remission_id', DB::raw('SUM(payment) as total_payment'))
                                 ->groupBy('remission_id');
 
-
         return DB::connection('tenant')
                     ->table('co_remissions')
-                    ->where('customer_id', $customer_id)
+//                    ->where('customer_id', $customer_id)
                     ->join('persons', 'persons.id', '=', 'co_remissions.customer_id')
                     ->leftJoinSub($remission_payments, 'payments', function ($join) {
                         $join->on('co_remissions.id', '=', 'payments.remission_id');
@@ -279,9 +294,13 @@ class DashboardView
                                         "co_remissions.total as total, ".
                                         "IFNULL(payments.total_payment, 0) as total_payment, ".
                                         "'remission' AS 'type', ". "co_remissions.currency_id, ". "co_remissions.date_expiration"))
-                    ->where('co_remissions.establishment_id', $establishment_id)
-                    ->whereBetween('co_remissions.date_of_issue', [$d_start, $d_end]);
-
-    }
-
+//                    ->where('co_remissions.establishment_id', $establishment_id)
+                    ->whereBetween('co_remissions.date_of_issue', [$d_start, $d_end])
+                    ->when($establishment_id !== null, function ($query) use ($establishment_id){
+                        return $query->where('co_remissions.establishment_id', $establishment_id);
+                    })
+                    ->when($customer_id !== null, function ($query) use ($customer_id){
+                        return $query->where('co_remissions.customer_id', $customer_id);
+                    });
+        }
 }

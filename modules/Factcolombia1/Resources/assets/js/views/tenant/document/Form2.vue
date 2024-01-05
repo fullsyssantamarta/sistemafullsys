@@ -1403,6 +1403,7 @@
                 num = num.toString().split('e');
                 return signo * (num[0] + 'e' + (num[1] ? (+num[1] - decimales) : -decimales));
             },
+
             createAllowanceCharge(amount, base) {
                 return [
                     {
