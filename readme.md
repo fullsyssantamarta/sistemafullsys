@@ -19,7 +19,7 @@
 Linux - Ubuntu 18 - Docker - SSL opcional<br>
 [Guia](https://gitlab.buho.la/facturalatam/co-facturadorpro2/-/snippets/2 "Clic")<br>
 
-[Script](https://gitlab.buho.la/facturalatam/co-facturadorpro2/-/snippets/2/raw/master/install.sh "Clic")<br>
+[Script](https://gitlab.buho.la/facturalatam/co-facturadorpro2/-/snippets/2/raw/main/install.sh "Clic")<br>
 
 
 ### Manuales de actualización
