@@ -26,7 +26,7 @@ Linux - Ubuntu 18 - Docker - SSL opcional<br>
 
 * Docker
 
-[Actualizacion Simple](https://gitlab.com/rash07/facturadorpro2-co/-/blob/master/Proceso%20de%20actualizacion%20FACTURADOR%20PRO%202.txt "Clic")
+[Actualizacion Simple](https://gitlab.buho.la/facturalatam/co-facturadorpro2/-/blob/master/Proceso%20de%20actualizacion%20FACTURADOR%20PRO%202.txt "Clic")
 <br>
 [Con Docker](https://docs.google.com/document/d/1ekGySBjGHspbPEE3OLkMGlWwjLvudmyLKo9Et-Cxejk/edit "Clic")
 <br>
