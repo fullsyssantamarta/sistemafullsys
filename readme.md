@@ -17,9 +17,9 @@
 ## Instalación con Docker usando Script
 
 Linux - Ubuntu 18 - Docker - SSL opcional<br>
-[Guia](https://gitlab.com/rash07/facturadorpro2-co/-/snippets/2026645 "Clic")<br>
+[Guia](https://gitlab.buho.la/facturalatam/co-facturadorpro2/-/snippets/2 "Clic")<br>
 
-[Script](https://gitlab.com/rash07/facturadorpro2-co/-/snippets/2026645/raw/master/install.sh "Clic")<br>
+[Script](https://gitlab.buho.la/facturalatam/co-facturadorpro2/-/snippets/2/raw/master/install.sh "Clic")<br>
 
 
 ### Manuales de actualización
