@@ -120,7 +120,7 @@ class PosController extends Controller
                             })
                             ->whereWarehouse()
                             ->whereIsActive()
-                            ->when($request->has('cat'), function ($query) use ($request) {
+                            ->when($request->has('cat') && $request->cat != '', function ($query) use ($request) {
                                 $query->where('category_id', $request->cat);
                             })
                             ->paginate(50);
