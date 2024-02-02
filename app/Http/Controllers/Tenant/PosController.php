@@ -111,6 +111,7 @@ class PosController extends Controller
 
         $items = Item::where('name','like', "%{$request->input_item}%")
                             ->orWhere('internal_id','like', "%{$request->input_item}%")
+                            ->orWhere('category_id', $request->cat)
                             ->orWhereHas('category', function($query) use($request) {
                                 $query->where('name', 'like', '%' . $request->input_item . '%');
                             })
@@ -119,6 +120,9 @@ class PosController extends Controller
                             })
                             ->whereWarehouse()
                             ->whereIsActive()
+                            ->when($request->has('cat'), function ($query) use ($request) {
+                                $query->where('category_id', $request->cat);
+                            })
                             ->paginate(50);
 
         return new PosCollection($items, $configuration);

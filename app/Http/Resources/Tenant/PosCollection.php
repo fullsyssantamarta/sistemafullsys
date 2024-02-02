@@ -33,6 +33,7 @@ class PosCollection extends ResourceCollection
                 'description' => $row->description,
                 'name' => $row->name,
                 'currency_type_id' => $row->currency_type->id,
+                'category_id' => $row->category_id,
                 'internal_id' => $row->internal_id,
                 'currency_type_symbol' => $row->currency_type->symbol,
                 'sale_unit_price' => number_format($row->sale_unit_price, $this->configuration->decimal_quantity, ".",""),
