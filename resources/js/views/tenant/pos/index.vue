@@ -191,7 +191,18 @@
                     </div>
                 </template>
             </div>
-
+            <div v-if="place == 'prod' || place == 'cat2'" class="row">
+                <div class="col-md-12 text-center">
+                    <el-pagination
+                        @current-change="getRecords"
+                        layout="total, prev, pager, next"
+                        :total="pagination.total"
+                        :current-page.sync="pagination.current_page"
+                        :page-size="pagination.per_page"
+                    >
+                    </el-pagination>
+                </div>
+            </div>
         </div>
         <div class="col-lg-4 col-md-6 bg-white m-0 p-0" style="height: calc(100vh - 110px)">
             <div class="h-75 bg-light" style="overflow-y: auto">
@@ -429,6 +440,7 @@ import HistorySalesForm from "../../../../../modules/Pos/Resources/assets/js/vie
 import HistoryPurchasesForm from "../../../../../modules/Pos/Resources/assets/js/views/history/purchases.vue";
 import PersonForm from "../persons/form.vue";
 import WarehousesDetail from '../items/partials/warehouses.vue'
+import queryString from "query-string";
 
 export default {
     props: ['configuration', 'soapCompany'],
@@ -477,12 +489,12 @@ export default {
             categories: [],
             colors: ['#1cb973', '#bf7ae6', '#fc6304', '#9b4db4', '#77c1f3'],
             type_refund: false,
-            items_refund: []
+            items_refund: [],
+            pagination: {},
+            category_selected: ""
         };
     },
-    mounted() {
-
-    },
+    mounted() {    },
     async created() {
         await this.initForm();
         await this.getTables();
@@ -497,7 +509,6 @@ export default {
         }
 
     },
-
     computed: {
 
         classObjectCol() {
@@ -533,8 +544,40 @@ export default {
             }
         }
     },
-
     methods: {
+        getQueryParameters() {
+            return queryString.stringify({
+                page: this.pagination.current_page
+                    ? this.pagination.current_page
+                    : 1,
+                input_item: this.input_item,
+                cat: this.category_selected,
+                limit: this.limit
+            });
+        },
+        getRecords() {
+            this.loading = true;
+            return this.$http
+                .get(
+                    `/${this.resource}/search_items?${this.getQueryParameters()}&cat=${
+                        this.category_selected
+                    }`
+                )
+                .then(response => {
+                    this.all_items = response.data.data;
+                    this.filterItems();
+                    this.pagination = response.data.meta;
+                    this.pagination.per_page = parseInt(
+                        response.data.meta.per_page
+                    );
+                    this.loading = false;
+                    if (response.data.meta.total > 0) {
+                        this.pagination.total = response.data.meta.total;
+                    } else {
+                        this.pagination.total = 0;
+                    }
+                });
+        },
         setListPriceItem(item_unit_type, index) {
 
             let list_price = 0
@@ -561,10 +604,11 @@ export default {
         filterCategorie(id, mod = false) {
 
             if (id) {
-                this.items = this.all_items.filter(x => x.category_id == id)
-
+                this.category_selected = id;
+                this.getRecords();
             } else {
-                this.filterItems()
+                this.category_selected = "";
+                this.getRecords();
             }
 
             if (mod) {
@@ -1324,7 +1368,12 @@ export default {
                     .get(`/${this.resource}/search_items?${parameters}`)
                     .then(response => {
                         // console.log(response)
-                        this.items = response.data.items;
+                        this.items = response.data.data;
+
+                        this.pagination = response.data.meta;
+                        this.pagination.per_page = parseInt(
+                            response.data.meta.per_page
+                        );
 
                         this.loading = false;
                         if (this.items.length == 0) {
