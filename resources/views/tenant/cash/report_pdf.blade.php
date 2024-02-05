@@ -26,7 +26,7 @@ foreach ($cash_documents as $cash_document) {
             // $pays = $cash_document->document_pos->payments;
             $pays = ($cash_document->document_pos->state_type_id === '11') ? collect() : $cash_document->document_pos->payments;
 
-            foreach ($methods_payment as $record) 
+            foreach ($methods_payment as $record)
             {
                 $record->sum = ($record->sum + $pays->where('payment_method_type_id', $record->id)->sum('payment') );
             }
@@ -199,6 +199,7 @@ $cash_final_balance = $final_balance + $cash->beginning_balance;
                                 <th>Cliente/Proveedor</th>
                                 <th>N° Documento</th>
                                 <th>Moneda</th>
+                                <th>Subtotal</th>
                                 <th>Total</th>
                             </tr>
                         </thead>
@@ -214,7 +215,6 @@ $cash_final_balance = $final_balance + $cash->beginning_balance;
                             @foreach($all_documents as $key => $value)
                                 <tr>
                                     @php
-
                                         // $type_transaction =  null;
                                         $document_type_description = null;
                                         $number = null;
@@ -246,6 +246,7 @@ $cash_final_balance = $final_balance + $cash->beginning_balance;
                                     <td class="celda">{{ $customer_name }}</td>
                                     <td class="celda">{{$customer_number }}</td>
                                     <td class="celda">{{ $currency_type_id }}</td>
+                                    <td class="celda">{{ number_format($value->document_pos->subtotal,2, ".", "") }}</td>
                                     <td class="celda">{{ number_format($total,2, ".", "") }}</td>
 
                                 </tr>
