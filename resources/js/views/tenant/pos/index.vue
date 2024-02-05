@@ -88,6 +88,12 @@
                             <div class="card-footer pointer text-center bg-primary">
                                 <template v-if="!item.edit_unit_price">
                                     <h5 class="font-weight-semibold text-right text-white">
+                                        <button
+                                            type="button"
+                                            class="btn btn-xs btn-primary-pos"
+                                            @click="clickOpenInputEditUP(index)">
+                                            <span style="font-size:16px;">&#9998;</span>
+                                        </button>
                                         {{currency.symbol}} {{ item.sale_unit_price_with_tax }}
                                     </h5>
                                 </template>
@@ -666,8 +672,9 @@ export default {
         },
         clickEditUnitPriceItem(index) {
             // console.log(index)
-            let item_search = this.items[index]
-            this.items[index].sale_unit_price = this.items[index].edit_sale_unit_price
+            let price_with_tax = this.items[index].edit_sale_unit_price //price with tax
+            this.items[index].sale_unit_price_with_tax = price_with_tax
+            this.items[index].sale_unit_price = price_with_tax / (1 + (this.items[index].tax.rate / this.items[index].tax.conversion))
             this.items[index].edit_unit_price = false
 
             // console.log(item_search)

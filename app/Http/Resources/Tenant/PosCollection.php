@@ -26,6 +26,7 @@ class PosCollection extends ResourceCollection
         return $this->collection->transform(function ($row, $key) {
 
             $full_description = ($row->internal_id)?$row->internal_id.' - '.$row->name:$row->name;
+            $price_with_tax = $this->getSaleUnitPriceWithTax($row, $this->configuration->decimal_quantity);
             return [
                 'id' => $row->id,
                 'item_id' => $row->id,
@@ -45,7 +46,7 @@ class PosCollection extends ResourceCollection
                 'edit_unit_price' => false,
                 'aux_quantity' => 1,
                 'aux_sale_unit_price' => number_format($row->sale_unit_price, $this->configuration->decimal_quantity, ".",""),
-                'edit_sale_unit_price' => number_format($row->sale_unit_price, $this->configuration->decimal_quantity, ".",""),
+                'edit_sale_unit_price' => $price_with_tax,
                 'image_url' => ($row->image !== 'imagen-no-disponible.jpg') ? asset('storage'.DIRECTORY_SEPARATOR.'uploads'.DIRECTORY_SEPARATOR.'items'.DIRECTORY_SEPARATOR.$row->image) : asset("/logo/{$row->image}"),
                 'sets' => collect($row->sets)->transform(function($r){
                     return [
@@ -61,7 +62,7 @@ class PosCollection extends ResourceCollection
                 'item_unit_types' => $row->item_unit_types->transform(function($row) { return $row->getSearchRowResource();}),
                 'unit_type' => $row->unit_type,
                 'tax' => $row->tax,
-                'sale_unit_price_with_tax' => $this->getSaleUnitPriceWithTax($row, $this->configuration->decimal_quantity)
+                'sale_unit_price_with_tax' => $price_with_tax
             ];
         });
     }
