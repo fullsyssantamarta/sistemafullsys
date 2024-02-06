@@ -79,37 +79,16 @@
         </div>
         <div class="col-lg-8 col-md-6 px-4 pt-3 hyo">
             <div class="row d-flex justify-content-center pt-2">
-                <!-- <div class="col-lg-6 col-md-6 ">
-
-                    <el-radio-group v-model="form.document_type_id" size="small"   @change="filterSeries">
-                        <el-radio-button label="01" >FACTURA  </el-radio-button>
-                        <el-radio-button label="03">BOLETA  </el-radio-button>
-                        <el-radio-button label="80">N. VENTA  </el-radio-button>
-                    </el-radio-group>
-                </div>
-
-                <div class="col-lg-2 col-md-2" >
-
-                    <el-select v-model="form.series_id" class="c-width">
-                        <el-option   v-for="option in series" :key="option.id" :label="option.number" :value="option.id">
-                        </el-option>
-                    </el-select>
-                </div>
-                <div class="col-lg-2 col-md-2">
-
-                     <button class="btn btn-sm btn-block btn-primary" @click="back"><i class="fas fa-angle-left"></i> Regresar</button>
-
-                </div> -->
-
-                <div class="col-lg-8">
+                <div class="col-md-12 col-lg-8">
                     <div class="card card-default">
                         <div class="card-body ">
                             <div class="row">
                                 <div class="col-md-6">
-                                    <el-radio-group v-model="form.document_type_id" size="small" @change="filterSeries">
+                                    <el-radio-group v-model="form.document_type_id" size="small" @change="filterSeries(form.document_type_id)">
                                       <!--  <el-radio-button label="01" >FACTURA  </el-radio-button>
                                         <el-radio-button label="80">NOTA DE VENTA  </el-radio-button>-->
                                         <el-radio-button label="90">POS  </el-radio-button>
+                                        <el-radio-button label="COT">COTIZACIÓN  </el-radio-button>
                                     </el-radio-group>
                                 </div>
                                 <div class="col-lg-2 col-md-2" >
@@ -122,6 +101,38 @@
                                     <button class="text-center btn btn-sm btn-block btn-primary pull-right" @click="back"><i class="fas fa-angle-left"></i> Regresar</button>
                                 </div>
                             </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group" :class="{'has-danger': errors.date_of_issue}">
+                                        <label class="control-label">Fecha de emisión</label>
+                                        <el-date-picker v-model="form.date_of_issue" type="date" value-format="yyyy-MM-dd" :clearable="false"></el-date-picker>
+                                        <small class="form-control-feedback" v-if="errors.date_of_issue" v-text="errors.date_of_issue[0]"></small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4" v-show="form.document_type_id == 'COT'">
+                                    <div class="form-group" :class="{'has-danger': errors.date_of_due}">
+                                        <label class="control-label">Tiempo de Validez</label>
+                                        <el-date-picker v-model="form.date_of_due" type="date" value-format="yyyy-MM-dd" :clearable="false"></el-date-picker>
+                                        <small class="form-control-feedback" v-if="errors.date_of_due" v-text="errors.date_of_due[0]"></small>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4" v-show="form.document_type_id == 'COT'">
+                                    <div class="form-group" :class="{'has-danger': errors.delivery_date}">
+                                        <label class="control-label">Tiempo de Entrega</label>
+                                        <el-date-picker v-model="form.delivery_date" type="date" value-format="yyyy-MM-dd" :clearable="true"></el-date-picker>
+                                        <small class="form-control-feedback" v-if="errors.delivery_date" v-text="errors.delivery_date[0]"></small>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6" v-show="form.document_type_id == 'COT'">
+                                    <div class="form-group" :class="{'has-danger': errors.exchange_rate_sale}">
+                                        <label class="control-label">Descripción
+                                        </label>
+                                        <el-input  type="textarea"  :rows="3" v-model="form.description"></el-input>
+                                        <small class="form-control-feedback" v-if="errors.description" v-text="errors.description[0]"></small>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="row mt-2" v-if="form.document_type_id == '01'">
 
                                 <div class="col-md-6">
@@ -153,7 +164,7 @@
                                 </div>
                                 <div class="col-md-6" v-show="form.payment_form_id == 2">
                                     <div class="form-group" :class="{'has-danger': errors.time_days_credit}">
-                                        <label class="control-label">Plazo Credito</label>
+                                        <label class="control-label">Plazo Crédito</label>
                                         <el-input v-model="form.time_days_credit"></el-input>
                                         <small class="form-control-feedback" v-if="errors.time_days_credit" v-text="errors.time_days_credit[0]"></small>
                                     </div>
@@ -166,7 +177,6 @@
 
                 <div class="col-lg-8">
                     <div class="card card-default">
-
                         <div class="card-body text-center">
                             <p class="my-0"><small>Monto a cobrar</small></p>
                             <h1 class="mb-2 mt-0">{{currencyTypeActive.symbol}} {{ Number(form.total).toFixed(2) }}</h1>
@@ -175,31 +185,26 @@
                 </div>
                 <div class="col-lg-8">
                     <div class="card card-default">
-
                         <div class="card-body text-center">
-
                             <div class="row col-lg-12">
-                            <div class="col-lg-6">
-                                <div class="form-group">
-                                    <label class="control-label">Ingrese monto</label>
-                                    <el-input v-model="enter_amount" @input="enterAmount()" >
-                                        <template slot="prepend">{{currencyTypeActive.symbol}}</template>
-                                    </el-input>
-
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label class="control-label">Ingrese monto</label>
+                                        <el-input v-model="enter_amount" @input="enterAmount()" >
+                                            <template slot="prepend">{{currencyTypeActive.symbol}}</template>
+                                        </el-input>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="form-group" :class="{'has-danger': difference < 0}">
+                                        <label class="control-label" v-text="(difference <0) ? 'Faltante' :'Vuelto'"></label>
+                                        <!-- <el-input v-model="difference" :disabled="true">
+                                            <template slot="prepend">{{currencyTypeActive.symbol}}</template>
+                                        </el-input> -->
+                                        <h4 class="control-label font-weight-semibold m-0 text-center m-b-0">{{currencyTypeActive.symbol}} {{ Number(difference).toFixed(2)}}</h4>
+                                    </div>
                                 </div>
                             </div>
-
-                            <div class="col-lg-6">
-                                <div class="form-group" :class="{'has-danger': difference < 0}">
-                                    <label class="control-label" v-text="(difference <0) ? 'Faltante' :'Vuelto'"></label>
-                                    <!-- <el-input v-model="difference" :disabled="true">
-                                        <template slot="prepend">{{currencyTypeActive.symbol}}</template>
-                                    </el-input> -->
-                                    <h4 class="control-label font-weight-semibold m-0 text-center m-b-0">{{currencyTypeActive.symbol}} {{ Number(difference).toFixed(2)}}</h4>
-                                </div>
-                            </div>
-                            </div>
-
                         </div>
                     </div>
                 </div>
@@ -298,6 +303,13 @@
                           :recordId="saleNotesNewId"
                           :originPos="true"
                           :showClose="true"></document-pos-options>
+
+        <quotation-options :showDialog.sync="showDialogQuotationOptions"
+                          :recordId="saleNotesNewId"
+                          :typeUser="'admin'"
+                          :showGenerate="false"
+                          :showClose="true"
+                          @triggerBack="back"></quotation-options>
     </div>
 </template>
 <style>
@@ -316,9 +328,10 @@
     import OptionsForm from './options.vue'
     import MultiplePaymentForm from './multiple_payment.vue'
     import DocumentPosOptions from './document_pos_options.vue'
+    import QuotationOptions from '../../quotations/partials/options.vue'
 
     export default {
-        components: {OptionsForm, CardBrandsForm, SaleNotesOptions, MultiplePaymentForm, DocumentPosOptions},
+        components: {OptionsForm, CardBrandsForm, SaleNotesOptions, MultiplePaymentForm, DocumentPosOptions, QuotationOptions},
 
         props:['form','customer', 'currencyTypeActive', 'exchangeRateSale', 'is_payment', 'soapCompany', 'items_refund'],
         data() {
@@ -330,12 +343,13 @@
                 showDialogMultiplePayment:false,
                 showDialogSaleNote:false,
                 showDialogNewCardBrand:false,
+                showDialogQuotationOptions: false,
                 documentNewId:null,
                 saleNotesNewId:null,
                 resource_options:null,
                 has_card: false,
                 resource: 'pos',
-                resource_documents: 'co-documents',
+                resource_documents: 'document-pos',
                 resource_payments: 'document_payments',
                 amount: 0,
                 enter_amount: 0,
@@ -357,6 +371,16 @@
                 payment_forms: [],
                 errors: {},
                 limit_uvt: 0,
+                resources: [
+                    {
+                        type: '90',
+                        url: 'document-pos'
+                    },
+                    {
+                        type: 'COT',
+                        url: 'quotations'
+                    }
+                ]
             }
         },
         async created() {
@@ -566,11 +590,14 @@
                     sale_note_id:null,
                     document_pos_id:null
                 }
-
             },
 
-            filterSeries() {
-                this.form.document_type_id = '90'
+            filterSeries(document_type_id) {
+                let resource = this.resources.find(function (element) { return element.type === document_type_id })
+                this.resource_documents = resource.url
+                this.form.document_type_id = resource.type
+                // this.form.document_type_id =
+                // this.form.document_type_id = '90'
                 /*this.form.series_id = null
                 this.series = _.filter(this.all_series, {'document_type_id': this.form.document_type_id });
                 this.form.series_id = (this.series.length > 0)?this.series[0].id:null
@@ -643,10 +670,15 @@
                 }
 
                     //this.form.prefix = "NV";
+
                 this.form.paid = 1;
-                this.resource_documents = "document-pos";
+                // this.resource_documents = resources[this.form.document_type_id];
                 this.resource_payments = "document_pos_payments";
                 this.resource_options = this.resource_documents;
+
+                if(this.form.document_type_id === 'COT') {
+                    this.form.prefix = this.form.document_type_id
+                }
 
                 const items_final = this.form.items.concat(this.items_refund);
                 this.form.items = items_final
@@ -657,7 +689,12 @@
 
                         this.form_cash_document.document_pos_id = response.data.data.id;
                         this.saleNotesNewId = response.data.data.id;
-                        this.showDialogSaleNote = true;
+                        if (this.form.document_type_id === "90") {
+                            this.showDialogSaleNote = true;
+                        }
+                        if (this.form.document_type_id === "COT") {
+                            this.showDialogQuotationOptions = true;
+                        }
 
                         /*if (this.form.document_type_id === "80") {
 
@@ -699,6 +736,9 @@
                 });
             },
             saveCashDocument(){
+                if(this.form.document_type_id === "COT") {
+                    return
+                }
                 this.$http.post(`/cash/cash_document`, this.form_cash_document)
                     .then(response => {
                         if (response.data.success) {
@@ -739,7 +779,7 @@
                         this.payment_methods = response.data.payment_methods
                         this.payment_forms = response.data.payment_forms
                         this.limit_uvt = response.data.limit_uvt
-                        this.filterSeries()
+                        this.filterSeries(this.form.document_type_id)
                     })
             },
 

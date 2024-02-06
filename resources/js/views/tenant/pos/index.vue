@@ -768,7 +768,7 @@ export default {
                 id: this.form.customer_id
             });
             this.customer = customer;
-            // this.form.document_type_id = customer.identity_document_type_id == "1" ? "03" : "01";
+            this.form.document_type_id = '90';
             this.setLocalStorageIndex('customer', this.customer)
             this.setFormPosLocalStorage()
         },

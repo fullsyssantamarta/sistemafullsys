@@ -495,6 +495,8 @@ export default {
     },
     clickClose() {
       this.$emit("update:showDialog", false);
+      this.$emit("triggerBack");
+
       this.initForm();
       this.resetDocument();
     },
