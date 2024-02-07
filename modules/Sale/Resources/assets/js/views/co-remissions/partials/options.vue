@@ -18,7 +18,7 @@
                 </button>
                 <p>Imprimir</p>
             </div>
-        </div> 
+        </div>
 
         <span slot="footer" class="dialog-footer">
             <template v-if="showClose">
@@ -116,6 +116,7 @@
             },
             clickClose() {
                 this.$emit('update:showDialog', false)
+                this.$emit("triggerBack");
                 this.initForm()
             },
         }

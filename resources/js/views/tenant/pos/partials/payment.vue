@@ -83,19 +83,12 @@
                     <div class="card card-default">
                         <div class="card-body ">
                             <div class="row">
-                                <div class="col-md-6">
+                                <div class="col-md-8">
                                     <el-radio-group v-model="form.document_type_id" size="small" @change="filterSeries(form.document_type_id)">
-                                      <!--  <el-radio-button label="01" >FACTURA  </el-radio-button>
-                                        <el-radio-button label="80">NOTA DE VENTA  </el-radio-button>-->
-                                        <el-radio-button label="90">POS  </el-radio-button>
-                                        <el-radio-button label="COT">COTIZACIÓN  </el-radio-button>
+                                        <template v-for="(resource, index) in resources">
+                                            <el-radio-button :label="resource.type">{{ resource.description }}</el-radio-button>
+                                        </template>
                                     </el-radio-group>
-                                </div>
-                                <div class="col-lg-2 col-md-2" >
-                                    <el-select v-model="form.series_id" class="c-width" v-if="form.document_type_id == '80'">
-                                        <el-option   v-for="option in series" :key="option.id" :label="option.number" :value="option.id">
-                                        </el-option>
-                                    </el-select>
                                 </div>
                                 <div class="col-md-4 ">
                                     <button class="text-center btn btn-sm btn-block btn-primary pull-right" @click="back"><i class="fas fa-angle-left"></i> Regresar</button>
@@ -109,21 +102,27 @@
                                         <small class="form-control-feedback" v-if="errors.date_of_issue" v-text="errors.date_of_issue[0]"></small>
                                     </div>
                                 </div>
-                                <div class="col-md-4" v-show="form.document_type_id == 'COT'">
+                                <div class="col-md-4" v-show="['COT', 'RM'].includes(form.document_type_id)">
                                     <div class="form-group" :class="{'has-danger': errors.date_of_due}">
                                         <label class="control-label">Tiempo de Validez</label>
                                         <el-date-picker v-model="form.date_of_due" type="date" value-format="yyyy-MM-dd" :clearable="false"></el-date-picker>
                                         <small class="form-control-feedback" v-if="errors.date_of_due" v-text="errors.date_of_due[0]"></small>
                                     </div>
                                 </div>
-                                <div class="col-lg-4" v-show="form.document_type_id == 'COT'">
+                                <div class="col-lg-4" v-show="['COT', 'RM'].includes(form.document_type_id)">
                                     <div class="form-group" :class="{'has-danger': errors.delivery_date}">
                                         <label class="control-label">Tiempo de Entrega</label>
                                         <el-date-picker v-model="form.delivery_date" type="date" value-format="yyyy-MM-dd" :clearable="true"></el-date-picker>
                                         <small class="form-control-feedback" v-if="errors.delivery_date" v-text="errors.delivery_date[0]"></small>
                                     </div>
                                 </div>
-                                <div class="col-lg-6" v-show="form.document_type_id == 'COT'">
+                                <div class="col-lg-4 col-md-4" v-if="form.document_type_id == '80'">
+                                    <el-select v-model="form.series_id" class="c-width" >
+                                        <el-option   v-for="option in series" :key="option.id" :label="option.number" :value="option.id">
+                                        </el-option>
+                                    </el-select>
+                                </div>
+                                <div class="col-lg-6" v-show="['COT', 'RM'].includes(form.document_type_id)">
                                     <div class="form-group" :class="{'has-danger': errors.exchange_rate_sale}">
                                         <label class="control-label">Descripción
                                         </label>
@@ -295,21 +294,27 @@
                           :originPos="true"
                           :showClose="true"></sale-notes-options>-->
 
-        <card-brands-form   :showDialog.sync="showDialogNewCardBrand"
-                            :external="true"
-                            :recordId="null"></card-brands-form>
+        <card-brands-form :showDialog.sync="showDialogNewCardBrand"
+            :external="true"
+            :recordId="null"></card-brands-form>
 
          <document-pos-options :showDialog.sync="showDialogSaleNote"
-                          :recordId="saleNotesNewId"
-                          :originPos="true"
-                          :showClose="true"></document-pos-options>
+            :recordId="saleNotesNewId"
+            :originPos="true"
+            :showClose="true"></document-pos-options>
 
         <quotation-options :showDialog.sync="showDialogQuotationOptions"
-                          :recordId="saleNotesNewId"
-                          :typeUser="'admin'"
-                          :showGenerate="false"
-                          :showClose="true"
-                          @triggerBack="back"></quotation-options>
+            :recordId="saleNotesNewId"
+            :typeUser="'admin'"
+            :showGenerate="false"
+            :showClose="true"
+            @triggerBack="back"></quotation-options>
+
+        <remission-options :showDialog.sync="showDialogRemissionOptions"
+            :recordId="saleNotesNewId"
+            :showDownload="true"
+            :showClose="true"
+            @triggerBack="back"></remission-options>
     </div>
 </template>
 <style>
@@ -329,9 +334,10 @@
     import MultiplePaymentForm from './multiple_payment.vue'
     import DocumentPosOptions from './document_pos_options.vue'
     import QuotationOptions from '../../quotations/partials/options.vue'
+    import RemissionOptions from '@viewsModuleSale/co-remissions/partials/options.vue'
 
     export default {
-        components: {OptionsForm, CardBrandsForm, SaleNotesOptions, MultiplePaymentForm, DocumentPosOptions, QuotationOptions},
+        components: {OptionsForm, CardBrandsForm, SaleNotesOptions, MultiplePaymentForm, DocumentPosOptions, QuotationOptions, RemissionOptions},
 
         props:['form','customer', 'currencyTypeActive', 'exchangeRateSale', 'is_payment', 'soapCompany', 'items_refund'],
         data() {
@@ -344,6 +350,7 @@
                 showDialogSaleNote:false,
                 showDialogNewCardBrand:false,
                 showDialogQuotationOptions: false,
+                showDialogRemissionOptions: false,
                 documentNewId:null,
                 saleNotesNewId:null,
                 resource_options:null,
@@ -374,11 +381,18 @@
                 resources: [
                     {
                         type: '90',
-                        url: 'document-pos'
+                        url: 'document-pos',
+                        description: 'POS'
                     },
                     {
                         type: 'COT',
-                        url: 'quotations'
+                        url: 'quotations',
+                        description: 'Cotización'
+                    },
+                    {
+                        type: 'RM',
+                        url: 'co-remissions',
+                        description: 'Remisión'
                     }
                 ]
             }
@@ -596,6 +610,7 @@
                 let resource = this.resources.find(function (element) { return element.type === document_type_id })
                 this.resource_documents = resource.url
                 this.form.document_type_id = resource.type
+                this.form.prefix = resource.type
                 // this.form.document_type_id =
                 // this.form.document_type_id = '90'
                 /*this.form.series_id = null
@@ -676,9 +691,12 @@
                 this.resource_payments = "document_pos_payments";
                 this.resource_options = this.resource_documents;
 
-                if(this.form.document_type_id === 'COT') {
-                    this.form.prefix = this.form.document_type_id
-                }
+                // if(this.form.document_type_id === 'COT') {
+                //     this.form.prefix = this.form.document_type_id
+                // }
+                // if(this.form.document_type_id === 'RM') {
+                //     this.form.prefix = this.form.document_type_id
+                // }
 
                 const items_final = this.form.items.concat(this.items_refund);
                 this.form.items = items_final
@@ -694,6 +712,9 @@
                         }
                         if (this.form.document_type_id === "COT") {
                             this.showDialogQuotationOptions = true;
+                        }
+                        if (this.form.document_type_id === "RM") {
+                            this.showDialogRemissionOptions = true;
                         }
 
                         /*if (this.form.document_type_id === "80") {
@@ -736,7 +757,7 @@
                 });
             },
             saveCashDocument(){
-                if(this.form.document_type_id === "COT") {
+                if(this.form.document_type_id !== "90") {
                     return
                 }
                 this.$http.post(`/cash/cash_document`, this.form_cash_document)
