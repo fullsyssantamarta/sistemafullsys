@@ -8,38 +8,23 @@
         <title>Document</title>
     </head>
     <body>
-        <div>
-            <h3 align="center" class="title"><strong>Reporte Documentos</strong></h3>
-        </div>
-        <br>
-        <div style="margin-top:20px; margin-bottom:15px;">
-            <table>
-                <tr>
-                    <td>
-                        <p><b>Empresa: </b></p>
-                    </td>
-                    <td align="center">
-                        <p><strong>{{$company->name}}</strong></p>
-                    </td>
-                    <td>
-                        <p><strong>Fecha: </strong></p>
-                    </td>
-                    <td align="center">
-                        <p><strong>{{date('Y-m-d')}}</strong></p>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <p><strong>N° Documento: </strong></p>
-                    </td>
-                    <td align="center">{{$company->number}}</td>
-                    <td>
-                        <p><strong>Establecimiento: </strong></p>
-                    </td>
-                    <td align="center">{{$establishment->address}} - {{$establishment->address}} - {{$establishment->country->name}} - {{$establishment->department->name}} - {{$establishment->city->name}}</td>
-                </tr>
-            </table>
-        </div>
+        <table style="width:100%; border-collapse: collapse;">
+            <tr>
+                <td colspan="17" style="height:35px; text-align: center; vertical-align: middle; font-size: 16px; font-weight: bold; padding: 10px; background-color: #0e3abd; color: white;">
+                    <h1 style="font-size: 24px; margin: 0; padding-bottom: 10px;">Reporte Documentos</h1>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="17" style="height:100px; text-align: center; vertical-align: middle; font-size: 12px; font-weight: bold; padding: 10px; background-color: #0e3abd; color: white;">
+
+                    <span style="font-size: 12px;">Empresa: {{$company->name}}</span><br>
+                    <span style="font-size: 12px;">Fecha: {{date('Y-m-d')}}</span><br>
+                    <span style="font-size: 12px;">N° Documento: {{$company->number}}</span><br>
+                    <span style="font-size: 12px;">Establecimiento: {{$establishment->address}} - {{$establishment->address}} - {{$establishment->country->name}} - {{$establishment->department->name}} - {{$establishment->city->name}}</span>
+                </td>
+            </tr>
+            <!-- Aquí seguiría el resto de tu tabla -->
+        </table>
         <br>
         @if(!empty($records))
             <div class="">
@@ -58,13 +43,19 @@
                                 <th>Cliente</th>
                                 <th>N° Documento</th>
                                 <th>Estado</th>
-                                <th class="">Moneda</th>
+                                <th class="">Moneda</th> 
+                                <th>Subtotal</th>
+                                <th class="">Descuento</th>                                
+                                <th>Valor Impuesto</th>
                                 <th>Total</th>
                             </tr>
                         </thead>
                         <tbody>
 
                             @php
+                                $sum_sale = 0;
+                                $sum_total_discount = 0;
+                                $sum_total_tax = 0;
                                 $sum_total = 0;
                             @endphp
 
@@ -87,8 +78,11 @@
                                         $serie_affec = $series.' - '.$number;
                                     }
 
-                                    $total = in_array($value->document_type_id,[3]) ? -abs($value->total) : $value->total;
-                                    $sum_total += $total;
+                                    
+                                    $sum_sale += $value->sale;
+                                    $sum_total_discount += $value->total_discount;
+                                    $sum_total_tax += $value->total_tax;
+                                    $sum_total += $value->total;
 
                                 @endphp
                                 <td class="celda">{{$serie_affec }} </td>
@@ -102,7 +96,10 @@
 
                                 <td class="celda">{{$value->currency_type_id}}</td>
 
-                                <td class="celda">{{$total}}</td>
+                                <td class="celda">{{$value->sale}}</td>
+                                <td class="celda">{{$value->total_discount}}</td>
+                                <td class="celda">{{$value->total_tax}}</td>
+                                <td class="celda">{{$value->total}}</td>
 
 
                             </tr>
@@ -110,7 +107,10 @@
 
                             <tr>
                                 <td class="celda" colspan="11"></td>
-                                <td class="celda" >Total:</td>
+                                <td class="celda" >Totales:</td>
+                                <td class="celda">{{ number_format($sum_sale, 2, ".", "") }}</td>
+                                <td class="celda">{{ number_format($sum_total_discount, 2, ".", "") }}</td>
+                                <td class="celda">{{ number_format($sum_total_tax, 2, ".", "") }}</td>
                                 <td class="celda">{{ number_format($sum_total, 2, ".", "") }}</td>
                             </tr>
 
