@@ -1,41 +1,33 @@
 @php
 
-$establishment = $cash->user->establishment;
+    $establishment = $cash->user->establishment;
+    $final_balance = 0;
+    $cash_income = 0;
+    $cash_egress = 0;
+    $cash_final_balance = 0;
+    $document_count = 0;
+    $cash_taxes = 0;
+    $cash_documents = $cash->cash_documents;
 
-$final_balance = 0;
-$cash_income = 0;
-$cash_egress = 0;
-$cash_final_balance = 0;
-
-
-$cash_documents = $cash->cash_documents;
-
-
-foreach ($cash_documents as $cash_document) {
-
-    if($cash_document->document_pos){
-
-        // $cash_income += $cash_document->document_pos->total;
-        // $final_balance += $cash_document->document_pos->total;
-
-        $cash_income += $cash_document->document_pos->getTotalCash();
-        $final_balance += $cash_document->document_pos->getTotalCash();
-
-        if( count($cash_document->document_pos->payments) > 0)
-        {
-            // $pays = $cash_document->document_pos->payments;
-            $pays = ($cash_document->document_pos->state_type_id === '11') ? collect() : $cash_document->document_pos->payments;
-
-            foreach ($methods_payment as $record)
+    foreach ($cash_documents as $cash_document) {
+        if($cash_document->document_pos){
+            $cash_income += $cash_document->document_pos->getTotalCash();
+            $final_balance += $cash_document->document_pos->getTotalCash();
+            $cash_taxes += $cash_document->document_pos->total_tax;
+            $document_count++;
+            if( count($cash_document->document_pos->payments) > 0)
             {
-                $record->sum = ($record->sum + $pays->where('payment_method_type_id', $record->id)->sum('payment') );
+                // $pays = $cash_document->document_pos->payments;
+                $pays = ($cash_document->document_pos->state_type_id === '11') ? collect() : $cash_document->document_pos->payments;
+
+                foreach ($methods_payment as $record)
+                {
+                    $record->sum = ($record->sum + $pays->where('payment_method_type_id', $record->id)->sum('payment') );
+                }
             }
         }
     }
-
-}
-
-$cash_final_balance = $final_balance + $cash->beginning_balance;
+    $cash_final_balance = $final_balance + $cash->beginning_balance;
 
 @endphp
 <!DOCTYPE html>
@@ -47,49 +39,7 @@ $cash_final_balance = $final_balance + $cash->beginning_balance;
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <title>Reporte POS - {{$cash->user->name}} - {{$cash->date_opening}} {{$cash->time_opening}}</title>
         <style>
-            html {
-                font-family: sans-serif;
-                font-size: 12px;
-            }
-
-            table {
-                width: 100%;
-                border-spacing: 0;
-                border: 1px solid black;
-            }
-
-            .celda {
-                text-align: center;
-                padding: 5px;
-                border: 0.1px solid black;
-            }
-
-            th {
-                padding: 5px;
-                text-align: center;
-                border-color: #0088cc;
-                border: 0.1px solid black;
-            }
-
-            .title {
-                font-weight: bold;
-                padding: 5px;
-                font-size: 20px !important;
-                text-decoration: underline;
-            }
-
-            p>strong {
-                margin-left: 5px;
-                font-size: 12px;
-            }
-
-            thead {
-                font-weight: bold;
-                background: #0088cc;
-                color: white;
-                text-align: center;
-            }
-            .td-custom { line-height: 0.1em; }
+            .celda,th{border:.1px solid #000;padding:5px;text-align:center}.celda,.title,th{padding:5px}html,p>strong{font-size:12px}.title,thead{font-weight:700}.celda,th,thead{text-align:center}html{font-family:sans-serif}table{width:100%;border-spacing:0;border:1px solid #000}.title{font-size:20px!important;text-decoration:underline}p>strong{margin-left:5px}thead{background:#08c;color:#fff}.td-custom{line-height:.1em}
         </style>
     </head>
     <body>
@@ -97,8 +47,6 @@ $cash_final_balance = $final_balance + $cash->beginning_balance;
             <p align="center" class="title"><strong>Reporte Punto de Venta</strong></p>
         </div>
         <div style="margin-top:20px; margin-bottom:20px;">
-
-
             <table>
                 <tr>
                     <td class="td-custom">
@@ -113,7 +61,7 @@ $cash_final_balance = $final_balance + $cash->beginning_balance;
                         <p><strong>N° Documento: </strong>{{$company->number}}</p>
                     </td>
                     <td class="td-custom">
-                        <p><strong>Establecimiento: </strong>{{$establishment->description}} </p> {{-- $establishment->department->description}} - {{$establishment->district->description --}}
+                        <p><strong>Establecimiento: </strong>{{$establishment->description}} </p>
                     </td>
                 </tr>
 
@@ -141,19 +89,27 @@ $cash_final_balance = $final_balance + $cash->beginning_balance;
                     </td>
                 </tr>
                 <tr>
-                    <td class="td-custom">
-                        <p><strong>Saldo inicial: </strong>S/. {{number_format($cash->beginning_balance, 2, ".", "")}}</p>
+                    <td  class="td-custom">
+                        <p><strong>Egreso: </strong>S/. {{number_format($cash_egress, 2, ".", "")}} </p>
                     </td>
                     <td  class="td-custom">
                         <p><strong>Ingreso: </strong>S/. {{number_format($cash_income, 2, ".", "")}} </p>
                     </td>
                 </tr>
                 <tr>
+                    <td class="td-custom">
+                        <p><strong>Saldo inicial: </strong>S/. {{number_format($cash->beginning_balance, 2, ".", "")}}</p>
+                    </td>
                     <td  class="td-custom">
                         <p><strong>Saldo final: </strong>S/. {{number_format($cash_final_balance, 2, ".", "")}} </p>
                     </td>
+                </tr>
+                <tr>
+                    <td class="td-custom">
+                        <p><strong>Documentos generados: </strong>{{ $document_count }}</p>
+                    </td>
                     <td  class="td-custom">
-                        <p><strong>Egreso: </strong>S/. {{number_format($cash_egress, 2, ".", "")}} </p>
+                        <p><strong>Impuestos: </strong>S/. {{ $cash_taxes }} </p>
                     </td>
                 </tr>
             </table>
@@ -161,37 +117,29 @@ $cash_final_balance = $final_balance + $cash->beginning_balance;
         @if($cash_documents->count())
             <div class="">
                 <div class=" ">
-
                     <table>
-
                         <thead>
                             <tr>
                                 <th>#</th>
                                 <th>Descripcion</th>
                                 <th>Suma</th>
-
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($methods_payment as $item)
-
                                 <tr>
                                     <td class="celda">{{ $loop->iteration }}</td>
                                     <td class="celda">{{ $item->name }}</td>
                                     <td class="celda">{{ number_format($item->sum, 2, ".", "")  }}</td>
-
                                 </tr>
-
                             @endforeach
                         </tbody>
-
-                    </table> <br>
-
+                    </table>
+                    <br>
                     <table class="">
                         <thead>
                             <tr>
                                 <th>#</th>
-                                {{-- <th>Tipo transacción</th> --}}
                                 <th>Tipo documento</th>
                                 <th>Documento</th>
                                 <th>Estado</th>
@@ -199,6 +147,7 @@ $cash_final_balance = $final_balance + $cash->beginning_balance;
                                 <th>Cliente/Proveedor</th>
                                 <th>N° Documento</th>
                                 <th>Moneda</th>
+                                <th>Impuesto</th>
                                 <th>Subtotal</th>
                                 <th>Total</th>
                             </tr>
@@ -215,7 +164,6 @@ $cash_final_balance = $final_balance + $cash->beginning_balance;
                             @foreach($all_documents as $key => $value)
                                 <tr>
                                     @php
-                                        // $type_transaction =  null;
                                         $document_type_description = null;
                                         $number = null;
                                         $date_of_issue = null;
@@ -223,22 +171,15 @@ $cash_final_balance = $final_balance + $cash->beginning_balance;
                                         $customer_number = null;
                                         $currency_type_id = null;
                                         $total = null;
-
-                                        // $type_transaction =  'Venta';
                                         $document_type_description =  'FACT POS';
                                         $number = $value->document_pos->number_full;
-                                        // $number = $value->document_pos->number;
                                         $date_of_issue = $value->document_pos->date_of_issue->format('Y-m-d');
                                         $customer_name = $value->document_pos->customer->name;
                                         $customer_number = $value->document_pos->customer->number;
                                         $total = $value->document_pos->total;
                                         $currency_type_id = $value->document_pos->currency_type_id;
-
                                     @endphp
-
-
                                     <td class="celda">{{ $loop->iteration }}</td>
-                                    {{-- <td class="celda">{{ $type_transaction }}</td> --}}
                                     <td class="celda">{{ $document_type_description }}</td>
                                     <td class="celda">{{ $number }}</td>
                                     <td class="celda">{{ $value->document_pos->state_type->description ?? null }}</td>
@@ -246,9 +187,9 @@ $cash_final_balance = $final_balance + $cash->beginning_balance;
                                     <td class="celda">{{ $customer_name }}</td>
                                     <td class="celda">{{$customer_number }}</td>
                                     <td class="celda">{{ $currency_type_id }}</td>
-                                    <td class="celda">{{ number_format($value->document_pos->subtotal,2, ".", "") }}</td>
+                                    <td class="celda">{{ $value->document_pos->total_tax }}</td>
+                                    <td class="celda">{{ $value->document_pos->sale }}</td>
                                     <td class="celda">{{ number_format($total,2, ".", "") }}</td>
-
                                 </tr>
                             @endforeach
                         </tbody>
