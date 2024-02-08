@@ -200,7 +200,7 @@ class CashController extends Controller
     }
 
 
-    public function report($cash) {
+    public function report($cash, $only_head = null) {
 
         $cash = Cash::findOrFail($cash);
         $company = Company::first();
@@ -215,7 +215,7 @@ class CashController extends Controller
 
         set_time_limit(0);
 
-        $pdf = PDF::loadView('tenant.cash.report_pdf', compact("cash", "company", "methods_payment"));
+        $pdf = PDF::loadView('tenant.cash.report_pdf', compact("cash", "company", "methods_payment", "only_head"));
 
         $filename = "Reporte_POS - {$cash->user->name} - {$cash->date_opening} {$cash->time_opening}";
 

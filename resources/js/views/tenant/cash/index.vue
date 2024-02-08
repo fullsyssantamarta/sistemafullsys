@@ -48,9 +48,7 @@
                         <td>{{ row.state_description }}</td>
                         <td class="text-center">
                             <button type="button" class="btn waves-effect waves-light btn-xs btn-primary" @click.prevent="clickDownload(row.id)">Reporte</button>
-                            <!-- <button type="button" class="btn waves-effect waves-light btn-xs btn-primary" @click.prevent="clickDownloadProducts(row.id)">Reporte Productos</button> -->
-
-                            <!--<button type="button" class="btn waves-effect waves-light btn-xs btn-success" @click.prevent="clickDownloadIncomeSummary(row.id)">R. Ingreso</button>-->
+                            <button type="button" class="btn waves-effect waves-light btn-xs btn-primary" @click.prevent="clickDownload(row.id, 'resumido')">Reporte Resumen</button>
 
                             <template v-if="row.state">
 
@@ -104,8 +102,8 @@
 
         },
         methods: {
-            clickDownload(id) {
-                window.open(`/${this.resource}/report/${id}`, '_blank');
+            clickDownload(id, only_head = '') {
+                window.open(`/${this.resource}/report/${id}/${only_head}`, '_blank');
             },
             clickDownloadIncomeSummary(id) {
                 window.open(`/${this.resource}/report/income-summary/${id}`, '_blank');

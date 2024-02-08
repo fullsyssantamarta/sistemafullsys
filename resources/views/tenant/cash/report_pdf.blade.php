@@ -8,13 +8,25 @@
     $document_count = 0;
     $cash_taxes = 0;
     $cash_documents = $cash->cash_documents;
+    $is_complete = $only_head === 'resumido' ? false : true;
+    $first_document = '';
+    $last_document = '';
+
+    $list = $cash_documents->filter(function ($item) {
+        return $item->document_pos_id !== null;
+    });
+    if($list->count() > 0){
+        $first_document= $list->first()->document_pos->series.'-'.$list->first()->document_pos->number;
+        $last_document= $list->last()->document_pos->series.'-'.$list->last()->document_pos->number;
+    }
+
 
     foreach ($cash_documents as $cash_document) {
         if($cash_document->document_pos){
             $cash_income += $cash_document->document_pos->getTotalCash();
             $final_balance += $cash_document->document_pos->getTotalCash();
             $cash_taxes += $cash_document->document_pos->total_tax;
-            $document_count++;
+            $document_count = $cash_document->document_pos->count();
             if( count($cash_document->document_pos->payments) > 0)
             {
                 // $pays = $cash_document->document_pos->payments;
@@ -106,100 +118,110 @@
                 </tr>
                 <tr>
                     <td class="td-custom">
-                        <p><strong>Documentos generados: </strong>{{ $document_count }}</p>
+                        <p>
+                            <strong>Documentos generados: </strong>
+                            {{ $document_count }}
+                            @if($first_document != '' && $last_document != '')
+                                del {{ $first_document }} al {{ $last_document }}
+                            @endif
+                        </p>
                     </td>
                     <td  class="td-custom">
                         <p><strong>Impuestos: </strong>S/. {{ $cash_taxes }} </p>
                     </td>
                 </tr>
+
+
             </table>
         </div>
-        @if($cash_documents->count())
-            <div class="">
-                <div class=" ">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Descripcion</th>
-                                <th>Suma</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($methods_payment as $item)
+        @if($is_complete)
+            @if($cash_documents->count())
+                <div class="">
+                    <div class=" ">
+                        <table>
+                            <thead>
                                 <tr>
-                                    <td class="celda">{{ $loop->iteration }}</td>
-                                    <td class="celda">{{ $item->name }}</td>
-                                    <td class="celda">{{ number_format($item->sum, 2, ".", "")  }}</td>
+                                    <th>#</th>
+                                    <th>Descripcion</th>
+                                    <th>Suma</th>
                                 </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                    <br>
-                    <table class="">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Tipo documento</th>
-                                <th>Documento</th>
-                                <th>Estado</th>
-                                <th>Fecha emisión</th>
-                                <th>Cliente/Proveedor</th>
-                                <th>N° Documento</th>
-                                <th>Moneda</th>
-                                <th>Impuesto</th>
-                                <th>Subtotal</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @php
-                                $all_documents = [];
-                                foreach ($cash_documents as $key => $value) {
-                                    if($value->document_pos){
-                                        $all_documents[] = $value;
+                            </thead>
+                            <tbody>
+                                @foreach($methods_payment as $item)
+                                    <tr>
+                                        <td class="celda">{{ $loop->iteration }}</td>
+                                        <td class="celda">{{ $item->name }}</td>
+                                        <td class="celda">{{ number_format($item->sum, 2, ".", "")  }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                        <br>
+                        <table class="">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Tipo documento</th>
+                                    <th>Documento</th>
+                                    <th>Estado</th>
+                                    <th>Fecha emisión</th>
+                                    <th>Cliente/Proveedor</th>
+                                    <th>N° Documento</th>
+                                    <th>Moneda</th>
+                                    <th>Impuesto</th>
+                                    <th>Subtotal</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php
+                                    $all_documents = [];
+                                    foreach ($cash_documents as $key => $value) {
+                                        if($value->document_pos){
+                                            $all_documents[] = $value;
+                                        }
                                     }
-                                }
-                            @endphp
-                            @foreach($all_documents as $key => $value)
-                                <tr>
-                                    @php
-                                        $document_type_description = null;
-                                        $number = null;
-                                        $date_of_issue = null;
-                                        $customer_name = null;
-                                        $customer_number = null;
-                                        $currency_type_id = null;
-                                        $total = null;
-                                        $document_type_description =  'FACT POS';
-                                        $number = $value->document_pos->number_full;
-                                        $date_of_issue = $value->document_pos->date_of_issue->format('Y-m-d');
-                                        $customer_name = $value->document_pos->customer->name;
-                                        $customer_number = $value->document_pos->customer->number;
-                                        $total = $value->document_pos->total;
-                                        $currency_type_id = $value->document_pos->currency_type_id;
-                                    @endphp
-                                    <td class="celda">{{ $loop->iteration }}</td>
-                                    <td class="celda">{{ $document_type_description }}</td>
-                                    <td class="celda">{{ $number }}</td>
-                                    <td class="celda">{{ $value->document_pos->state_type->description ?? null }}</td>
-                                    <td class="celda">{{ $date_of_issue}}</td>
-                                    <td class="celda">{{ $customer_name }}</td>
-                                    <td class="celda">{{$customer_number }}</td>
-                                    <td class="celda">{{ $currency_type_id }}</td>
-                                    <td class="celda">{{ $value->document_pos->total_tax }}</td>
-                                    <td class="celda">{{ $value->document_pos->sale }}</td>
-                                    <td class="celda">{{ number_format($total,2, ".", "") }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                                @endphp
+                                @foreach($all_documents as $key => $value)
+                                    <tr>
+                                        @php
+                                            $document_type_description = null;
+                                            $number = null;
+                                            $date_of_issue = null;
+                                            $customer_name = null;
+                                            $customer_number = null;
+                                            $currency_type_id = null;
+                                            $total = null;
+                                            $document_type_description =  'FACT POS';
+                                            $number = $value->document_pos->number_full;
+                                            $date_of_issue = $value->document_pos->date_of_issue->format('Y-m-d');
+                                            $customer_name = $value->document_pos->customer->name;
+                                            $customer_number = $value->document_pos->customer->number;
+                                            $total = $value->document_pos->total;
+                                            $currency_type_id = $value->document_pos->currency_type_id;
+                                        @endphp
+                                        <td class="celda">{{ $loop->iteration }}</td>
+                                        <td class="celda">{{ $document_type_description }}</td>
+                                        <td class="celda">{{ $number }}</td>
+                                        <td class="celda">{{ $value->document_pos->state_type->description ?? null }}</td>
+                                        <td class="celda">{{ $date_of_issue}}</td>
+                                        <td class="celda">{{ $customer_name }}</td>
+                                        <td class="celda">{{$customer_number }}</td>
+                                        <td class="celda">{{ $currency_type_id }}</td>
+                                        <td class="celda">{{ $value->document_pos->total_tax }}</td>
+                                        <td class="celda">{{ $value->document_pos->sale }}</td>
+                                        <td class="celda">{{ number_format($total,2, ".", "") }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
-        @else
-            <div class="callout callout-info">
-                <p>No se encontraron registros.</p>
-            </div>
+            @else
+                <div class="callout callout-info">
+                    <p>No se encontraron registros.</p>
+                </div>
+            @endif
         @endif
     </body>
 </html>
