@@ -128,7 +128,7 @@ class ViewServiceProvider extends ServiceProvider
         );
 
         view()->composer(
-            'tenant.layouts.auth',
+            ['tenant.layouts.auth', 'tenant.auth.login'],
             'App\Http\ViewComposers\Tenant\CompanyViewComposer'
         );
 

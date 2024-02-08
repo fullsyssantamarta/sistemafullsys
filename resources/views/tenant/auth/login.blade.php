@@ -1,62 +1,71 @@
 @extends('tenant.layouts.auth')
 
 @section('content')
-    <section class="body-sign">
-        <div class="center-sign">
-            <div class="card">
-                <div class="card card-header card-primary" style="background:#0088CC">
-                    <p class="card-title text-center">Acceso al Sistema</p>
-                    <h1 class="display-3 position-absolute text-left font-weight-bold" style="left: 90%; margin-top: -35px; color: rgba(255,255,255,.1);">2</h1>
+@php
+    $path_background = $vc_company->logo_login != '' ? 'storage/uploads/logos/'.$vc_company->logo_login : 'images/fondo-5.svg';
+@endphp
+<section class="auth auth__form-right">
+    <article class="auth__image" style="background-image: url({{ asset($path_background) }});background-size: 100%">
+        @if ($vc_company->logo ?? false)
+            <img class="auth__logo top-left" src="{{ asset('storage/uploads/logos/'.$vc_company->logo) }}" alt="Logo" />
+        @endif
+    </article>
+    <article class="auth__form">
+        <form method="POST" action="{{ route('login') }}">
+            @csrf
+            <div class="d-flex justify-content-center">
+                <div class="row">
+                    @if ($vc_company->logo ?? false)
+                        <img class="auth__logo-form" src="{{ asset('storage/uploads/logos/'.$vc_company->logo) }}" alt="Logo" width="100" />
+                    @endif
                 </div>
-                <div class="card-body">
-                    <form method="POST" action="{{ route('login') }}">
-                        @csrf
-                        <div class="form-group mb-3">
-                            <label>Correo electrónico</label>
-                            <div class="input-group">
-                                <input id="email" type="email" name="email" class="form-control form-control-lg" value="{{ old('email') }}">
-                                <span class="input-group-append">
-                                    <span class="input-group-text">
-                                        <i class="fas fa-user"></i>
-                                    </span>
-                                </span>
-                            </div>
-                            @if ($errors->has('email'))
-                                <label class="error">
-                                    <strong>{{ $errors->first('email') }}</strong>
-                                </label>
-                            @endif
-                        </div>
-                        <div class="form-group mb-3 {{ $errors->has('password') ? ' error' : '' }}">
-                            <label>Contraseña</label>
-                            <div class="input-group">
-                                <input name="password" type="password" class="form-control form-control-lg">
-                                <span class="input-group-append">
-                                    <span class="input-group-text">
-                                        <i class="fas fa-lock"></i>
-                                    </span>
-                                </span>
-                            </div>
-                            @if ($errors->has('password'))
-                                <label class="error">
-                                    <strong>{{ $errors->first('password') }}</strong>
-                                </label>
-                            @endif
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-8">
-                                <div class="checkbox-custom checkbox-default">
-                                    <input name="remember" id="RememberMe" type="checkbox" {{ old('remember') ? 'checked' : '' }}>
-                                    <label for="RememberMe">Recordarme</label>
-                                </div>
-                            </div>
-                            <div class="col-sm-4 text-right">
-                                <button type="submit" class="btn btn-primary mt-2">Iniciar sesión</button>
-                            </div>
-                        </div>
-                    </form>
+            </div>
+            <div class="text-center">
+                <h1 class="auth__title">Bienvenido a<br>{{ $vc_company->trade_name }}</h1>
+                <p>Ingresa a tu cuenta</p>
+            </div>
+            <div class="form-group">
+                <label for="email">Correo electrónico</label>
+                <input type="email" name="email" id="email" class="form-control {{ $errors->has('email') ? 'is-invalid' : '' }}" value="{{ old('email') }}" autofocus>
+                @if ($errors->has('email'))
+                    <div class="invalid-feedback">{{ $errors->first('email') }}</div>
+                @endif
+            </div>
+            <div class="form-group">
+                <div class="d-flex justify-content-between">
+                    <label for="password">Contraseña</label>
+                    {{-- <a href="{{ url('password/reset') }}" tabindex="5">¿Has olvidado tu contraseña?</a> --}}
                 </div>
-            {{-- <p class="text-center text-muted mt-3 mb-3">&copy; Copyright {{ date('Y') }}. Todos los derechos reservados</p> --}}
-        </div>
-    </section>
+                <div class="position-relative">
+                    <input type="password" name="password" id="password" class="form-control hide-password {{ $errors->has('password') ? 'is-invalid' : '' }}">
+                    <button type="button" class="btn btn-eye" id="btnEye" tabindex="4">
+                        <i class="fa fa-eye"></i>
+                    </button>
+                </div>
+                @if ($errors->has('password'))
+                    <div class="invalid-feedback">{{ $errors->first('password') }}</div>
+                @endif
+            </div>
+            <button type="submit" class="btn btn-signin btn-block">INICIAR SESIÓN</button>
+        </form>
+    </article>
+</section>
 @endsection
+
+@push('scripts')
+    <script>
+        var inputPassword = document.getElementById('password');
+        var btnEye = document.getElementById('btnEye');
+        btnEye.addEventListener('click', function () {
+            if (inputPassword.classList.contains('hide-password')) {
+                inputPassword.type = 'text';
+                inputPassword.classList.remove('hide-password');
+                btnEye.innerHTML = '<i class="fa fa-eye-slash"></i>'
+            } else {
+                inputPassword.type = 'password';
+                inputPassword.classList.add('hide-password');
+                btnEye.innerHTML = '<i class="fa fa-eye"></i>'
+            }
+        });
+    </script>
+@endpush
