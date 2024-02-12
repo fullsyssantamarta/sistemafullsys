@@ -71,13 +71,27 @@ class DocumentController extends Controller
         return view('factcolombia1::document.tenant.index');
     }
 
+    /**
+     * Scope a query to include documents where the customer's name matches a search term.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  string  $name
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeFilterByName($query, $name)
+    {
+        // Asumiendo que 'customer' es una columna de tipo JSON y 'name' es uno de sus atributos
+        return $query->where('customer->name', 'LIKE', "%{$name}%");
+    }
+
 
     public function columns()
     {
         return [
-            'number' => 'Número',
+            'number' => 'Número de Factura',
             'date_of_issue' => 'Fecha de emisión',
-            'customer' => 'Cliente',
+            'name' => 'Nombre',
+            'customer' => 'No Cédula'
         ];
     }
 
@@ -108,9 +122,24 @@ class DocumentController extends Controller
 
     public function records(Request $request)
     {
-        $records =  Document::where($request->column, 'like', '%' . $request->value . '%')->whereTypeUser()->latest();
+        $records = Document::query();
+    
+        // Filtrado por columna específica y valor
+        if ($request->column == 'name' && $request->filled('value')) {
+            // Utilizar whereRaw para buscar en un campo JSON de manera insensible a mayúsculas
+            $value = strtolower($request->value);
+            $records->whereRaw('lower(customer->>"$.name") like ?', ["%{$value}%"]);
+        } else if ($request->filled('column') && $request->filled('value')) {
+            // Para otras columnas que no son JSON
+            $records->where($request->column, 'like', '%' . $request->value . '%');
+        }
+    
+        $records->whereTypeUser()->latest();
+    
         return new DocumentCollection($records->paginate(config('tenant.items_per_page')));
     }
+    
+    
 
 
     public function record($id)
