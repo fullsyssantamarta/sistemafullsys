@@ -124,20 +124,23 @@ class DocumentController extends Controller
     {
         $records = Document::query();
     
-        // Filtrado por columna específica y valor
         if ($request->column == 'name' && $request->filled('value')) {
-            // Utilizar whereRaw para buscar en un campo JSON de manera insensible a mayúsculas
+            // Convertimos tanto el valor de la columna como el valor de búsqueda a minúsculas
             $value = strtolower($request->value);
-            $records->whereRaw('lower(customer->>"$.name") like ?', ["%{$value}%"]);
-        } else if ($request->filled('column') && $request->filled('value')) {
-            // Para otras columnas que no son JSON
-            $records->where($request->column, 'like', '%' . $request->value . '%');
+            $records->whereRaw("LOWER(json_unquote(json_extract(`customer`, '$.name'))) LIKE ?", ["%{$value}%"]);
+        } elseif ($request->filled('column') && $request->filled('value')) {
+            // Para otras columnas que no son JSON y buscamos insensitivo a mayúsculas/minúsculas
+            $value = strtolower($request->value);
+            $records->whereRaw("LOWER({$request->column}) LIKE ?", ["%{$value}%"]);
         }
     
         $records->whereTypeUser()->latest();
     
         return new DocumentCollection($records->paginate(config('tenant.items_per_page')));
     }
+    
+    
+  
     
     
 

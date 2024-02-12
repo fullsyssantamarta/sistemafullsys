@@ -105,7 +105,7 @@
                                     </td>
                                     <td>
                                         <div class="form-group mb-2 mr-2" >
-                                            <el-input v-model="row.payment"></el-input>
+                                            <el-input v-model="row.payment" disabled></el-input>
                                         </div>
                                     </td>
                                     <td class="series-table-actions text-center">
