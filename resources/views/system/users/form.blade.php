@@ -2,10 +2,13 @@
 
 @section('content')
 
-    <div class="row">
-        <div class="col-lg-6 col-md-12">
+    <!-- Elimina la clase 'row' y usa un div sin restricciones de ancho -->
+    <div>
+        @if ($currentUserId === 1)
             <system-users-form></system-users-form>
-        </div>
+        @else
+            <h3>No tienes permiso para ver este contenido.</h3>
+        @endif
     </div>
 
 @endsection

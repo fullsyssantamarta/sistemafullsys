@@ -2,6 +2,7 @@
 
 namespace Modules\Factcolombia1\Http\Controllers\System;
 
+use Modules\Factcolombia1\Http\Controllers\System\CompanyController;
 use Modules\Factcolombia1\Jobs\Tenant\ConfigureTenantJob;
 use Hyn\Tenancy\Contracts\Repositories\{
     HostnameRepository,
@@ -151,6 +152,12 @@ class CompanyController extends Controller
 
     }
 
+    public function currentUserId()
+    {
+        $currentUserId = auth()->id();
+        return response()->json(['currentUserId' => $currentUserId]);
+    }
+    
 
     public function validateWebsite($uuid, $website){
 
@@ -162,7 +169,83 @@ class CompanyController extends Controller
 
     }
 
+    /*
 
+    // funcion para cambiar de secion hacia empresa tenancy por cristian
+
+    public function switchTenant($companyId)
+    {
+        $company = Company::findOrFail($companyId);
+        // Asegúrate de que la relación o método 'hostname' exista y devuelva el objeto esperado
+        $hostname = $company->hostname;
+    
+        // Obtiene el usuario administrador autenticado
+        $user = auth()->user();
+    
+        // Verifica si el usuario tiene un token; si no, crea uno nuevo
+        if (empty($user->api_token)) {
+            $user->api_token = Str::random(60); // Usa Str::random o cualquier otro método que prefieras para generar el token
+            $user->save();
+        }
+    
+        // Prepara la URL para redireccionar al tenant
+        $urlToRedirect = "http://{$hostname->fqdn}/switch-tenant?token={$user->api_token}";
+    
+        // Redirecciona al usuario
+        return redirect()->away($urlToRedirect);
+    }
+    */
+
+    
+    public function switchTenant($companyId)
+    {
+        // Obtener la compañía y su hostname asociado
+        $company = Company::findOrFail($companyId);
+        $hostname = $company->hostname; // Asume que tienes una relación o atributo 
+
+       // dd($company->subdomain);
+
+       //datos de configuración de da la base de datos host,base de datos, contraseña etc
+        $environment = app(Environment::class);
+        $environment->tenant($company->website);
+
+     
+        $tenantDatabaseName = 'tenancy_' . $company->subdomain; // O cualquier lógica que utilices para nombrar las bases de datos
+
+           
+        config([
+            'database.connections.tenant' => [
+                'driver' => 'mysql',
+                'host' => config('database.connections.mysql.host'),
+                'port' => config('database.connections.mysql.port'),
+                'database' => $tenantDatabaseName,
+                'username' => config('database.connections.mysql.username'),
+                'password' => config('database.connections.mysql.password'),
+                'unix_socket' => config('database.connections.mysql.unix_socket'),
+                'charset' => config('database.connections.mysql.charset'),
+                'collation' => config('database.connections.mysql.collation'),
+                'prefix' => '',
+                'strict' => true,
+                'engine' => null,
+            ],
+        ]);
+
+        // Realizar una consulta utilizando la conexión 'tenant' y obtener el primer registro de la tabla 'users'
+        $firstUser = DB::connection('tenant')->table('co_service_companies')->first();
+        $apiToken = $firstUser->api_token;
+
+         // Encripta el token antes de agregarlo a la URL
+         $encryptedToken = encrypt($apiToken);
+
+        // Genera la URL con el token encriptado como parámetro
+        $urlToRedirect = "http://{$hostname->fqdn}/dashboard?api_token={$encryptedToken}";
+    
+        // Redirecciona al usuario al tenant con el token incluido en la URL
+        return redirect()->away($urlToRedirect);
+    }
+
+
+/*
     public function records()
     {
 
@@ -201,6 +284,62 @@ class CompanyController extends Controller
 
         return new CompanyCollection($records);
     }
+*/
+public function records()
+{
+    // Obtener el ID del usuario autenticado
+    $userId = auth()->id();
+
+    if (in_array($userId, [1, 2])) {
+        // Para los usuarios con ID 1 y 2, obtener todas las empresas
+        $records = Company::latest()->get();
+    } else {
+        // Obtener los identification_number asociados con el usuario autenticado
+        $identificationNumbers = ServiceCompany::where('user_id', $userId)
+                                                ->pluck('identification_number');
+
+        // Filtrar las Company por los identification_number obtenidos
+        $records = Company::whereIn('identification_number', $identificationNumbers)
+                          ->latest()
+                          ->get();
+    }
+
+    // Procesar cada registro de Company obtenido
+    foreach ($records as &$row) {
+        $tenancy = app(Environment::class);
+        $tenancy->tenant($row->hostname->website);
+        // $row->count_doc = DB::connection('tenant')->table('documents')->count();
+        $row->count_doc = DB::connection('tenant')->table('configurations')->first()->quantity_documents;
+        //$row->count_user = DB::connection('tenant')->table('users')->count();
+
+        if($row->start_billing_cycle)
+        {
+            $day_start_billing = date_format($row->start_billing_cycle, 'j');
+            $day_now = (int)date('j');
+
+
+            if( $day_now <= $day_start_billing  )
+            {
+                $init = Carbon::parse( date('Y').'-'.((int)date('n') -1).'-'.$day_start_billing );
+                $end = Carbon::parse(date('Y-m-d'));
+
+                $row->count_doc_month = DB::connection('tenant')->table('documents')->whereBetween('date_of_issue', [ $init, $end  ])->count();
+            }
+            else{
+
+                $init = Carbon::parse( date('Y').'-'.((int)date('n') ).'-'.$day_start_billing );
+                $end = Carbon::parse(date('Y-m-d'));
+                $row->count_doc_month = DB::connection('tenant')->table('documents')->whereBetween('date_of_issue', [ $init, $end  ])->count();
+
+            }
+
+        }
+    }
+
+    // Devolver la colección de Company procesadas
+    return new CompanyCollection($records);
+}
+
 
 
     public function record($id)
@@ -386,6 +525,22 @@ class CompanyController extends Controller
         curl_close($ch);
         $respuesta = json_decode($response);
     }
+
+    public function updateUser(Request $request)
+        {
+            $identification_number = $request->input('identification_number');
+            $user_id = $request->input('user_id');
+
+            DB::table('co_service_companies')
+                ->where('identification_number', $identification_number)
+                ->update(['user_id' => $user_id]);
+
+            return [
+                'success' => true,
+                'message' => "Se actualizó el usuario de la compañía con identificación {$identification_number}."
+            ];
+        }
+
 
 
     public function tables()

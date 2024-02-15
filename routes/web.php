@@ -558,6 +558,9 @@ if ($hostname) {
             // });
             Route::get('dashboard', 'System\HomeController@index')->name('system.dashboard');
 
+            // Ruta para cambiar de tenant
+            Route::get('/switch-tenant/{companyId}', 'System\TenantSwitchController@switch')->name('system.switch_tenant');
+
             //Clients
             Route::get('clients', 'System\ClientController@index')->name('system.clients.index');
             Route::get('clients/records', 'System\ClientController@records');
@@ -605,7 +608,9 @@ if ($hostname) {
             //Users
             Route::get('users/create', 'System\UserController@create')->name('system.users.create');
             Route::get('users/record', 'System\UserController@record');
+            Route::get('users/records', 'System\UserController@records');
             Route::post('users', 'System\UserController@store');
+            Route::put('users/{user}', 'System\UserController@update')->name('system.users.update'); // Ruta PUT para actualizar usuarios
 
             Route::get('services/ruc/{number}', 'System\ServiceController@ruc');
 
