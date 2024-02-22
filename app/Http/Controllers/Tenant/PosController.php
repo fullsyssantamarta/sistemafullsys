@@ -108,22 +108,21 @@ class PosController extends Controller
     public function search_items(Request $request)
     {
         $configuration =  Configuration::first();
-
-        $items = Item::where('name','like', "%{$request->input_item}%")
-                            ->orWhere('internal_id','like', "%{$request->input_item}%")
-                            ->orWhere('category_id', $request->cat)
-                            ->orWhereHas('category', function($query) use($request) {
-                                $query->where('name', 'like', '%' . $request->input_item . '%');
-                            })
-                            ->orWhereHas('brand', function($query) use($request) {
-                                $query->where('name', 'like', '%' . $request->input_item . '%');
-                            })
-                            ->whereWarehouse()
-                            ->whereIsActive()
-                            ->when($request->has('cat') && $request->cat != '', function ($query) use ($request) {
-                                $query->where('category_id', $request->cat);
-                            })
-                            ->paginate(50);
+        $items = Item::where('name','like',  '%' . $request->input_item . '%')
+                    ->orWhere('description','like',  '%' . $request->input_item . '%')
+                    ->orWhere('internal_id','like',  '%' . $request->input_item . '%')
+                    ->orWhereHas('category', function($query) use($request) {
+                        $query->where('name', 'like', '%' . $request->input_item . '%');
+                    })
+                    ->orWhereHas('brand', function($query) use($request) {
+                        $query->where('name', 'like', '%' . $request->input_item . '%');
+                    })
+                    ->whereWarehouse()
+                    ->whereIsActive()
+                    ->when($request->has('cat') && $request->cat != '', function ($query) use ($request) {
+                        $query->where('category_id', $request->cat);
+                    })
+                    ->paginate(50);
 
         return new PosCollection($items, $configuration);
     }
