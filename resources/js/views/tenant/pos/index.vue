@@ -571,6 +571,7 @@ export default {
                 )
                 .then(response => {
                     this.all_items = response.data.data;
+                    this.items = response.data.data;
                     this.filterItems();
                     this.pagination = response.data.meta;
                     this.pagination.per_page = parseInt(
@@ -1406,7 +1407,13 @@ export default {
                 await this.$http.get(`/${this.resource}/search_items?${parameters}`)
                     .then(response => {
 
-                        this.items = response.data.items;
+                        this.items = response.data.data;
+
+                        this.pagination = response.data.meta;
+                        this.pagination.per_page = parseInt(
+                            response.data.meta.per_page
+                        );
+
                         this.enabledSearchItemsBarcode()
                         this.loading = false;
                         if (this.items.length == 0) {
@@ -1425,7 +1432,7 @@ export default {
         enabledSearchItemsBarcode() {
 
             if (this.search_item_by_barcode) {
-
+                console.log(this.items)
                 if (this.items.length == 1) {
 
                     // console.log(this.items)
