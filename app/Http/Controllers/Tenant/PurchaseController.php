@@ -123,17 +123,17 @@ class PurchaseController extends Controller
         $payment_method_types = PaymentMethodType::all();
         $payment_destinations = $this->getPaymentDestinations();
         $customers = $this->getPersons('customers');
-        
+
         $currencies = Currency::all();
         $taxes = $this->table('taxes');
 
-        return compact('suppliers', 'establishment','currencies', 
+        return compact('suppliers', 'establishment','currencies',
                     'taxes', 'document_types_invoice','company','payment_method_types', 'payment_destinations', 'customers');
     }
 
     public function item_tables()
     {
-
+        ini_set('memory_limit', '-1');
         $items = $this->table('items');
         $taxes = $this->table('taxes');
         $categories = [];
@@ -304,7 +304,7 @@ class PurchaseController extends Controller
                 if(isset($payment['payment_destination_id'])){
                     $this->createGlobalPayment($record_payment, $payment);
                 }
-                
+
                 if(isset($payment['payment_filename'])){
                     $record_payment->payment_file()->create([
                         'filename' => $payment['payment_filename']
@@ -374,7 +374,7 @@ class PurchaseController extends Controller
     public function table($table)
     {
         switch ($table) {
-            
+
             case 'taxes':
 
                 return Tax::all()->transform(function($row) {
@@ -640,6 +640,6 @@ class PurchaseController extends Controller
         return $persons;
 
     }
- 
+
 
 }

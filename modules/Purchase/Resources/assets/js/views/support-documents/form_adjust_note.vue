@@ -13,7 +13,7 @@
                                 <div class="form-group" :class="{'has-danger': errors.note_concept_id}">
                                     <label class="control-label">Concepto</label>
                                     <el-select v-model="form.note_concept_id"  popper-class="el-select-document_type" class="border-left rounded-left border-info" filterable>
-                                        <el-option v-for="option in credit_note_concepts" :key="option.id" :value="option.id" :label="option.name"></el-option>
+                                        <el-option v-for="option in credit_note_concepts" :key="option.code" :value="option.code" :label="option.name"></el-option>
                                     </el-select>
                                     <small class="form-control-feedback" v-if="errors.note_concept_id" v-text="errors.note_concept_id[0]"></small>
                                 </div>
@@ -203,7 +203,7 @@
         props: ['supportDocumentId'],
         mixins: [operations_api],
         components: {
-            SupportDocumentFormItem, 
+            SupportDocumentFormItem,
             SupportDocumentOptions
         },
         data() {
@@ -238,7 +238,7 @@
             this.loading_form = true
             this.events()
         },
-        methods: 
+        methods:
         {
             async getRecord()
             {
@@ -258,7 +258,7 @@
                 this.form.total = data.total
                 this.form.sale = data.sale
                 this.form.affected_support_document_id = this.supportDocumentId
-                
+
 
                 this.reloadDataSuppliers(data.supplier_id)
             },
@@ -473,7 +473,7 @@
             close() {
                 location.href = (this.is_contingency) ? `/contingencies` : `/${this.resource}`
             },
-            reloadDataSuppliers(supplier_id) 
+            reloadDataSuppliers(supplier_id)
             {
                 this.$http.get(`/person-by-id/${supplier_id}`).then((response) => {
                     this.suppliers = response.data
@@ -499,13 +499,13 @@
                 this.loading_submit = true
                 this.$http.post(`/${this.resource}`, this.form).then(response => {
 
-                    if (response.data.success) 
+                    if (response.data.success)
                     {
                         this.resetForm()
                         this.recordNewId = response.data.data.id
                         this.showDialogOptions = true
                     }
-                    else 
+                    else
                     {
                         this.$message.error(response.data.message)
                     }
