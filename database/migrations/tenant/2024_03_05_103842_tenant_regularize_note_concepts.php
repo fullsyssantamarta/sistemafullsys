@@ -19,7 +19,8 @@ class TenantRegularizeNoteConcepts extends Migration
         NoteConcept::where('id', 6)->update(['id' => 6, 'type_document_id' => 3, 'name' => 'Rebaja  o descuento parcial o total', 'code' => '3']);
         NoteConcept::where('id', 7)->update(['id' => 7, 'type_document_id' => 3, 'name' => 'Ajuste de precio', 'code' => '4']);
         NoteConcept::where('id', 8)->update(['id' => 8, 'type_document_id' => 3, 'name' => 'Otros', 'code' => '5']);
-        NoteConcept::find(9)->forceDelete();
+        if(count(NoteConcept::where('id', 9)->get()) > 0)
+            NoteConcept::find(9)->forceDelete();
     }
 
     /**

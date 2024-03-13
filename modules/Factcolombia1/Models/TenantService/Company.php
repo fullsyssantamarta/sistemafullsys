@@ -33,7 +33,7 @@ class Company extends Model
     protected $fillable = [
         'message', 'password', 'api_token','user_id', 'identification_number', 'dv', 'language_id', 'tax_id', 'type_environment_id', 'type_operation_id', 'type_document_identification_id', 'country_id', 'department_id', 'type_currency_id', 'type_organization_id', 'type_regime_id', 'type_liability_id', 'municipality_id', 'merchant_registration', 'address', 'phone',
         'id_software', 'pin_software', 'url_software', 'response_software', 'certificate_name', 'password_certificate', 'response_certificate', 'response_resolution', 'test_id', 'response_resolution_credit', 'response_resolution_debit',
-        'id_software_payroll', 'pin_software_payroll', 'test_set_id_payroll', 'payroll_type_environment_id'
+        'id_software_payroll', 'pin_software_payroll', 'test_set_id_payroll', 'payroll_type_environment_id', 'id_software_eqdocs', 'pin_software_eqdocs', 'test_set_id_eqdocs', 'eqdocs_type_environment_id'
     ];
 
     /**
@@ -212,9 +212,9 @@ class Company extends Model
                 'code' => '0',
             ]);*/
     }
-    
+
     /**
-     * 
+     *
      * No incluir las relaciones iniciales asociadas al modelo
      *
      * @param $query

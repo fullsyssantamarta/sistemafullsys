@@ -11,9 +11,9 @@ use Modules\Factcolombia1\Http\Requests\Tenant\{
     ConfigurationServiceCompanyRequest,
     ConfigurationServiceSoftwareCompanyRequest,
     ConfigurationServiceSoftwarePayrollRequest,
+    ConfigurationServiceSoftwareEqDocsRequest,
     ConfigurationServiceCertificateCompanyRequest,
     ConfigurationServiceResolutionCompanyRequest
-
 };
 use Illuminate\Http\Request;
 use Modules\Factcolombia1\Configuration;
@@ -1068,7 +1068,6 @@ class ConfigurationController extends Controller
      */
     public function storeServiceSoftwarePayroll(ConfigurationServiceSoftwarePayrollRequest $request)
     {
-
         $company = ServiceCompany::firstOrFail();
         $connection_api = (new HttpConnectionApi($company->api_token));
         $send_request_to_api = $connection_api->sendRequestToApi('ubl2.1/config/softwarepayroll', $request->all());
@@ -1088,9 +1087,32 @@ class ConfigurationController extends Controller
                 return $connection_api->responseMessage(false, 'Error en validacion de datos Api.'.($response_message ? ' - '.$response_message:''));
             }
         }
-
         return $connection_api->responseMessage(false,  'Error en peticion Api.'.($response_message ? ' - '.$response_message:''));
+    }
 
+    /**
+     * Regitrar id y pin sw para documentos equivalentes en api
+     *
+     * @param  mixed $request
+     * @return array
+     */
+    public function storeServiceSoftwareEqDocs(ConfigurationServiceSoftwareEqDocsRequest $request)
+    {
+        $company = ServiceCompany::firstOrFail();
+        $connection_api = (new HttpConnectionApi($company->api_token));
+        $send_request_to_api = $connection_api->sendRequestToApi('ubl2.1/config/softwareeqdocs', $request->all());
+        $response_message = isset($send_request_to_api['message']) ? $send_request_to_api['message'] : null;
+
+        if(isset($send_request_to_api['success'])){
+            if($send_request_to_api['success']){
+                $this->updateServiceCompany($company, $request);
+                return $connection_api->responseMessage(true, $response_message);
+            }
+            else{
+                return $connection_api->responseMessage(false, 'Error en validacion de datos Api.'.($response_message ? ' - '.$response_message:''));
+            }
+        }
+        return $connection_api->responseMessage(false,  'Error en peticion Api.'.($response_message ? ' - '.$response_message:''));
     }
 
     private function updateServiceCompany($company, $request)
@@ -1098,7 +1120,9 @@ class ConfigurationController extends Controller
         $company->test_set_id_payroll = $request->test_set_id_payroll;
         $company->pin_software_payroll = $request->pinpayroll;
         $company->id_software_payroll = $request->idpayroll;
+        $company->test_set_id_eqdocs = $request->test_set_id_eqdocs;
+        $company->pin_software_eqdocs = $request->pineqdocs;
+        $company->id_software_eqdocs = $request->ideqdocs;
         $company->save();
     }
-
 }

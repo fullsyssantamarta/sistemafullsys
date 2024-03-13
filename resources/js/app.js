@@ -118,17 +118,13 @@ Vue.component('tenant-configuration-resolution', require('@viewsModuleProColombi
 Vue.component('tenant-configuration-documents', require('@viewsModuleProColombia/tenant/configuration/Documents.vue'));
 Vue.component('tenant-configuration-change-ambient', require('@viewsModuleProColombia/tenant/configuration/Production.vue'))
 Vue.component('tenant-configuration-software-payroll', require('@viewsModuleProColombia/tenant/configuration/SoftwarePayroll.vue'));
-
-
+Vue.component('tenant-configuration-software-eqdocs', require('@viewsModuleProColombia/tenant/configuration/SoftwareEqDocs.vue'));
 
 //colombia
 
-
 Vue.component('tenant-dashboard-index', require('../../modules/Dashboard/Resources/assets/js/views/index.vue'));
-
 Vue.component('x-graph', require('./components/graph/src/Graph.vue'));
 Vue.component('x-graph-line', require('./components/graph/src/GraphLine.vue'));
-
 Vue.component('tenant-companies-form', require('./views/tenant/companies/form.vue'));
 Vue.component('tenant-companies-logo', require('./views/tenant/companies/logo.vue'));
 Vue.component('tenant-certificates-index', require('./views/tenant/certificates/index.vue'));
