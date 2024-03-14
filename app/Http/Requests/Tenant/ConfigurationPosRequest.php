@@ -22,6 +22,7 @@ class ConfigurationPosRequest extends FormRequest
             'date_end' => ['required'],
             'from' => ['required'],
             'to' => ['required'],
+            'electronic' => ['required'],
         ];
     }
 }

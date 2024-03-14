@@ -36,7 +36,9 @@ use App\Models\Tenant\ConfigurationPos;
 use App\Http\Requests\Tenant\ConfigurationPosRequest;
 use Modules\Factcolombia1\Models\TenantService\AdvancedConfiguration;
 use App\Http\Resources\Tenant\PosCollection;
-
+use Modules\Factcolombia1\Models\TenantService\{
+    Company as ServiceCompany
+};
 
 class PosController extends Controller
 {
@@ -71,29 +73,72 @@ class PosController extends Controller
     public function records()
     {
         return [
-            'data' =>  ConfigurationPos::all()
+            'data' => ConfigurationPos::all()
         ];
     }
 
     public function configuration_store(ConfigurationPosRequest $request)
     {
-       // $id = null;
+        try{
+            $configuration = ConfigurationPos::updateOrCreate(['resolution_number' => $request->resolution_number, 'prefix' => $request->prefix], $request->all());
+            if($request->electronic === true){
+                $company = ServiceCompany::firstOrFail();
+                $base_url = config("tenant.service_fact", "");
+                $ch3 = curl_init("{$base_url}ubl2.1/config/resolution");
+                $data = [
+                    "delete_all_type_resolutions" => false,
+                    "type_document_id" => 15,
+                    "prefix" => $request->prefix,
+                    "resolution" => $request->resolution_number,
+                    "resolution_date" => Carbon::parse($request->resolution_date)->toDateString(),
+                    "from" => $request->from,
+                    "to" => $request->to,
+                    'date_from' => Carbon::parse($request->date_from)->toDateString(),
+                    'date_to' => Carbon::parse($request->date_end)->toDateString(),
+                ];
 
-        /*$configuration_f = ConfigurationPos::first();
-        if($configuration_f)
-        {
-            $id=$configuration_f->id;
-        }*/
+                $data_resolution = json_encode($data);
+                curl_setopt($ch3, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch3, CURLOPT_CUSTOMREQUEST, "PUT");
+                curl_setopt($ch3, CURLOPT_POSTFIELDS,($data_resolution));
+                curl_setopt($ch3, CURLOPT_SSL_VERIFYHOST, 0);
+                curl_setopt($ch3, CURLOPT_SSL_VERIFYPEER, 0);
+                curl_setopt($ch3, CURLOPT_HTTPHEADER, array(
+                    'Content-Type: application/json',
+                    'Accept: application/json',
+                    "Authorization: Bearer {$company->api_token}"
+                ));
 
-        $configuration = ConfigurationPos::updateOrCreate(['resolution_number' => $request->resolution_number, 'prefix' => $request->prefix], $request->all());
-       // $configuration->fill($request->all());
-       // $configuration->save();
+                $response_resolution = curl_exec($ch3);
+                $err = curl_error($ch3);
+                curl_close($ch3);
+                $respuesta = json_decode($response_resolution);
 
-        return [
-            'success' => true,
-            'message' => 'Cambios guardados correctamente.',
-        ];
+                //return json_encode($respuesta);
 
+                if($err) {
+                    $r = ConfigurationPos::where('resolution_number', $request->resolution_number)->where('prefix', $request->prefix)->first();
+                    $r->forceDelete();
+                    return [
+                        'success' => false,
+                        'message' => "Error en peticion Api Resolution.",
+                    ];
+                }
+            }
+
+            return [
+                'success' => true,
+                'message' => 'Cambios guardados correctamente.',
+            ];
+        }
+        catch (\Exception $e){
+            $r = ConfigurationPos::where('resolution_number', $request->resolution_number)->where('prefix', $request->prefix)->first();
+            $r->forceDelete();
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
     }
 
     public function index_full()

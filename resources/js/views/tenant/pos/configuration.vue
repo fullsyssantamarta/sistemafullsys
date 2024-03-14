@@ -34,6 +34,16 @@
                         label="Hasta">
                     </el-table-column>
                     <el-table-column
+                        prop="electronic"
+                        label="POS Electronico">
+                        <template slot-scope="scope">
+                            <el-checkbox
+                                v-model="scope.row.electronic"
+                                :disabled="true"
+                            ></el-checkbox>
+                        </template>
+                    </el-table-column>
+                    <el-table-column
                         fixed="right"
                         label="Operaciones"
                         width="120">
@@ -156,12 +166,22 @@
                                     <small class="form-control-feedback" v-if="errors.to" v-text="errors.to[0]"></small>
                                 </div>
                             </div>
+
+                            <div class="col-lg-4">
+                                <div class="form-group" :class="{'has-danger': errors.electronic}">
+                                    <label class="control-label">POS Electronico</label><br>
+                                    <el-checkbox  v-model="resolution.electronic"></el-checkbox>
+                                    <small class="form-control-feedback" v-if="errors.electronic" v-text="errors.electronic[0]"></small>
+                                </div>
+                            </div>
                         </div>
                         <div class="form-actions text-right mt-4">
+                            <el-button type="default " @click="clearFields()">Limpiar campos</el-button>
                             <el-button
                                 type="primary"
                                 :loading="loadingResolution"
-                                @click="validateResolution()">Guardar</el-button>
+                                @click="validateResolution()">Guardar
+                            </el-button>
                         </div>
                     </div>
                 </form>
@@ -184,10 +204,13 @@
                 { id: 5, name: "Nota Débito" },
                 { id: 6, name: "ZIP" }
             ],
+
             errors: {
             },
+
             resolution: {
             },
+
             loadingResolution: false,
             records: []
         }),
@@ -221,6 +244,7 @@
                 this.$http.get(`/pos/records`, this.resolution)
                     .then(response => {
                         this.records = response.data.data
+                        console.log(this.records)
                     })
                     .catch(error => {
 
@@ -228,8 +252,8 @@
                     .then(() => {
                     })
             },
-            initForm() {
 
+            initForm() {
                 this.resolution = {
                     prefix : '',
                     resolution_number: '',
@@ -237,7 +261,8 @@
                     date_from: '',
                     date_end: '',
                     from: '',
-                    to: ''
+                    to: '',
+                    electronic: true
                 }
             },
 
@@ -264,8 +289,8 @@
                         //this.initForm()
                     })
             },
-            selection(row)
-            {
+
+            selection(row) {
                 this.resolution = {
                     prefix : row.prefix,
                     resolution_number: row.resolution_number,
@@ -273,8 +298,13 @@
                     date_from: row.date_from,
                     date_end: row.date_end,
                     from: row.from,
-                    to: row.to
+                    to: row.to,
+                    electronic: row.electronic
                 }
+            },
+
+            clearFields(){
+                this.initForm()
             }
         }
     };

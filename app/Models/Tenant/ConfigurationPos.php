@@ -13,11 +13,12 @@ class ConfigurationPos extends ModelTenant
         'date_from',
         'date_end',
         'from',
-        'to'
+        'to',
+        'electronic'
     ];
 
     protected $casts = [
         'resolution_date' => 'date',
+        'electronic' => 'boolean',
     ];
-
 }
