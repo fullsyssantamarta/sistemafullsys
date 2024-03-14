@@ -1065,7 +1065,13 @@
 
                                 <li class="{{($path[0] === 'co-radian-events' && $path[1] == 'manage') ? 'nav-active' : ''}}">
                                     <a class="nav-link" href="{{route('tenant.co-radian-events-manage.index')}}">
-                                        Gestionar eventos
+                                        Gestionar eventos Doc. Procesados
+                                    </a>
+                                </li>
+
+                                <li class="{{($path[0] === 'co-radian-events' && $path[1] == 'manage') ? 'nav-active' : ''}}">
+                                    <a class="nav-link" href="{{route('tenant.co-radian-cufe.index')}}">
+                                        Gestionar eventos con CUFE
                                     </a>
                                 </li>
 

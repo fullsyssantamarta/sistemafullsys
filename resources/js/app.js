@@ -333,6 +333,7 @@ Vue.component('tenant-support-documents-form-adjust-note', require('@viewsModule
 Vue.component('tenant-co-radian-event-reception-index', require('@viewsModuleRadianEvent/reception/index.vue'));
 Vue.component('tenant-co-radian-event-manage-index', require('@viewsModuleRadianEvent/manage/index.vue'));
 Vue.component('tenant-co-radian-event-process-emails-index', require('@viewsModuleRadianEvent/process-emails/index.vue'));
+Vue.component('tenant-co-radian-event-radiancufe-index', require('@viewsModuleRadianEvent/manage/radiancufe.vue'));
 
 
 // advanced-configuration
