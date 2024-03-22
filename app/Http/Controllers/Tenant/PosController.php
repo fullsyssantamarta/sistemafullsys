@@ -57,6 +57,8 @@ class PosController extends Controller
         if(!$configuration_pos_document) return redirect()->route('tenant.pos.configuration');*/
 
         $configuration = Configuration::first();
+        $configuration_pos = ConfigurationPos::where('id', $cash->resolution_id)->firstOrFail();
+        $configuration->configuration_pos = $configuration_pos;
 
         $company = Company::select('soap_type_id')->first();
         $soap_company  = $company->soap_type_id;
@@ -333,7 +335,7 @@ class PosController extends Controller
      */
     private function getSaleUnitPriceWithTax($item, $decimal_quantity)
     {
-        return number_format($item->sale_unit_price * ( 1 + $item->tax->rate / $item->tax->conversion ), $decimal_quantity, ".","");
+        return number_format($item->sale_unit_price * ( 1 + ($item->tax->rate ?? 0) / ($item->tax->conversion ?? 1) ), $decimal_quantity, ".","");
     }
 
     public static function calculateSalePrice($item)

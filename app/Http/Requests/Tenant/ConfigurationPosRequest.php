@@ -23,6 +23,8 @@ class ConfigurationPosRequest extends FormRequest
             'from' => ['required'],
             'to' => ['required'],
             'electronic' => ['required'],
+            'plate_number' => ['nullable', 'required_if:electronic,true'],
+            'cash_type' => ['nullable', 'required_if:electronic,true'],
         ];
     }
 }

@@ -44,6 +44,14 @@
                         </template>
                     </el-table-column>
                     <el-table-column
+                        prop="plate_number"
+                        label="Serial Caja">
+                    </el-table-column>
+                    <el-table-column
+                        prop="cash_type"
+                        label="Tipo Caja">
+                    </el-table-column>
+                    <el-table-column
                         fixed="right"
                         label="Operaciones"
                         width="120">
@@ -56,7 +64,6 @@
                         </template>
                     </el-table-column>
                 </el-table>
-
             </div>
             <div class="resolution">
                 <form autocomplete="off">
@@ -175,6 +182,33 @@
                                 </div>
                             </div>
                         </div>
+
+                        <div class="row mt-4" v-if="resolution.electronic">
+                            <div class="col-lg-4">
+                                <div class="form-group" :class="{'has-danger': errors.plate_number}">
+                                    <label class="control-label">Serial Caja</label>
+                                    <el-input
+                                        v-model="resolution.plate_number"
+                                        placeholder="Introduzca el numero serial de la caja."
+                                        :disabled="false">
+                                    </el-input>
+                                    <small class="form-control-feedback" v-if="errors.plate_number" v-text="errors.plate_number[0]"></small>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-4">
+                                <div class="form-group" :class="{'has-danger': errors.cash_type}">
+                                    <label class="control-label">Tipo Caja</label>
+                                    <el-input
+                                        v-model="resolution.cash_type"
+                                        placeholder="Digite el tipo de caja."
+                                        :disabled="false">
+                                    </el-input>
+                                    <small class="form-control-feedback" v-if="errors.cash_type" v-text="errors.cash_type[0]"></small>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="form-actions text-right mt-4">
                             <el-button type="default " @click="clearFields()">Limpiar campos</el-button>
                             <el-button
@@ -262,7 +296,9 @@
                     date_end: '',
                     from: '',
                     to: '',
-                    electronic: true
+                    electronic: true,
+                    plate_number: '',
+                    cash_type: '',
                 }
             },
 
@@ -272,6 +308,8 @@
                     .then(response => {
                         if (response.data.success) {
                             this.$message.success(response.data.message)
+                            if(this.resolution.electronic)
+                                localStorage.setItem("plate_number", this.resolution.plate_number);
                             this.getRecords()
                         } else {
                             this.$message.error(response.data.message)
@@ -299,7 +337,9 @@
                     date_end: row.date_end,
                     from: row.from,
                     to: row.to,
-                    electronic: row.electronic
+                    electronic: row.electronic,
+                    plate_number: row.plate_number,
+                    cash_type: row.cash_type
                 }
             },
 

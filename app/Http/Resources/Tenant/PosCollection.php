@@ -76,7 +76,6 @@ class PosCollection extends ResourceCollection
      */
     private function getSaleUnitPriceWithTax($item, $decimal_quantity)
     {
-        return number_format($item->sale_unit_price * ( 1 + $item->tax->rate / $item->tax->conversion ), $decimal_quantity, ".","");
+        return number_format($item->sale_unit_price * ( 1 + ($item->tax->rate ?? 0) / ($item->tax->conversion ?? 1)), $decimal_quantity, ".","");
     }
-
 }

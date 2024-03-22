@@ -435,8 +435,8 @@ class ConfigurationController extends Controller
     }
 
 
-    public function changeEnvironmentProduction(string $environment){
-
+    public function changeEnvironmentProduction(string $environment)
+    {
         $company = ServiceCompany::firstOrFail();
         $base_url = config("tenant.service_fact", "");
 //        $base_url = env("SERVICE_FACT", "");
@@ -459,16 +459,14 @@ class ConfigurationController extends Controller
         $err = curl_error($ch);
         $respuesta = json_decode($response_change);
 
-        if($err)
-        {
+        if($err){
             return [
                 'message' => "Error en peticion Api.",
                 'success' => false,
             ];
         }
         else{
-            if(property_exists($respuesta, 'message'))
-            {
+            if(property_exists($respuesta, 'message')){
                 return $this->updateTypeEnvironmentCompany($environment, $company);
             }
             else{
@@ -513,6 +511,15 @@ class ConfigurationController extends Controller
                 $message = 'Se cambio satisfactoriamente a HABILITACIÓN.';
                 break;
 
+            case 'eqdocsP':
+                $company->eqdocs_type_environment_id = 1;
+                $message = 'Se cambio satisfactoriamente a ambiente de PRODUCCIÓN.';
+                break;
+
+            case 'eqdocsH':
+                $company->eqdocs_type_environment_id = 2;
+                $message = 'Se cambio satisfactoriamente a HABILITACIÓN.';
+                break;
         }
 
         $company->save();
@@ -555,12 +562,19 @@ class ConfigurationController extends Controller
                     "payroll_type_environment_id" => 2,
                 ];
                 break;
+            case 'eqdocsP':
+                $data = [
+                    "eqdocs_type_environment_id" => 1,
+                ];
+                break;
+            case 'eqdocsH':
+                $data = [
+                    "eqdocs_type_environment_id" => 2,
+                ];
+                break;
         }
-
         return $data;
-
     }
-
 
     public function queryTechnicalKey(){
         $company = ServiceCompany::firstOrFail();
@@ -587,16 +601,14 @@ class ConfigurationController extends Controller
         $err = curl_error($ch);
         $respuesta = json_decode($response_query);
 
-        if($err)
-        {
+        if($err){
             return [
                 'message' => "Error en peticion Api.",
                 'success' => false,
             ];
         }
         else{
-            if(property_exists($respuesta, 'ResponseDian'))
-            {
+            if(property_exists($respuesta, 'ResponseDian')){
 //                $message = $respuesta->ResponseDian->Envelope->Body->GetNumberingRangeResponse->GetNumberingRangeResult->OperationDescription;
                 $message = $respuesta->ResponseDian;
 //                if($respuesta->ResponseDian->Envelope->Body->GetNumberingRangeResponse->GetNumberingRangeResult->OperationCode == '301'){
@@ -615,7 +627,7 @@ class ConfigurationController extends Controller
             }
             else{
                 return [
-                    'message' => "Error en validacion de datos Api.",
+                    'message' => "Error en validacion de datos Api."." - ".$respuesta->message,
                     'success' => false,
                 ];
             }

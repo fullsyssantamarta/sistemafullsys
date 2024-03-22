@@ -14,7 +14,9 @@ class ConfigurationPos extends ModelTenant
         'date_end',
         'from',
         'to',
-        'electronic'
+        'electronic',
+        'plate_number',
+        'cash_type',
     ];
 
     protected $casts = [

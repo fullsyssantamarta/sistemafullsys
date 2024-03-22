@@ -20,15 +20,12 @@ class DocumentPos extends ModelTenant
         'establishment',
         'soap_type_id',
         'state_type_id',
-
         'prefix',
-
         'date_of_issue',
         'time_of_issue',
         'customer_id',
         'customer',
         'exchange_rate_sale',
-
         'total',
         'filename',
         'total_canceled',
@@ -43,7 +40,6 @@ class DocumentPos extends ModelTenant
         'number',
         'paid',
         'license_plate',
-
         //co
         'currency_id',
         'sale',
@@ -51,7 +47,7 @@ class DocumentPos extends ModelTenant
         'total_tax',
         'subtotal',
         'total_discount',
-
+        'electronic'
     ];
 
     protected $casts = [
@@ -209,9 +205,9 @@ class DocumentPos extends ModelTenant
 
 
     /**
-     * 
+     *
      * Obtener el total del documento
-     * 
+     *
      * Usado en:
      * Cash - Cierre de caja chica/Reporte
      *
@@ -221,18 +217,18 @@ class DocumentPos extends ModelTenant
     {
         return ($this->state_type_id === '11') ? 0 : $this->total;
     }
-    
+
     public function getDocumentTypeDescription()
     {
         return 'FACT POS';
     }
-    
+
     /**
      * Obetener arreglo con los datos necesarios para mostrar en vista/reporte
      *
      * Usado en:
      * DocumentPosCollection - Reportes
-     * 
+     *
      * @return array
      */
     public function getRowResource()
@@ -251,16 +247,16 @@ class DocumentPos extends ModelTenant
             'document_type_description' => $this->getDocumentTypeDescription(),
         ];
     }
-    
+
 
     public function cash_document()
     {
         return $this->hasOne(CashDocument::class);
     }
 
-    
+
     /**
-     * 
+     *
      * Obtener resolucion de la caja asociada al documento
      *
      * @return ConfigurationPos
@@ -268,14 +264,14 @@ class DocumentPos extends ModelTenant
     public function getCashResolution()
     {
         $resolution = null;
-        
+
         if($this->cash_document->cash->resolution ?? false)
         {
             // para documentos registrados
             $resolution = $this->cash_document->cash->resolution;
         }
         else
-        {   
+        {
             // para documentos en proceso de creacion
             $resolution = $this->getResolutionFromCurrentCash();
         }
@@ -283,9 +279,9 @@ class DocumentPos extends ModelTenant
         return $resolution;
     }
 
-    
+
     /**
-     * 
+     *
      * Buscar caja actual asociada al pos y retornar resolución
      *
      * @return ConfigurationPos
@@ -299,9 +295,9 @@ class DocumentPos extends ModelTenant
 
 
     /**
-     * 
+     *
      * Filtrar por cliente
-     * 
+     *
      * @param  Builder $query
      * @param  int $customer_id
      * @return Builder
@@ -313,11 +309,11 @@ class DocumentPos extends ModelTenant
         return $query;
     }
 
-    
+
     /**
-     * 
+     *
      * Filtrar por usuario
-     * 
+     *
      * @param  Builder $query
      * @param  int $user_id
      * @return Builder
@@ -329,11 +325,11 @@ class DocumentPos extends ModelTenant
         return $query;
     }
 
-    
+
     /**
-     * 
+     *
      * Filtrar por rango de tiempo
-     * 
+     *
      * @param  Builder $query
      * @param  string $start_time
      * @param  string $end_time
@@ -343,7 +339,7 @@ class DocumentPos extends ModelTenant
     {
         $first_second = '00';
         $last_second = '59';
-        
+
         if($start_time) $query->where('time_of_issue', '>=', "{$start_time}:{$first_second}");
 
         if($end_time) $query->where('time_of_issue', '<=', "{$end_time}:{$last_second}");
@@ -351,11 +347,11 @@ class DocumentPos extends ModelTenant
         return $query;
     }
 
-    
+
     /**
-     * 
+     *
      * Filtrar por rango de fecha
-     * 
+     *
      * @param  Builder $query
      * @param  string $start_date
      * @param  string $end_date
@@ -366,9 +362,9 @@ class DocumentPos extends ModelTenant
         return $query->whereBetween('date_of_issue', [$start_date, $end_date]);
     }
 
-    
+
     /**
-     * 
+     *
      * Campos base para calculos
      *
      * @param  Builder $query
@@ -416,7 +412,7 @@ class DocumentPos extends ModelTenant
 
 
     /**
-     * 
+     *
      * Filtros para reporte libro ventas
      *
      * @param  Builder $query
@@ -435,7 +431,7 @@ class DocumentPos extends ModelTenant
                         ->latest();
     }
 
-        
+
     /**
      * Total neto
      *
@@ -448,7 +444,7 @@ class DocumentPos extends ModelTenant
 
 
     /**
-     * 
+     *
      * Reporte libro ventas
      *
      * @return array
@@ -469,7 +465,7 @@ class DocumentPos extends ModelTenant
 
 
     /**
-     * 
+     *
      * Reporte libro ventas resumido
      *
      * @return array
@@ -485,7 +481,7 @@ class DocumentPos extends ModelTenant
 
 
     /**
-     * 
+     *
      * Totales por impuestos
      *
      * @param  int $tax_id
@@ -510,7 +506,7 @@ class DocumentPos extends ModelTenant
         ];
     }
 
-    
+
     /**
      * Filtrar items por impuesto
      *
@@ -522,9 +518,9 @@ class DocumentPos extends ModelTenant
         return $this->items->where('tax_id', $tax_id);
     }
 
-    
+
     /**
-     * 
+     *
      * Obtener total exento del documento
      *
      * @return float
