@@ -12,21 +12,12 @@ class Company extends Model
 
     protected $table = 'co_service_companies';
     /**
-     * With default model.
-     *
-     * @var array
-     */
-    /*protected $with = [
-        'software', 'certificate', 'resolutions', 'language', 'tax', 'country', 'type_document_identification', 'type_operation', 'type_environment', 'type_currency', 'type_organization', 'municipality', 'type_liability', 'type_regime', 'send',
-    ];*/
-
-    /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'user_id', 'identification_number', 'dv', 'language_id', 'tax_id', 'type_environment_id', 'type_operation_id', 'type_document_identification_id', 'country_id', 'department_id', 'type_currency_id', 'type_organization_id', 'type_regime_id', 'type_liability_id', 'municipality_id', 'merchant_registration', 'address', 'phone',
+        'user_id', 'identification_number', 'dv', 'language_id', 'tax_id', 'type_environment_id', 'type_operation_id', 'type_document_identification_id', 'country_id', 'department_id', 'type_currency_id', 'type_organization_id', 'type_regime_id', 'type_liability_id', 'municipality_id', 'merchant_registration', 'address', 'phone', 'api_token',
     ];
 
     /**
@@ -38,33 +29,6 @@ class Company extends Model
         'software', 'certificate', 'resolutions', 'language', 'tax', 'country', 'type_document_identification', 'type_operation', 'type_environment', 'type_currency', 'type_organization', 'municipality', 'type_liability', 'type_regime',
     ];
 
-    /**
-     * Get the software record associated with the company.
-     */
-   /* public function software()
-    {
-        return $this->hasOne(Software::class);
-    }*/
-
-    /**
-     * Get the certificate record associated with the company.
-     */
-    /*public function certificate()
-    {
-        return $this->hasOne(Certificate::class);
-    }*/
-
-    /**
-     * Get the resolutions record associated with the company.
-     */
-    /*public function resolutions()
-    {
-        return $this->hasMany(Resolution::class);
-    }*/
-
-    /**
-     * Get the language that owns the company.
-     */
     public function language()
     {
         return $this->belongsTo(Language::class)
@@ -192,12 +156,7 @@ class Company extends Model
             ]);
     }
 
-    /**
-     * Get the send that owns the company.
-     */
-    /*public function send()
-    {
-        return $this->hasMany(Send::class)
-            ->where('year', now()->format('y'));
-    }*/
+    public function api_token(){
+        return $this->attributes['api_token'];
+    }
 }

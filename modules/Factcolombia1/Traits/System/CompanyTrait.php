@@ -29,7 +29,6 @@ trait CompanyTrait
             'economic_activity_code' => $request->economic_activity_code,
             'ica_rate' => $request->ica_rate,
             'type_identity_document_id' => $request->type_document_identification_id,
-
         ]);
 
         $companyservice = ServiceCompany::create([
@@ -51,16 +50,13 @@ trait CompanyTrait
             'merchant_registration' => $request->merchant_registration,
             'address' => $request->address,
             'phone' => $request->phone,
+            'api_token' => $request->api_token,
         ]);
 
-
         return $company;
-
     }
 
-
     public function createCompanyApiDian($request) {
-
         $base_url = config('tenant.service_fact');
         $number = $request->identification_number;
         $dv = $request->dv;

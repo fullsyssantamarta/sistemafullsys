@@ -196,61 +196,94 @@ class DocumentPosController extends Controller
 
     public function store(Request $request)
     {
-
-
         DB::connection('tenant')->transaction(function () use ($request) {
-
             $data = $this->mergeData($request);
-
-
+            $customer = Person::where('number', $data['customer']['number'])->where('type', 'customers')->firstOrFail();
+            $data_invoice_pos = [
+                'number' => $data['number'],
+                'type_document_id' => 15,
+                'date' => $data['date_of_issue'],
+	            'time' => $data['time_of_issue'],
+                'postal_zone_code' => '11001',
+                'resolution_number' => $data['resolution_number'],
+                'prefix' => $data['prefix'],
+                'notes' => null,
+                'sendmail' => true,
+                'sendmailtome' => true,
+                'software_manufacturer' => [
+                    'name' => env('APP_OWNER_NAME'),
+                    'business_name' => env('APP_BUSINESS_NAME'),
+                    'software_name' => env('APP_NAME'),
+                ],
+                'buyer_benefits' => [
+                    'code' => $data['customer']['number'],
+                    'name' => $data['customer']['name'],
+                    'points' => "0",
+                ],
+                'cash_information' => [
+                    'plate_number' => $data['plate_number'],
+                    'location' => auth()->user()->establishment->address,
+                    'cashier' => auth()->user()->name,
+                    'cash_type' => $data['cash_type'],
+                    'sales_code' => $data['prefix'],
+                    'subtotal' => $data['sale'],
+                ],
+                'customer' => [
+                    'identification_number' => $data['customer']['number'],
+                    'dv' => $data['customer']['dv'],
+                    'name' => $data['customer']['name'],
+                    'phone' => $data['customer']['telephone'],
+                    'address' => $data['customer']['address'],
+                    'email' => $data['customer']['email'],
+                    'merchant_registration' => "0000000-00",
+                    'type_document_identification_id' => $customer->identity_document_type_id,
+                    'type_organization_id' => $customer->type_person_id,
+                    'type_liability_id' => $customer->type_obligation_id,
+                    'municipality_id_fact' => $customer->city_id,
+                    'type_regime_id' => $customer->type_regime_id,
+                ],
+            ];
+            \Log::debug(json_encode($data_invoice_pos));
+            return [
+                'success' => false,
+                'data' => [
+                    'id' => null,
+                ],
+            ];
             $this->sale_note =  DocumentPos::create($data);
-
-
             // $this->sale_note->payments()->delete();
             $this->deleteAllPayments($this->sale_note->payments);
-
-
             foreach($data['items'] as $row) {
-
                 $item_id = isset($row['id']) ? $row['id'] : null;
                 $sale_note_item = DocumentPosItem::firstOrNew(['id' => $item_id]);
-
                 if(isset($row['item']['lots'])){
                     $row['item']['lots'] = isset($row['lots']) ? $row['lots']:$row['item']['lots'];
                 }
-
                 $sale_note_item->fill($row);
                 $sale_note_item->document_pos_id = $this->sale_note->id;
                 $sale_note_item->save();
-
                 if(isset($row['lots'])){
-
                     foreach($row['lots'] as $lot) {
                         $record_lot = ItemLot::findOrFail($lot['id']);
                         $record_lot->has_sale = true;
                         $record_lot->update();
                     }
                 }
-
                 if(isset($row['IdLoteSelected']))
                 {
                     $lot = ItemLotsGroup::find($row['IdLoteSelected']);
                     $lot->quantity = ($lot->quantity - $row['quantity']);
                     $lot->save();
                 }
-
             }
 
             //pagos
             // foreach ($data['payments'] as $row) {
             //     $this->sale_note->payments()->create($row);
             // }
-
             $this->savePayments($this->sale_note, $data['payments']);
-
             $this->setFilename();
             $this->createPdf($this->sale_note,"ticket", $this->sale_note->filename);
-
         });
 
         return [
@@ -259,7 +292,6 @@ class DocumentPosController extends Controller
                 'id' => $this->sale_note->id,
             ],
         ];
-
     }
 
 
@@ -289,31 +321,21 @@ class DocumentPosController extends Controller
     public function mergeData($inputs)
     {
         $this->company = Company::active();
-
         $config = ConfigurationPos::first();
-
         $user = auth()->user();
-
         $cash = Cash::where('state', 1)
-        ->where('user_id', $user->id)
-        ->first();
-
+                    ->where('user_id', $user->id)
+                    ->first();
         $config =  $cash->resolution;
-
-        if(!$config)
-        {
+        if(!$config){
             throw new Exception('Resolución no establecida en caja chica actual.');
         }
-
         $number = null;
-
         $document = DocumentPos::select('id', 'number')
-            ->where('prefix', $config->prefix)
-            ->orderBy('id', 'desc')
-            ->first();
-
-            $number = ($document) ? (int)$document->number + 1 : 1;
-
+                                ->where('prefix', $config->prefix)
+                                ->orderBy('id', 'desc')
+                                ->first();
+        $number = ($document) ? (int)$document->number + 1 : 1;
         $values = [
             //'automatic_date_of_issue' => $automatic_date_of_issue,
             'user_id' => auth()->id(),
@@ -323,14 +345,14 @@ class DocumentPosController extends Controller
             'soap_type_id' => $this->company->soap_type_id,
             'state_type_id' => '01',
             'series' => $config->prefix,
+            'resolution_number' => $config->resolution_number,
+            'plate_number' => $config->plate_number,
+            'cash_type' => $config->cash_type,
             'number' => $number,
             'prefix' => $config->prefix,
         ];
-
         unset($inputs['series_id']);
-
         $inputs->merge($values);
-
         return $inputs->all();
     }
 

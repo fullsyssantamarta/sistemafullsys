@@ -14,7 +14,7 @@ class CompanyRequest extends FormRequest
     public function authorize() {
         return true;
     }
-    
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -48,6 +48,7 @@ class CompanyRequest extends FormRequest
             'dv' => 'required|numeric|digits_between:1,9|max:9',
             'ica_rate'=> 'required',
             'economic_activity_code'=> 'required',
+            'api_token' => 'nullable|string',
         ];
     }
 }

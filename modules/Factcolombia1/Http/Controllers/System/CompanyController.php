@@ -58,13 +58,10 @@ use Modules\Factcolombia1\Http\Resources\System\{
 
 class CompanyController extends Controller
 {
-
     use CompanyTrait;
-
 
     public function store(CompanyRequest $request) {
         $response = $this->createCompanyApiDian($request);
-
         if(!property_exists( $response, 'password' ) || !property_exists( $response, 'token' )){
             return [
                 'message' => "Error al registrar Compañía en ApiDian",
@@ -72,12 +69,11 @@ class CompanyController extends Controller
                 'success' => false
             ];
         }
-
+        $request->api_token = $response->token;
 
         DB::connection('system')->beginTransaction();
 
         try {
-
             $subDom = strtolower($request->input('subdomain'));
             $uuid = config('tenant.prefix_database').'_'.$subDom;
             $fqdn = $subDom.'.'.config('tenant.app_url_base');
@@ -213,7 +209,6 @@ class CompanyController extends Controller
         $tenancy = app(Environment::class);
         $tenancy->tenant($company->hostname->website);
         $company->modules = DB::connection('tenant')->table('module_user')->where('user_id', 1)->get();
-
         return new CompanyResource($company);
     }
 
@@ -236,7 +231,6 @@ class CompanyController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function update(CompanyUpdateRequest $request) {
-
         $response = $this->createCompanyApiDian($request);
 
         if(!property_exists( $response, 'password' ) || !property_exists( $response, 'token' )){
@@ -254,13 +248,11 @@ class CompanyController extends Controller
             'limit_users' => $request->limit_users,
             'economic_activity_code' => $request->economic_activity_code,
             'ica_rate' => $request->ica_rate
-
         ]);
 
         $tenancy = app(Environment::class);
         $tenancy->tenant($company->hostname->website);
         DB::connection('tenant')->table('configurations')->where('id', 1)->update(['limit_users' => $company->limit_users]);
-
 
         ServiceCompany::where('identification_number', $company->identification_number)->first()
             ->update(
@@ -274,6 +266,7 @@ class CompanyController extends Controller
                     'address' => $request->address,
                     'phone' => $request->phone,
                     'type_liability_id' => $request->type_liability_id,
+                    'api_token' => $response->token,
                 ]
             );
 
@@ -294,7 +287,6 @@ class CompanyController extends Controller
                     'password' => bcrypt($request->password),
                 ]);
         }
-
 
         TenantServiceCompany::firstOrFail()
             ->update(
@@ -340,12 +332,10 @@ class CompanyController extends Controller
         DB::connection('tenant')->table('module_user')->insert($array_modules);
         //modules
 
-
         return [
             'message' => "Se actualizo con éxito la compañía {$company->name}.",
             'success' => true
         ];
-
     }
 
     /**

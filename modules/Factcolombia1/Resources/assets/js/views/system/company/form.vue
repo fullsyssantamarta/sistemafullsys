@@ -29,7 +29,6 @@
                         </div>
                     </div>
                     <div class="col-md-6">
-
                         <div class="form-group" :class="{'has-danger': (errors.subdomain || errors.uuid)}">
                             <label class="control-label">Nombre de Subdominio</label>
                             <el-input v-model="form.subdomain" :disabled="form.is_update">
@@ -39,12 +38,17 @@
                             <small class="form-control-feedback" v-if="errors.uuid" v-text="errors.uuid[0]"></small>
                         </div>
                     </div>
-
-
                 </div>
 
                 <div class="row">
+                    <div class="col-md-12 mb-2">
+                        <label class="control-label">API Token</label>
+                        <el-input v-model="form.api_token" :disabled="true"></el-input>
+                        <button type="button" class="btn waves-effect waves-light btn-xs btn-info" @click.prevent="copyToClipboard">Copiar</button>
+                    </div>
+                </div>
 
+                <div class="row">
                     <div class="col-md-12 mb-2">
                         <h4><b>Datos usuario</b></h4>
                     </div>
@@ -69,7 +73,7 @@
                             <small class="form-control-feedback" v-if="errors.password_confirmation" v-text="errors.password_confirmation[0]"></small>
                         </div>
                     </div>
-                    
+
                     <div class="col-md-6">
                         <div  class="form-group" :class="{'has-danger': errors.type_liability_id}">
                             <label class="control-label">Tipo de responsabilidad</label>
@@ -255,7 +259,6 @@
             }
         },
         async created() {
-
             await this.$http.get(`/${this.resource}/tables`)
                 .then(response => {
                     this.modules = response.data.modules
@@ -269,15 +272,29 @@
                 })
 
             await this.initForm()
-
         },
+
         methods: {
+            copyToClipboard() {
+                const el = document.createElement('textarea');
+                el.value = this.form.api_token;
+                el.setAttribute('readonly', '');
+                el.style.position = 'absolute';
+                el.style.left = '-9999px';
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+                console.log('Texto copiado al portapapeles:', this.form.api_token);
+            },
+
             cascade() {
                 this.form.municipality_id = null
                 this.municipalities = this.all_municipalities.filter(
                     x => x.department_id == this.form.department_id
                 )
             },
+
             filterMunicipalities() {
                 this.municipalities = this.all_municipalities.filter(
                     x => x.department_id == this.form.department_id
@@ -287,7 +304,6 @@
 
                 this.errors = {}
                 this.form = {
-
                     id: null,
                     is_update: false,
                     identification_number: null,
@@ -296,7 +312,7 @@
                     email: null,
                     password: null,
                     password_confirmation: null,
-
+                    api_token: null,
                     department_id: null,
                     municipality_id: null,
                     type_organization_id: null,
