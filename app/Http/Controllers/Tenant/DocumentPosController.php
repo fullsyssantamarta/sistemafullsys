@@ -198,7 +198,55 @@ class DocumentPosController extends Controller
     {
         DB::connection('tenant')->transaction(function () use ($request) {
             $data = $this->mergeData($request);
+//            \Log::debug(json_encode($data));
             $customer = Person::where('number', $data['customer']['number'])->where('type', 'customers')->firstOrFail();
+            $tax_totals = [];
+            $invoice_lines = [];
+            foreach($data['items'] as $row){
+                $invoice_lines[] = [
+                    'unit_measure_id' => $row['item']['unit_type']['code'],
+                    'invoiced_quantity' => $row['quantity'],
+                    'line_extension_amount' => $row['total'] - $row['total_tax'],
+                    'free_of_charge_indicator' => false,
+                    'description' => $row['item']['description'],
+                    'notes' => null,
+                    'code' => $row['item']['internal_id'],
+                    'type_item_identification_id' => 4,
+                    'price_amount' => $row['item']['edit_sale_unit_price'],
+                    'base_quantity' => "1"
+                ];
+                if($row['item']['tax'] !== null){
+                    $invoice_lines[count($invoice_lines) - 1]['tax_totals'] = [
+                        [
+                            'tax_id' => $row['item']['tax']['type_tax']['id'],
+                            'tax_amount' => $row['total_tax'],
+                            'taxable_amount' => $row['item']['sale_unit_price'] * $row['quantity'],
+                            'percent' => $row['item']['tax']['rate'],
+                        ]
+                    ];
+                }
+                if($row['item']['tax'] !== null){
+                    $tax_id = $row['item']['tax']['type_tax']['id'];
+                    $percent = $row['item']['tax']['rate'];
+                    $tax_amount = $row['total_tax'];
+                    $taxable_amount = $row['item']['sale_unit_price'];
+                    // Verificar si el elemento con este tax_id ya existe en $tax_totals
+                    if(isset($tax_totals[$tax_id][$percent])) {
+                        // Si ya existe, actualizar los valores
+                        $tax_totals[$tax_id][$percent]['tax_amount'] += $tax_amount;
+                        $tax_totals[$tax_id][$percent]['taxable_amount'] += $taxable_amount;
+                    }
+                    else {
+                    // Si no existe, agregar un nuevo elemento
+                        $tax_totals[] = [
+                            'tax_id' => $tax_id,
+                            'percent' => $percent,
+                            'tax_amount' => $tax_amount,
+                            'taxable_amount' => $taxable_amount,
+                        ];
+                    }
+                }
+            }
             $data_invoice_pos = [
                 'number' => $data['number'],
                 'type_document_id' => 15,
@@ -242,14 +290,28 @@ class DocumentPosController extends Controller
                     'municipality_id_fact' => $customer->city_id,
                     'type_regime_id' => $customer->type_regime_id,
                 ],
-            ];
-            \Log::debug(json_encode($data_invoice_pos));
-            return [
-                'success' => false,
-                'data' => [
-                    'id' => null,
+                'payment_form' => [
+                    'payment_form_id' => 1,
+                    'payment_method_id' => 30,
+                    'payment_due_date' => $data['date_of_issue'],
+                    'duration_measure' => "0",
                 ],
+                'legal_monetary_totals' => [
+                    'line_extension_amount' => $data['sale'],
+                    'tax_exclusive_amount' => $data['sale'],
+                    'tax_inclusive_amount' => $data['total'],
+                    'payable_amount' => $data['total'],
+                ],
+                'tax_totals' => $tax_totals,
+                'invoice_lines' => $invoice_lines,
             ];
+//            \Log::debug(json_encode($data_invoice_pos));
+//            return [
+//                'success' => false,
+//                'data' => [
+//                    'id' => null,
+//                ],
+//            ];
             $this->sale_note =  DocumentPos::create($data);
             // $this->sale_note->payments()->delete();
             $this->deleteAllPayments($this->sale_note->payments);
