@@ -1,7 +1,6 @@
 <?php
 
 
-
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -14,3 +13,16 @@
 */
 
 Route::get('/document-received/{cufe}/{state}', 'Api\Tenant\DocumentReceivedController@documentReceived')->name('document.received');
+
+$currentHostname = app(Hyn\Tenancy\Contracts\CurrentHostname::class);
+
+if ($currentHostname) {
+    Route::domain($currentHostname->fqdn)->group(function() {
+        Route::middleware('auth:api')->group(function() {
+            Route::prefix('co-documents')->group(function() {
+                Route::get('tables', 'Api\Tenant\DocumentController@tables');
+                Route::post('', 'Api\Tenant\DocumentController@store');
+            });
+        });
+    });
+}
