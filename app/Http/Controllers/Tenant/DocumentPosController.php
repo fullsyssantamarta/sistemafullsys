@@ -52,6 +52,9 @@ use Modules\Factcolombia1\Models\Tenant\{
     TypeDocument,
     Tax,
 };
+use Modules\Factcolombia1\Models\TenantService\{
+    Company as ServiceTenantCompany
+};
 use App\Models\Tenant\Document;
 use App\Models\Tenant\DocumentPos;
 use App\Models\Tenant\DocumentPosItem;
@@ -153,10 +156,8 @@ class DocumentPosController extends Controller
             ];
         });
         $payment_destinations = $this->getPaymentDestinations();
-
         $currencies = Currency::all();
         $taxes = $this->table('taxes');
-
 
         return compact('customers', 'establishments','currencies', 'taxes','company','payment_method_types', 'series', 'payment_destinations');
     }
@@ -196,17 +197,21 @@ class DocumentPosController extends Controller
 
     public function store(Request $request)
     {
-        DB::connection('tenant')->transaction(function () use ($request) {
+        DB::connection('tenant')->beginTransaction();
+        try{
+//        DB::connection('tenant')->transaction(function () use ($request) {
             $data = $this->mergeData($request);
+//            \Log::debug($request);
 //            \Log::debug(json_encode($data));
             $customer = Person::where('number', $data['customer']['number'])->where('type', 'customers')->firstOrFail();
             $tax_totals = [];
             $invoice_lines = [];
+            $tax_exclusive_amount = 0;
             foreach($data['items'] as $row){
                 $invoice_lines[] = [
                     'unit_measure_id' => $row['item']['unit_type']['code'],
                     'invoiced_quantity' => $row['quantity'],
-                    'line_extension_amount' => $row['total'] - $row['total_tax'],
+                    'line_extension_amount' => (string)($row['total'] - $row['total_tax']),
                     'free_of_charge_indicator' => false,
                     'description' => $row['item']['description'],
                     'notes' => null,
@@ -220,7 +225,7 @@ class DocumentPosController extends Controller
                         [
                             'tax_id' => $row['item']['tax']['type_tax']['id'],
                             'tax_amount' => $row['total_tax'],
-                            'taxable_amount' => $row['item']['sale_unit_price'] * $row['quantity'],
+                            'taxable_amount' => number_format((float)($row['item']['sale_unit_price'] * $row['quantity']), 2, '.', ''),
                             'percent' => $row['item']['tax']['rate'],
                         ]
                     ];
@@ -230,7 +235,13 @@ class DocumentPosController extends Controller
                     $percent = $row['item']['tax']['rate'];
                     $tax_amount = $row['total_tax'];
                     $taxable_amount = $row['item']['sale_unit_price'];
-                    // Verificar si el elemento con este tax_id ya existe en $tax_totals
+                    if (strpos($taxable_amount, '.') !== false){
+                        // Si ya tiene dos decimales, no es necesario agregar más
+                        $taxable_amount = number_format($taxable_amount, 2, '.', '');
+                    } else {
+                        // Si solo tiene un decimal, agregar un cero adicional
+                        $taxable_amount = number_format($taxable_amount, 1, '.', '') . '0';
+                    }
                     if(isset($tax_totals[$tax_id][$percent])) {
                         // Si ya existe, actualizar los valores
                         $tax_totals[$tax_id][$percent]['tax_amount'] += $tax_amount;
@@ -245,6 +256,7 @@ class DocumentPosController extends Controller
                             'taxable_amount' => $taxable_amount,
                         ];
                     }
+                    $tax_exclusive_amount += $tax_totals[count($tax_totals) - 1]['taxable_amount'];
                 }
             }
             $data_invoice_pos = [
@@ -252,7 +264,7 @@ class DocumentPosController extends Controller
                 'type_document_id' => 15,
                 'date' => $data['date_of_issue'],
 	            'time' => $data['time_of_issue'],
-                'postal_zone_code' => '11001',
+                'postal_zone_code' => '411001',
                 'resolution_number' => $data['resolution_number'],
                 'prefix' => $data['prefix'],
                 'notes' => null,
@@ -298,7 +310,7 @@ class DocumentPosController extends Controller
                 ],
                 'legal_monetary_totals' => [
                     'line_extension_amount' => $data['sale'],
-                    'tax_exclusive_amount' => $data['sale'],
+                    'tax_exclusive_amount' => (string)$tax_exclusive_amount,
                     'tax_inclusive_amount' => $data['total'],
                     'payable_amount' => $data['total'],
                 ],
@@ -308,10 +320,184 @@ class DocumentPosController extends Controller
 //            \Log::debug(json_encode($data_invoice_pos));
 //            return [
 //                'success' => false,
+//                'message' => "Abortando...",
 //                'data' => [
 //                    'id' => null,
-//                ],
+//                ]
 //            ];
+            if($data['electronic'] == true){
+                $company = ServiceTenantCompany::firstOrFail();
+                $id_test = $company->test_set_id_eqdocs;
+                $base_url = config('tenant.service_fact');
+                if($company->eqdocs_type_environment_id == 2 && $company->test_set_id_eqdocs != 'no_test_set_id'){
+                    $ch = curl_init("{$base_url}ubl2.1/eqdoc/{$id_test}");
+                }
+                else
+                    $ch = curl_init("{$base_url}ubl2.1/eqdoc");
+                $data_document = json_encode($data_invoice_pos);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+                curl_setopt($ch, CURLOPT_POSTFIELDS,($data_document));
+                curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                    'Content-Type: application/json',
+                    'Accept: application/json',
+                    "Authorization: Bearer {$company->api_token}"
+                ));
+                $response = curl_exec($ch);
+\Log::debug($company->eqdocs_type_environment_id);
+\Log::debug($company->test_set_id_eqdocs);
+\Log::debug("{$base_url}ubl2.1/eqdoc");
+\Log::debug($company->api_token);
+\Log::debug($data_document);
+\Log::debug($response);
+                curl_close($ch);
+                $response_model = json_decode($response);
+                $zip_key = null;
+                $invoice_status_api = null;
+
+                if($company->eqdocs_type_environment_id == 2 && $company->test_set_id_eqdocs != 'no_test_set_id'){
+                    if(property_exists($response_model, 'urlinvoicepdf') && property_exists($response_model, 'urlinvoicexml')){
+                        if(!is_string($response_model->ResponseDian->Envelope->Body->SendTestSetAsyncResponse->SendTestSetAsyncResult->ZipKey)){
+                            if(is_string($response_model->ResponseDian->Envelope->Body->SendTestSetAsyncResponse->SendTestSetAsyncResult->ErrorMessageList->XmlParamsResponseTrackId->Success)){
+                                if($response_model->ResponseDian->Envelope->Body->SendTestSetAsyncResponse->SendTestSetAsyncResult->ErrorMessageList->XmlParamsResponseTrackId->Success == 'false'){
+                                    return [
+                                        'success' => false,
+                                        'message' => $response_model->ResponseDian->Envelope->Body->SendTestSetAsyncResponse->SendTestSetAsyncResult->ErrorMessageList->XmlParamsResponseTrackId->ProcessedMessage,
+                                        'data' => [
+                                            'id' => null,
+                                        ],
+                                    ];
+                                }
+                            }
+                        }
+                        else
+                            if(is_string($response_model->ResponseDian->Envelope->Body->SendTestSetAsyncResponse->SendTestSetAsyncResult->ZipKey))
+                                $zip_key = $response_model->ResponseDian->Envelope->Body->SendTestSetAsyncResponse->SendTestSetAsyncResult->ZipKey;
+                    }
+                    else{
+                        return [
+                            'success' => false,
+                            'message' => "Error el Documento Equivalente POS Nro: {$data['series']}{$data['number']}, Errores: ",
+                            'data' => [
+                                'id' => null,
+                            ],
+                        ];
+                    }
+
+                    $response_status = null;
+//\Log::debug($zip_key);
+                    if($zip_key){
+                        sleep(6);
+                        $ch2 = curl_init("{$base_url}ubl2.1/status/zip/{$zip_key}");
+                        curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
+                        curl_setopt($ch2, CURLOPT_CUSTOMREQUEST, "POST");
+
+                        if(file_exists(storage_path('sendmail.api')))
+                            curl_setopt($ch2, CURLOPT_POSTFIELDS, json_encode(array("sendmail" => true, "is_payroll" => false, "is_eqdoc" => true)));
+                        else
+                            curl_setopt($ch2, CURLOPT_POSTFIELDS, json_encode(array("sendmail" => false, "is_payroll" => false, "is_eqdoc" => true)));
+
+                        curl_setopt($ch2, CURLOPT_HTTPHEADER, array(
+                            'Content-Type: application/json',
+                            'Accept: application/json',
+                            "Authorization: Bearer {$company->api_token}"
+                        ));
+                        $response_status = curl_exec($ch2);
+//\Log::debug($response_status);
+                        curl_close($ch2);
+                        $response_status_decoded = json_decode($response_status);
+                        if(property_exists($response_status_decoded, 'ResponseDian')){
+                            if($response_status_decoded->ResponseDian->Envelope->Body->GetStatusZipResponse->GetStatusZipResult->DianResponse->IsValid == "true"){
+                                $data['ambient_id'] = $company->eqdocs_type_environment_id;
+                                $data['request_api'] = $data_document;
+                                $data['response_api'] = $response_status;
+                                $data['cude'] = $response_status_decoded->ResponseDian->Envelope->Body->GetStatusZipResponse->GetStatusZipResult->DianResponse->XmlDocumentKey;
+                                $data['qr'] = $response_model->QRStr;
+                            }
+                            else{
+                                if(isset($response_status_decoded->ResponseDian->Envelope->Body->GetStatusZipResponse->GetStatusZipResult->DianResponse->ErrorMessage->string)){
+                                    if(is_array($response_status_decoded->ResponseDian->Envelope->Body->GetStatusZipResponse->GetStatusZipResult->DianResponse->ErrorMessage->string)){
+                                        $mensajeerror = implode(",", $response_status_decoded->ResponseDian->Envelope->Body->GetStatusZipResponse->GetStatusZipResult->DianResponse->ErrorMessage->string);
+                                    }
+                                    else{
+                                        $mensajeerror = $response_status_decoded->ResponseDian->Envelope->Body->GetStatusZipResponse->GetStatusZipResult->DianResponse->ErrorMessage->string;
+                                    }
+                                }
+                                else{
+                                    $mensajeerror = $response_status_decoded->ResponseDian->Envelope->Body->GetStatusZipResponse->GetStatusZipResult->DianResponse->StatusDescription;
+                                }
+
+                                if($response_status_decoded->ResponseDian->Envelope->Body->GetStatusZipResponse->GetStatusZipResult->DianResponse->IsValid == 'false'){
+                                    return [
+                                        'success' => false,
+                                        'message' => "Error el Documento Equivalente POS Nro: {$data['series']}{$data['number']}, Errores: ".$mensajeerror,
+                                        'data' => [
+                                            'id' => null,
+                                        ],
+                                    ];
+                                }
+                            }
+                        }
+                        else{
+                            $mensajeerror = $response_status_decoded->message;
+                            return [
+                                'success' => false,
+                                'message' => "Error el Documento Equivalente POS Nro: {$data['series']}{$data['number']} Errores: ".$mensajeerror,
+                                'data' => [
+                                    'id' => null,
+                                ],
+                            ];
+                        }
+                    }
+                    else{
+//                        \Log::debug("C");
+                        return [
+                            'success' => false,
+                            'message' => "Error de ZipKey.",
+                            'data' => [
+                                'id' => null,
+                            ],
+                        ];
+                    }
+                }
+                else{
+                    if(property_exists($response_model, 'send_email_success')){
+                        if($response_model->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->IsValid == "true"){
+                            $data['ambient_id'] = $company->eqdocs_type_environment_id;
+                            $data['request_api'] = $data_document;
+                            $data['response_api'] = json_encode($response_model);
+                            $data['cude'] = $response_model->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->XmlDocumentKey;
+                            $data['qr'] = $response_model->QRStr;
+                        }
+                        else
+                        {
+                            if(is_array($response_model->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->ErrorMessage->string))
+                                $mensajeerror = implode(",", $response_model->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->ErrorMessage->string);
+                            else
+                                $mensajeerror = $response_model->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->ErrorMessage->string;
+                            if($response_model->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->IsValid == 'false'){
+                                if($invoice_json == NULL)
+                                    return [
+                                        'success' => false,
+                                        'message' => "Error al Validar Factura Nro: {$data['series']}{$data['number']} Errores: ".$mensajeerror,
+                                        'data' => [
+                                            'id' => null,
+                                        ],
+                                    ];
+                            }
+                        }
+                    }
+                    else{
+                        return [
+                            'success' => false,
+                            'message' => "Error al Validar Factura Nro: {$data['series']}{$data['number']} Errores: ".$response_model->message,
+                            'data' => [
+                                'id' => null,
+                            ],
+                        ];
+                    }
+                }
+            }
             $this->sale_note =  DocumentPos::create($data);
             // $this->sale_note->payments()->delete();
             $this->deleteAllPayments($this->sale_note->payments);
@@ -346,16 +532,26 @@ class DocumentPosController extends Controller
             $this->savePayments($this->sale_note, $data['payments']);
             $this->setFilename();
             $this->createPdf($this->sale_note,"ticket", $this->sale_note->filename);
-        });
+//        });
+        }catch(\Exception $e){
+            DB::connection('tenant')->rollBack();
+            return [
+                'success' => false,
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTrace(),
+            ];
+        }
+        DB::connection('tenant')->commit();
 
         return [
             'success' => true,
+            'message' => "Documento Equivalente POS Nro: {$data['series']}{$data['number']} Procesado Correctamente.",
             'data' => [
                 'id' => $this->sale_note->id,
             ],
         ];
     }
-
 
     public function destroy_sale_note_item($id)
     {
@@ -412,6 +608,7 @@ class DocumentPosController extends Controller
             'cash_type' => $config->cash_type,
             'number' => $number,
             'prefix' => $config->prefix,
+            'electronic' => (bool)$config->electronic,
         ];
         unset($inputs['series_id']);
         $inputs->merge($values);

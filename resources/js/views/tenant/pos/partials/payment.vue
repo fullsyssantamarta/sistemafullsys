@@ -665,97 +665,88 @@
                 this.loading_submit = false
                 window.open('/co-documents/create', '_blank')
             },
-            async clickPayment()
-            {
+
+            async clickPayment(){
                 const validate_limit_uvt = this.validateLimitUvt()
 
-                if(!validate_limit_uvt.success)
-                {
+                if(!validate_limit_uvt.success){
                     this.$setStorage('form_exceed_uvt', this.form)
-
                     this.$message.error({
                         showClose: true,
                         message: validate_limit_uvt.message,
                         type: 'error',
                         duration: 6000
                     })
-
                     this.redirectCreateDocument()
                     return
                 }
-
-                    //this.form.prefix = "NV";
-
+                //this.form.prefix = "NV";
                 this.form.paid = 1;
                 // this.resource_documents = resources[this.form.document_type_id];
                 this.resource_payments = "document_pos_payments";
                 this.resource_options = this.resource_documents;
-
                 // if(this.form.document_type_id === 'COT') {
                 //     this.form.prefix = this.form.document_type_id
                 // }
                 // if(this.form.document_type_id === 'RM') {
                 //     this.form.prefix = this.form.document_type_id
                 // }
-
                 const items_final = this.form.items.concat(this.items_refund);
                 this.form.items = items_final
-
                 this.loading_submit = true
-                await this.$http.post(`/${this.resource_documents}`, this.form).then(response => {
-                    if (response.data.success) {
-
+                this.$http.post(`/${this.resource_documents}`, this.form).then(response => {
+                    if (response.data.success == true) {
                         this.form_cash_document.document_pos_id = response.data.data.id;
                         this.saleNotesNewId = response.data.data.id;
-                        if (this.form.document_type_id === "90") {
-                            this.showDialogSaleNote = true;
+                        if(this.saleNotesNewId != null){
+                            if (this.form.document_type_id === "90") {
+                                this.showDialogSaleNote = true;
+                            }
+                            if (this.form.document_type_id === "COT") {
+                                this.showDialogQuotationOptions = true;
+                            }
+                            if (this.form.document_type_id === "RM") {
+                                this.showDialogRemissionOptions = true;
+                            }
+
+                            /*if (this.form.document_type_id === "80") {
+                                // this.form_payment.sale_note_id = response.data.data.id;
+                                this.form_cash_document.sale_note_id = response.data.data.id;
+                                this.saleNotesNewId = response.data.data.id;
+                                this.showDialogSaleNote = true;
+                            } else {
+                                // this.form_payment.document_id = response.data.data.id;
+                                this.form_cash_document.document_id = response.data.data.id;
+                                this.statusDocument = response.data.data.response
+                                this.documentNewId = response.data.data.id;
+                                this.showDialogOptions = true;
+                            }*/
+                            // this.savePaymentMethod();
+                            this.saveCashDocument();
+                            // this.initFormPayment() ;
+                            this.cleanLocalStoragePayment()
+                            this.$message.success(response.data.message);
+                            this.$eventHub.$emit('saleSuccess');
                         }
-                        if (this.form.document_type_id === "COT") {
-                            this.showDialogQuotationOptions = true;
-                        }
-                        if (this.form.document_type_id === "RM") {
-                            this.showDialogRemissionOptions = true;
-                        }
-
-                        /*if (this.form.document_type_id === "80") {
-
-                            // this.form_payment.sale_note_id = response.data.data.id;
-                            this.form_cash_document.sale_note_id = response.data.data.id;
-                            this.saleNotesNewId = response.data.data.id;
-                            this.showDialogSaleNote = true;
-
-                        } else {
-
-                            // this.form_payment.document_id = response.data.data.id;
-                            this.form_cash_document.document_id = response.data.data.id;
-                            this.statusDocument = response.data.data.response
-                            this.documentNewId = response.data.data.id;
-                            this.showDialogOptions = true;
-
-                        }*/
-
-
-                        // this.savePaymentMethod();
-                        this.saveCashDocument();
-
-                        // this.initFormPayment() ;
-                        this.cleanLocalStoragePayment()
-                        this.$eventHub.$emit('saleSuccess');
+                        else
+                            this.$message.error(response.data.message);
                     }
                     else {
                         this.$message.error(response.data.message);
                     }
                 }).catch(error => {
-                    if (error.response.status === 422) {
+                    if (error.response && error.response.status === 422){
                         this.errors = error.response.data;
-                    }
-                    else {
+                    }else if (error.response){
                         this.$message.error(error.response.data.message);
+                    }else{
+                        this.$message.error("Ha ocurrido un error desconocido.");
                     }
                 }).then(() => {
                     this.loading_submit = false;
                 });
             },
+
             saveCashDocument(){
                 if(this.form.document_type_id !== "90") {
                     return

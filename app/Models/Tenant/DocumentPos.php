@@ -47,7 +47,13 @@ class DocumentPos extends ModelTenant
         'total_tax',
         'subtotal',
         'total_discount',
-        'electronic'
+        'electronic',
+        'cude',
+        'request_api',
+        'response_api',
+        'ambient_id',
+        'note_concept_id',
+        'qr',
     ];
 
     protected $casts = [

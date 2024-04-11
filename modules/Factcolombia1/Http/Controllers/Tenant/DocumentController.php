@@ -219,9 +219,11 @@ class DocumentController extends Controller
                 curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($ch2, CURLOPT_CUSTOMREQUEST, "POST");
 
-                if(file_exists(storage_path('sendmail.api'))){
-                    curl_setopt($ch2, CURLOPT_POSTFIELDS, json_encode(array("sendmail" => true)));
-                }
+                if(file_exists(storage_path('sendmail.api')))
+                    curl_setopt($ch2, CURLOPT_POSTFIELDS, json_encode(array("sendmail" => true, "is_payroll" => false, "is_eqdoc" => false)));
+                else
+                    curl_setopt($ch2, CURLOPT_POSTFIELDS, json_encode(array("sendmail" => false, "is_payroll" => false, "is_eqdoc" => false)));
+
                 curl_setopt($ch2, CURLOPT_HTTPHEADER, array(
                     'Content-Type: application/json',
                     'Accept: application/json',

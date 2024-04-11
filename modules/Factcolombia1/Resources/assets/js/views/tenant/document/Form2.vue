@@ -1133,7 +1133,7 @@
                           this.resetForm();
                           // console.log(response)
                           this.documentNewId = response.data.data.id;
-                          // this.$message.success(response.data.message);
+                          this.$message.success(response.data.message);
                           this.showDialogOptions = true;
                         }
                         else{

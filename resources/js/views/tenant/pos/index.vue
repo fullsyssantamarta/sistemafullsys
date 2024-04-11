@@ -12,10 +12,11 @@
                 <h2>
                     <el-switch v-model="search_item_by_barcode" active-text="Buscar por código de barras" @change="changeSearchItemBarcode"></el-switch>
                 </h2>
-                <h2>
-                    <el-switch v-model="type_refund" active-text="Devolución"></el-switch>
-                </h2>
-
+                <template v-if="!electronic">
+                    <h2>
+                        <el-switch v-model="type_refund" active-text="Devolución"></el-switch>
+                    </h2>
+                </template>
             </div>
             <div class="col-md-4">
                 <h2> <button type="button" @click="place = 'cat'" class="btn btn-custom btn-sm  mt-2 mr-2"><i class="fa fa-border-all"></i></button> </h2>
@@ -509,12 +510,20 @@ export default {
             items_refund: [],
             pagination: {},
             category_selected: "",
-            plate_number_valid: true
+            plate_number_valid: true,
+            electronic: false,
         };
     },
-    mounted() {    },
+
+    mounted(){
+    },
+
     async created() {
-        if(localStorage.getItem("plate_number") == this.configuration.configuration_pos.plate_number){
+        this.electronic = this.configuration.configuration_pos.electronic
+        console.log(localStorage.getItem("plate_number"))
+        console.log(this.configuration.configuration_pos.plate_number)
+        console.log(this.electronic)
+        if(localStorage.getItem("plate_number") == this.configuration.configuration_pos.plate_number || this.electronic == false){
             this.plate_number_valid = true
             await this.initForm();
             await this.getTables();
@@ -529,8 +538,8 @@ export default {
         else
             this.plate_number_valid = false
     },
-    computed: {
 
+    computed: {
         classObjectCol() {
 
             let cols = this.configuration.colums_grid_item
@@ -836,8 +845,8 @@ export default {
                 this.items_refund = []
             });
         },
-        initForm() {
 
+        initForm() {
             this.form = {
                 customer_id: null,
                 document_type_id: '01',
@@ -863,20 +872,21 @@ export default {
                 service_invoice: {},
                 payment_form_id: 1,
                 payment_method_id: 1,
-                payments: []
+                payments: [],
+                electronic: false,
             }
-
             this.initFormItem();
             this.changeDateOfIssue();
             this.initInputPerson()
-
         },
+
         initInputPerson() {
             this.input_person = {
                 number: '',
                 identity_document_type_id: ''
             }
         },
+
         initFormItem() {
             this.form_item = {
                 id: null,
@@ -902,10 +912,9 @@ export default {
                 sale_unit_price_with_tax: 0,
                 refund: false
             };
-
             //this.items_refund = []
-
         },
+
         async clickPayment() {
 
             let flag = 0;
@@ -1336,14 +1345,15 @@ export default {
             val.total = (Number(total) - Number(total_refund)).toFixed(2)
 
         },
+
         changeExchangeRate() {
             // this.searchExchangeRateByDate(this.form.date_of_issue).then(response => {
             //     this.form.exchange_rate_sale = response
             // })
         },
+
         async getTables() {
             await this.$http.get(`/${this.resource}/tables`).then(response => {
-
                 this.all_items = response.data.items;
                 this.all_customers = response.data.customers;
                 this.currencies = response.data.currencies;
@@ -1352,19 +1362,17 @@ export default {
                 this.form.currency_id = this.currencies.length > 0 ? this.currencies[0].id : null;
                 // console.log(this.form.currency_id)
                 this.taxes = response.data.taxes
-
                 this.renderCategories(response.data.categories)
                 // this.currency = _.find(this.currencys, {'id': this.form.currency_id})
                 // this.changeCurrencyType();
                 this.initCurrencyType()
-
                 this.filterItems();
                 this.changeDateOfIssue();
                 this.changeExchangeRate()
-
             });
-
+//            console.log(this.electronic);
         },
+
         renderCategories(source) {
             const contex = this
             this.categories = source.map((obj, index) => {
