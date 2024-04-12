@@ -23,6 +23,8 @@ if ($currentHostname) {
                 Route::get('tables', 'Api\Tenant\DocumentController@tables');
                 Route::post('', 'Api\Tenant\DocumentController@store');
                 Route::get('items-search', 'Api\Tenant\DocumentController@searchItems');
+                Route::get('documents-search', 'Api\Tenant\DocumentController@searchDocuments');
+                Route::get('customer-search', 'Api\Tenant\DocumentController@searchCustomers');
             });
         });
     });
