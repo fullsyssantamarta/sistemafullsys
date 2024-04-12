@@ -23,7 +23,7 @@ table {
   max-height: 100px;
 }
 .company_logo_box {
-  height: 100px;
+  min-height: 50px;
 }
 .company_logo_ticket {
   max-width: 200px;

@@ -60,6 +60,8 @@ class DocumentPos extends ModelTenant
         'date_of_issue' => 'date',
         'automatic_date_of_issue' => 'date',
         'taxes' => 'object',
+        'request_api' => 'object',
+        'response_api' => 'object',
     ];
 
 

@@ -1,10 +1,14 @@
 @php
+    use Mpdf\QrCode\QrCode;
+    use Mpdf\QrCode\Output;
+
     $establishment = $document->establishment;
     $customer = $document->customer;
     $invoice = $document->invoice;
     //$path_style = app_path('CoreFacturalo'.DIRECTORY_SEPARATOR.'Templates'.DIRECTORY_SEPARATOR.'pdf'.DIRECTORY_SEPARATOR.'style.css');
     $tittle = $document->series.'-'.str_pad($document->number, 8, '0', STR_PAD_LEFT);
     $payments = $document->payments;
+    $is_epos = $document->electronic === 1 ? true : false;
 
     // $config_pos = \App\Models\Tenant\ConfigurationPos::first();
     // $user = auth()->user();
@@ -16,6 +20,7 @@
     // $resolution = $cash->resolution;
 
     $resolution = $document->getCashResolution();
+    $payment = 0;
 
     $sucursal = \App\Models\Tenant\Establishment::where('id', $document->establishment_id)->first();
     if(!is_null($sucursal->establishment_logo)){
@@ -26,6 +31,13 @@
     }
     else
         $filename_logo = public_path("storage/uploads/logos/{$company->logo}");
+
+    if($is_epos) {
+        $data_qr = $document->qr;
+        $codigoQR = new QrCode($data_qr);
+        $output = new Output\Png();
+        $imagenCodigoQR = $output->output($codigoQR, 90);
+    }
 @endphp
 <html>
 <head>
@@ -34,52 +46,54 @@
 <body>
 
 @if($filename_logo != "")
-    <div class="text-center company_logo_box pt-5">
+    <div class="text-center company_logo_box">
         <img src="data:{{mime_content_type($filename_logo)}};base64, {{base64_encode(file_get_contents($filename_logo))}}" alt="{{$company->name}}" class="company_logo" style="max-width: 150px;">
     </div>
 @endif
-{{--@if($company->logo)
-    <div class="text-center company_logo_box pt-5">
-        <img src="data:{{mime_content_type(public_path("storage/uploads/logos/{$company->logo}"))}};base64, {{base64_encode(file_get_contents(public_path("storage/uploads/logos/{$company->logo}")))}}" alt="{{$company->name}}" class="company_logo_ticket contain">
-    </div>
-@endif--}}
 <table class="full-width">
     <tr>
-        <td class="text-center"><h4>{{ $company->name }}</h4></td>
+        <td colspan="2" class="text-center"><h4>{{ $company->name }}</h4></td>
     </tr>
     <tr>
-        <td><h5>Nit: {{ $company->identification_number }} - {{ $company->type_regime->name}} </h5></td>
+        <td colspan="2"><h5 >Nit: {{ $company->identification_number }} - {{ $company->type_regime->name}} </h5></td>
     </tr>
     <tr>
-        <td><h6> Sucursal: {{ $sucursal->description }} </h6></td>
+        <td width="50%"><h6>{{ $sucursal->description }} </h6></td>
+        <td class=""><h6>{{ ($establishment->email !== '-')? $establishment->email : '' }}</h6></td>
     </tr>
     <tr>
-        <td> <h6>Email: {{ ($establishment->email !== '-')? $establishment->email : '' }}</h6> </td>
+        <td colspan="2"> <h6>Documento Equivalente POS #: {{ $tittle }}</h6> </td>
+    </tr>
+    @if($is_epos)
+        <tr>
+            <td><h6>Serial de caja: {{ $document->request_api->cash_information->plate_number }}</h6></td>
+            <td class=""><h6>Tipo de caja: {{ $document->request_api->cash_information->cash_type }}</h6></td>
+        </tr>
+        <tr>
+            <td><h6>Cajero:  {{ $document->request_api->cash_information->cashier }} </h6></td>
+            <td class=""><h6>Caja: 01</h6></td>
+        </tr>
+        <tr>
+            <td><h6>Software: {{ $document->request_api->software_manufacturer->software_name }}</h6></td>
+            <td><h6>Fabricante: {{ $document->request_api->software_manufacturer->name }}</h6></td>
+        </tr>
+        <tr>
+            <td colspan="2"><h6>Compañia: {{ $document->request_api->software_manufacturer->business_name }}</h6></td>
+        </tr>
+    @endif
+    <tr>
+        <td><h6>Fecha: {{ $document->date_of_issue->format('d-m-Y')}}</h6></td>
+        <td><h6>Vence: {{$document->date_of_issue->format('d-m-Y') }}</h6></td>
     </tr>
     <tr>
-        <td> <h6>Documento Equivalente POS #: {{ $tittle }}</h6> </td>
+        <td><h6>Cliente:{{ $customer->name }}</h6></td>
+        <td><h6>Ciudad: {{ ($customer->city_id)? ''.$customer->city->name : '' }}</h6></td>
     </tr>
     <tr>
-        <td> <h6>Vendedor:  {{ $document->user->name }} </h6></td>
+        <td colspan="2"><h6>{{$customer->identity_document_type->name}}: {{ $customer->code }}</h6></td>
     </tr>
     <tr>
-        <td><h6>Caja: 01</h6></td>
-    </tr>
-    <tr>
-        <td><h6>Fecha: {{ $document->date_of_issue->format('d-m-Y')}} Vence: {{$document->date_of_issue->format('d-m-Y') }}</h6></td>
-    </tr>
-
-    <tr>
-        <td> <h6>Doc Cliente: {{ $customer->code }} </h6></td>
-    </tr>
-    <tr>
-        <td><h6> Nombre: {{ $customer->name }}</h6></td>
-    </tr>
-    <tr>
-        <td> <h6>Direccion: {{ $customer->address }} </h6></td>
-    </tr>
-    <tr>
-        <td> <h6>Ciudad: {{ ($customer->city_id)? ''.$customer->city->name : '' }} </h6></td>
+        <td colspan="2"> <h6>Direccion: {{ $customer->address }} </h6></td>
     </tr>
     <tr>
         <td> <h6>Tipo Venta: CONTADO 0 días </h6></td>
@@ -87,7 +101,7 @@
 
 </table>
 
-<table class="full-width mt-10 mb-10">
+<table class="full-width">
     <thead class="">
     <tr>
         <th class="border-top-bottom desc-9 text-left">CANT.</th>
@@ -120,7 +134,7 @@
             </td>
         </tr>
 
-        <table class="full-width mt-10 mb-10">
+        <table class="full-width">
             <tbody>
                 <tr>
                     <td class="text-left desc-9 align-top">
@@ -129,7 +143,7 @@
                     <td class="text-left desc-9 align-top">
                         {{ number_format($row->total_tax, 2)}}
                     </td>
-                    <td class="text-left desc-9 align-top">
+                    <td class="text-right desc-9 align-top">
                         {{ number_format($row->subtotal, 2)}}
                     </td>
                 </tr>
@@ -143,101 +157,80 @@
 </table>
 <table class="full-width">
     <tr>
-
-        @foreach(array_reverse((array) $document->legends) as $row)
-            <tr>
-                @if ($row->code == "1000")
-                    <td class="desc pt-3">Son: <span class="font-bold">{{ $row->value }} {{ $document->currency_type->description }}</span></td>
-                    @if (count((array) $document->legends)>1)
-                    <tr><td class="desc pt-3"><span class="font-bold">Leyendas</span></td></tr>
-                    @endif
-                @else
-                    <td class="desc pt-3">{{$row->code}}: {{ $row->value }}</td>
-                @endif
+        <td colspan="2" class="text-right font-bold desc">TOTAL VENTA: {{ $document->currency->symbol }}</td>
+        <td class="text-right font-bold desc">{{ $document->sale }}</td>
+    </tr>
+    <tr >
+        <td colspan="2" class="text-right font-bold desc">TOTAL DESCUENTO (-): {{ $document->currency->symbol }}</td>
+        <td class="text-right font-bold desc">{{ $document->total_discount }}</td>
+    </tr>
+    <tr>
+        <td colspan="2" class="text-right font-bold desc">SUBTOTAL: {{ $document->currency->symbol }}</td>
+        <td class="text-right font-bold desc">{{ number_format($document->subtotal - $document->total_tax, 2) }}</td>
+    </tr>
+    @foreach ($document->taxes as $tax)
+        @if ((($tax->total > 0) && (!$tax->is_retention)))
+            <tr >
+                <td colspan="2" class="text-right font-bold desc">
+                    {{$tax->name}}(+): {{ $document->currency->symbol }}
+                </td>
+                <td class="text-right font-bold desc">{{number_format($tax->total, 2)}} </td>
             </tr>
-        @endforeach
-    </tr>
-
-
-</table>
-<table class="full-width">
-    <tr>
-            <td colspan="2" class="text-right font-bold desc">TOTAL VENTA: {{ $document->currency->symbol }}</td>
-            <td class="text-right font-bold desc">{{ $document->sale }}</td>
-        </tr>
-        <tr >
-            <td colspan="2" class="text-right font-bold desc">TOTAL DESCUENTO (-): {{ $document->currency->symbol }}</td>
-            <td class="text-right font-bold desc">{{ $document->total_discount }}</td>
-        </tr>
-
-        <tr>
-            <td colspan="2" class="text-right font-bold desc">SUBTOTAL: {{ $document->currency->symbol }}</td>
-            <td class="text-right font-bold desc">{{ number_format($document->subtotal - $document->total_tax, 2) }}</td>
-        </tr>
-
-        @foreach ($document->taxes as $tax)
-            @if ((($tax->total > 0) && (!$tax->is_retention)))
-                <tr >
-                    <td colspan="2" class="text-right font-bold desc">
-                        {{$tax->name}}(+): {{ $document->currency->symbol }}
-                    </td>
-                    <td class="text-right font-bold desc">{{number_format($tax->total, 2)}} </td>
-                </tr>
-            @endif
-        @endforeach
-
-
-
-        <tr>
-            <td colspan="2" class="text-right font-bold desc">TOTAL A PAGAR: {{ $document->currency_type->symbol }}</td>
-            <td class="text-right font-bold desc">{{ number_format($document->total, 2) }}</td>
-        </tr>
-</table>
-<table class="full-width">
-    <tr><td><h6>PAGOS:</h6> </td></tr>
-    @php
-        $payment = 0;
-    @endphp
-    @foreach($payments as $row)
-        <tr><td>- {{ $row->date_of_payment->format('d/m/Y') }} - {{ $row->payment_method_type->description }} - {{ $row->reference ? $row->reference.' - ':'' }} {{ $document->currency_type->symbol }} {{ $row->payment }}</td></tr>
-        @php
-            $payment += (float) $row->payment;
-        @endphp
+        @endif
     @endforeach
-    <tr><td><h6>SALDO: {{ $document->currency_type->symbol }} {{ number_format($document->total - $payment, 2) }}</h6> </td></tr>
-</table>
-<table style="margin-top:3px" class="full-width">
-
-    @if($resolution)
-        <tr>
-            <td> <h6>Resol. DIAN #: {{ $resolution->resolution_number }} de {{ $resolution->resolution_date->format('d-m-Y') }}</h6> </td>
-        </tr>
-        <tr>
-            <td>
-                <h6>  Desde la
-                Factura: {{ $resolution->from }} a la
-                Factura: {{ $resolution->to }}
-                </h6>
-            </td>
-        </tr>
-    @endif
     <tr>
-        <?php
-        \Log::debug($resolution->date_from);
-        \Log::debug($resolution->date_end);
-            $firstDate  = new \DateTime($resolution->date_from);
-            $secondDate = new \DateTime($resolution->date_end);
-            $intvl = $firstDate->diff($secondDate);
-        ?>
-        <td>Vigencia: {{($intvl->y * 12) + $intvl->m}} Meses.</td>
+        <td colspan="2" class="text-right font-bold desc">TOTAL A PAGAR: {{ $document->currency_type->symbol }}</td>
+        <td class="text-right font-bold desc">{{ number_format($document->total, 2) }}</td>
     </tr>
+</table>
+<table class="full-width">
+    <tr>
+        <td class="desc">
+            <span>PAGOS:</span><br>
+            <ul>
+                @foreach($payments as $row)
+                    <li>{{ $row->date_of_payment->format('d/m/Y') }} {{ $row->payment_method_type->description }} {{ $row->reference ? $row->reference.' - ':'' }} {{ $document->currency_type->symbol }}{{ $row->payment }}</li>
+                    @php
+                        $payment += (float) $row->payment;
+                    @endphp
+                @endforeach
+            </ul>
+            <span>SALDO: {{ $document->currency_type->symbol }} {{ number_format($document->total - $payment, 2) }}</span>
+            @if($resolution)
+                <br>
+                <span>Resol. DIAN #:{{ $resolution->resolution_number }}</span>
+                <br>
+                <span>Fecha resol.: {{ $resolution->resolution_date->format('d-m-Y') }}</span>
+                <br>
+                <span>Desde la Factura {{ $resolution->from }} a la {{ $resolution->to }}</span>
+                <br>
+                @php
+                    $firstDate  = new \DateTime($resolution->date_from);
+                    $secondDate = new \DateTime($resolution->date_end);
+                    $intvl = $firstDate->diff($secondDate);
+                @endphp
+                <span>Vigencia: {{($intvl->y * 12) + $intvl->m}} Meses</span>
+            @endif
+
+        </td>
+        @if($is_epos)
+            <td>
+                <img src="data:image/png;base64,{{ base64_encode($imagenCodigoQR) }}" alt="QR" style="margin-right: -20px;">
+            </td>
+        @endif
+    </tr>
+</table>
+<table class="full-width">
     <tr>
         @if($document->state_type_id == '11')
-            <td class="text-center">ANULADO</td>
+            <td class="text-center">
+                <h6>ANULADO</h6>
+            </td>
         @else
-            <td class="text-center">GRACIAS POR SU COMPRA</td>
+            <td class="text-center">
+                <h6>GRACIAS POR SU COMPRA</h6>
+            </td>
         @endif
-
     </tr>
 </table>
 </body>

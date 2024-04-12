@@ -317,7 +317,7 @@ class DocumentPosController extends Controller
                 'tax_totals' => $tax_totals,
                 'invoice_lines' => $invoice_lines,
             ];
-//            \Log::debug(json_encode($data_invoice_pos));
+            \Log::debug(json_encode($data_invoice_pos));
 //            return [
 //                'success' => false,
 //                'message' => "Abortando...",
@@ -325,6 +325,7 @@ class DocumentPosController extends Controller
 //                    'id' => null,
 //                ]
 //            ];
+            // gestion DIAN
             if($data['electronic'] == true){
                 $company = ServiceTenantCompany::firstOrFail();
                 $id_test = $company->test_set_id_eqdocs;
@@ -344,12 +345,12 @@ class DocumentPosController extends Controller
                     "Authorization: Bearer {$company->api_token}"
                 ));
                 $response = curl_exec($ch);
-\Log::debug($company->eqdocs_type_environment_id);
-\Log::debug($company->test_set_id_eqdocs);
-\Log::debug("{$base_url}ubl2.1/eqdoc");
-\Log::debug($company->api_token);
-\Log::debug($data_document);
-\Log::debug($response);
+                \Log::debug($company->eqdocs_type_environment_id);
+                \Log::debug($company->test_set_id_eqdocs);
+                \Log::debug("{$base_url}ubl2.1/eqdoc");
+                \Log::debug($company->api_token);
+                \Log::debug($data_document);
+                \Log::debug($response);
                 curl_close($ch);
                 $response_model = json_decode($response);
                 $zip_key = null;
@@ -385,7 +386,7 @@ class DocumentPosController extends Controller
                     }
 
                     $response_status = null;
-//\Log::debug($zip_key);
+                    //\Log::debug($zip_key);
                     if($zip_key){
                         sleep(6);
                         $ch2 = curl_init("{$base_url}ubl2.1/status/zip/{$zip_key}");
@@ -403,7 +404,7 @@ class DocumentPosController extends Controller
                             "Authorization: Bearer {$company->api_token}"
                         ));
                         $response_status = curl_exec($ch2);
-//\Log::debug($response_status);
+                        //\Log::debug($response_status);
                         curl_close($ch2);
                         $response_status_decoded = json_decode($response_status);
                         if(property_exists($response_status_decoded, 'ResponseDian')){
@@ -450,7 +451,7 @@ class DocumentPosController extends Controller
                         }
                     }
                     else{
-//                        \Log::debug("C");
+                        // \Log::debug("C");
                         return [
                             'success' => false,
                             'message' => "Error de ZipKey.",
@@ -498,6 +499,7 @@ class DocumentPosController extends Controller
                     }
                 }
             }
+            // gestion DIAN
             $this->sale_note =  DocumentPos::create($data);
             // $this->sale_note->payments()->delete();
             $this->deleteAllPayments($this->sale_note->payments);
