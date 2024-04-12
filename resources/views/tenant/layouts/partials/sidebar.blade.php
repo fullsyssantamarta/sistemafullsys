@@ -7,12 +7,22 @@
 
 <aside id="sidebar-left" class="sidebar-left">
     <div class="sidebar-header">
-        <div class="sidebar-title">
-            Menu
-        </div>
-        <div class="sidebar-toggle d-none d-md-block" data-toggle-class="sidebar-left-collapsed" data-target="html"
-             data-fire-event="sidebar-left-toggle">
-            <i class="fas fa-bars" aria-label="Toggle sidebar"></i>
+        <a href="{{route('tenant.dashboard.index')}}"
+           class="logo pt-2 pt-md-0">
+            @if($vc_company->logo)
+                <img src="{{ asset('storage/uploads/logos/'.$vc_company->logo) }}"
+                     alt="Logo"/>
+            @else
+                <img src="{{asset('logo/tulogo.png')}}"
+                     alt="Logo"/>
+            @endif
+        </a>
+        <div class="d-md-none toggle-sidebar-left"
+            data-toggle-class="sidebar-left-opened"
+            data-target="html"
+            data-fire-event="sidebar-left-opened">
+            <i class="fas fa-bars"
+               aria-label="Toggle sidebar"></i>
         </div>
     </div>
     <div class="nano">
@@ -24,7 +34,7 @@
                         <a class="nav-link" href="{{ route('tenant.dashboard.index') }}">
                             <span class="float-right badge badge-red badge-danger mr-3">Nuevo</span>
                             <i class="fas fa-tachometer-alt" aria-hidden="true"></i>
-                            <span>DASHBOARD</span>
+                            <span>Dashboard</span>
                         </a>
                     </li>
                     @endif

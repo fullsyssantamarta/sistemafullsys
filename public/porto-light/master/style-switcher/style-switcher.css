@@ -1,5 +1,5 @@
 .style-switcher {
-    background: #171717;
+    background: #283046;
     width: 260px;
     position: fixed;
     top: 110px;
@@ -19,7 +19,7 @@
 }
 
 .style-switcher h4 {
-    background: #171717;
+    background: #283046;
     color: #fff;
     font-size: 15px;
     font-weight: 600;
@@ -29,7 +29,7 @@
 }
 
 .style-switcher .style-switcher-open {
-    background-color: #171717;
+    background-color: #283046;
     border-radius: 6px 0 0 6px;
     color: #fff;
     display: block;
@@ -215,3 +215,6 @@ html.sidebar-light:not(.dark) .style-switcher .style-switcher-buttons {
     border-top: 1px solid #ececec
 }
 
+html.newinvoice .style-switcher {
+    top: 60px;
+}

@@ -4,7 +4,7 @@
             <h3 class="my-0">Nuevo Comprobante</h3>
         </div> -->
 
-        <div class="tab-content"  v-if="company && establishment">
+        <div class="card-body"  v-if="company && establishment">
             <div class="invoice">
                 <header class="clearfix">
                     <div class="row">
@@ -197,7 +197,7 @@
                                         <tbody v-if="form.items.length > 0">
                                             <tr v-for="(row, index) in form.items" :key="index">
                                                 <td>{{ index + 1 }}</td>
-                                                <td>{{ row.item.name }} 
+                                                <td>{{ row.item.name }}
                                                     <template v-if="row.item.presentation">
                                                         {{row.item.presentation.hasOwnProperty('description') ? row.item.presentation.description : ''}}
                                                     </template>
@@ -375,7 +375,7 @@
                     this.all_customers = response.data.customers
                     this.payment_method_types = response.data.payment_method_types
                     this.company = response.data.company
-                    
+
                     let find_currency = _.find(this.currencies, {id:170})
                     this.form.currency_id = find_currency ? find_currency.id: null
 
@@ -637,13 +637,13 @@
                     enabled_concurrency:false,
                     license_plate: null,
                     paid: false,
-                    
+
                     sale: 0,
                     payments: [],
                     taxes: [],
                     total_tax: 0,
                     total_discount: 0,
-                    subtotal: 0, 
+                    subtotal: 0,
                 }
 
                 this.clickAddPayment()
@@ -652,7 +652,7 @@
             resetForm() {
                 this.activePanel = 0
                 this.initForm()
-            
+
                 let find_currency = _.find(this.currencies, {id:170})
                 this.form.currency_id = find_currency ? find_currency.id: null
 

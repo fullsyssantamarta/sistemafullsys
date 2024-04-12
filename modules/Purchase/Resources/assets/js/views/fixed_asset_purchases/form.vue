@@ -3,7 +3,7 @@
         <div class="card-header bg-info">
             <h3 class="my-0">{{title_form}}</h3>
         </div>
-        <div class="tab-content">
+        <div class="card-body">
             <form autocomplete="off" @submit.prevent="submit">
                 <div class="form-body">
 
@@ -64,7 +64,7 @@
                                 </el-select>
                                 <small class="form-control-feedback" v-if="errors.supplier_id" v-text="errors.supplier_id[0]"></small>
                             </div>
-                        </div> 
+                        </div>
                         <div class="col-lg-2">
                             <div class="form-group" :class="{'has-danger': errors.currency_type_id}">
                                 <label class="control-label">Moneda</label>
@@ -85,7 +85,7 @@
                                 <small class="form-control-feedback" v-if="errors.exchange_rate_sale" v-text="errors.exchange_rate_sale[0]"></small>
                             </div>
                         </div>
-                         
+
 
                         <div class="col-lg-12 col-md-6 d-flex align-items-end mt-4">
                             <div class="form-group">
@@ -523,7 +523,7 @@
 
             },
             setTotalDefaultPayment(){
-                
+
                 if(this.form.payments.length > 0){
 
                     this.form.payments[0].payment = this.form.total
@@ -568,14 +568,14 @@
 
             },
             async submit() {
-          
+
                 this.loading_submit = true
 
                 await this.$http.post(`/${this.resource}`, this.form)
                     .then(response => {
 
                         if (response.data.success) {
- 
+
                             this.resetForm()
                             this.purchaseNewId = response.data.data.id
                             this.showDialogOptions = true

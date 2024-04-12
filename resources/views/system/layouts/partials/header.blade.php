@@ -1,6 +1,6 @@
-<header class="header">
+<header class="header" style="left:10px;>
     <div class="logo-container">
-        <a href="{{route('system.co-companies')}}" class="logo pt-2 pt-md-0">
+        <a href="{{route('system.co-companies')}}" class="logo pt-2 pt-md-0 mt-2">
             @if (file_exists(public_path('theme/logo.svg')))
                 <img class="uk-logo-inverse" width="100" height="auto" src="{{asset('theme/logo.svg')}}" alt="Logo"/>
             @else

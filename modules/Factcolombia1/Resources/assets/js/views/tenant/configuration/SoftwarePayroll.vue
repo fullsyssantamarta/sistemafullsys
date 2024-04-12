@@ -3,7 +3,7 @@
         <div class="card-header bg-info">
             <h3 class="my-0">Configuración de nómina electrónica</h3>
         </div>
-        <div class="tab-content">
+        <div class="card-body">
             <div class="software">
                 <form autocomplete="off">
                     <div class="form-body">
@@ -30,7 +30,7 @@
                                     <small class="form-control-feedback" v-if="errors.pinpayroll" v-text="errors.pinpayroll[0]"></small>
                                 </div>
                             </div>
- 
+
                             <div class="col-lg-4">
                                 <div class="form-group" :class="{'has-danger': errors.test_set_id_payroll}">
                                     <label class="control-label">Test Set ID Nómina*</label>

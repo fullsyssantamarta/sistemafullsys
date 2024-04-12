@@ -3,7 +3,7 @@
         <div class="card-header bg-info">
             <h3 class="my-0">Nueva Compra</h3>
         </div>
-        <div class="tab-content">
+        <div class="card-body">
             <form autocomplete="off" @submit.prevent="submit">
                 <div class="form-body">
 
@@ -86,13 +86,13 @@
                             </div>
                         </div>
                         <div class="col-md-8 mt-4">
-                            <div class="form-group" > 
+                            <div class="form-group" >
                                 <el-checkbox v-model="form.has_client" @change="changeHasClient">¿Desea agregar el cliente para esta compra?</el-checkbox>
                             </div>
                         </div>
 
                         <div class="col-md-8 mt-2 mb-2">
-                            <div class="form-group" > 
+                            <div class="form-group" >
                                 <el-checkbox v-model="form.has_payment" @change="changeHasPayment">¿Desea agregar pagos a esta compra?</el-checkbox>
                             </div>
                         </div>
@@ -126,7 +126,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="(row, index) in form.payments" :key="index"> 
+                                    <tr v-for="(row, index) in form.payments" :key="index">
                                         <td>
                                             <div class="form-group mb-2 mr-2">
                                                 <el-select v-model="row.payment_method_type_id" @change="changePaymentMethodType(true,index)">
@@ -151,16 +151,16 @@
                                                 <el-input v-model="row.payment"></el-input>
                                             </div>
                                         </td>
-                                        <td class="series-table-actions text-center"> 
+                                        <td class="series-table-actions text-center">
                                             <button  type="button" class="btn waves-effect waves-light btn-xs btn-danger"  @click.prevent="clickCancel(index)">
                                                 <i class="fa fa-trash"></i>
                                             </button>
-                                        </td> 
+                                        </td>
                                         <br>
                                     </tr>
-                                </tbody> 
-                            </table> 
-                        
+                                </tbody>
+                            </table>
+
 
                         </div>
 
@@ -207,7 +207,7 @@
                                 </table>
                             </div>
                         </div>
-                        
+
                         <div class="col-md-12" style="display: flex; flex-direction: column; align-items: flex-end;" v-if="form.items.length > 0">
                             <table>
 
@@ -258,8 +258,8 @@
 
                         </div>
 
-                        <div class="col-md-12"> 
-                            
+                        <div class="col-md-12">
+
                             <h3 class="text-right" v-if="form.total > 0"><b>TOTAL COMPRAS: </b>{{ ratePrefix() }} {{ form.total }}</h3>
 
                             <template v-if="is_perception_agent">
@@ -395,7 +395,7 @@
                     this.all_customers = response.data.customers
 
                     // this.charges_types = response.data.charges_types
-                    
+
                     let find_currency = _.find(this.currencies, {id:170})
                     this.form.currency_id = find_currency ? find_currency.id: null
                     this.form.establishment_id = (this.establishment.id) ? this.establishment.id:null
@@ -603,9 +603,9 @@
 
                             this.form.document_type_id = "01"
                             // console.log(purchase_order.supplier_id)
-                            
+
                             this.form.items = response.data.data.purchase_order.items
-                            this.form.supplier_id = purchase_order.supplier_id 
+                            this.form.supplier_id = purchase_order.supplier_id
                             this.form.currency_id = purchase_order.currency_id
                             this.form.purchase_order_id = purchase_order.id
                             // this.form.payments[0].payment_method_type_id = purchase_order.payment_method_type_id
@@ -617,7 +617,7 @@
                             this.form.total_discount = purchase_order.total_discount
                             this.form.taxes = purchase_order.taxes
                             this.currency_type = _.find(this.currencies, {'id': this.form.currency_id})
-                            
+
                             this.form.items.forEach((it)=>{
                                 it.warehouse_id = warehouse.id
                             })
@@ -628,7 +628,7 @@
                 }
             },
             async validate_payments(){
- 
+
                 let error_by_item = 0
                 let acum_total = 0
                 let q_affectation_free = 0
@@ -671,7 +671,7 @@
                     payment_destination_id:'cash',
                     payment: 0,
                 });
-            },   
+            },
             initInputPerson(){
                 this.input_person = {
                     number:'',
@@ -822,7 +822,7 @@
             },
             resetForm() {
                 this.initForm()
-                
+
                 let find_currency = _.find(this.currencies, {id:170})
                 this.form.currency_id = find_currency ? find_currency.id: null
                 this.form.establishment_id = this.establishment.id
@@ -859,7 +859,7 @@
                 // this.calculateTotal()
             },
             calculateTotal() {
-                
+
                 this.setDataTotals()
 
                 this.calculatePerception()
@@ -869,7 +869,7 @@
 
             },
             setTotalDefaultPayment(){
-                
+
                 if(this.form.payments.length > 0){
 
                     this.form.payments[0].payment = this.form.total
@@ -914,7 +914,7 @@
 
             },
             async submit() {
-          
+
                 let validate = await this.validate_payments()
                 if(!validate.success) {
                     return this.$message.error(validate.message);

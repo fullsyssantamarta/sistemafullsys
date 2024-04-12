@@ -3,7 +3,7 @@
         <div class="card-header bg-info">
             <h3 class="my-0">Resolucion de Facturacion</h3>
         </div>
-        <div class="tab-content">
+        <div class="card-body">
             <div>
 
                 <el-table

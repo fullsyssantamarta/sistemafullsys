@@ -3,7 +3,7 @@
         <div class="card-header bg-info">
             <h3 class="my-0">Nuevo Gasto</h3>
         </div>
-        <div class="tab-content">
+        <div class="card-body">
             <form autocomplete="off" @submit.prevent="submit">
                 <div class="form-body">
 
@@ -221,7 +221,7 @@
                     this.currencies = response.data.currencies
                     this.establishment = response.data.establishment
                     this.suppliers = response.data.suppliers
-                    
+
                     let find_currency = _.find(this.currencies, {id:170})
                     this.form.currency_id = find_currency ? find_currency.id: null
 

@@ -1,6 +1,6 @@
 <template>
     <div class="card mb-0 pt-2 pt-md-0">
-        <div class="tab-content" v-if="loading_form">
+        <div class="card-body" v-if="loading_form">
             <div class="invoice">
                 <form autocomplete="off" @submit.prevent="submit">
                     <div class="form-body">

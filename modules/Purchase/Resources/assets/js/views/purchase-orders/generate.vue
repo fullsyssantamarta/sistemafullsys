@@ -3,7 +3,7 @@
         <!-- <div class="card-header bg-info">
             <h3 class="my-0">Nueva Compra</h3>
         </div> -->
-        <div class="tab-content" v-if="loading_form">
+        <div class="card-body" v-if="loading_form">
             <div class="invoice">
                 <header class="clearfix">
                     <div class="row">
@@ -56,7 +56,7 @@
                                     <small class="form-control-feedback" v-if="errors.date_of_due" v-text="errors.date_of_due[0]"></small>
                                 </div>
                             </div>
-                            
+
                             <div class="col-lg-2">
                                 <div class="form-group" :class="{'has-danger': errors.currency_id}">
                                     <label class="control-label">Moneda</label>
@@ -78,7 +78,7 @@
                                     </el-select>
                                     <small class="form-control-feedback" v-if="errors.payment_method_type_id" v-text="errors.payment_method_type_id[0]"></small>
                                 </div>
-                            </div> 
+                            </div>
                             <div class="col-lg-3" style="margin-top:29px;">
                                 <div class="form-group" :class="{'has-danger': errors.file}">
                                     <el-upload
@@ -150,7 +150,7 @@
                                 </div>
                             </div>
 
-                            
+
                             <div class="col-md-12" style="display: flex; flex-direction: column; align-items: flex-end;" v-if="form.items.length > 0">
                                 <table>
 
@@ -293,7 +293,7 @@
                     this.payment_method_types = response.data.payment_method_types
                     this.company = response.data.company
 
-                    
+
                     let find_currency = _.find(this.currencies, {id:170})
                     this.form.currency_id = find_currency ? find_currency.id: null
                     this.form.establishment_id = (this.establishment.id) ? this.establishment.id:null
@@ -454,11 +454,11 @@
 
                 return (this.company.currency != null) ? this.company.currency.symbol : '$';
             },
-            handleRemove(file, fileList) {                
+            handleRemove(file, fileList) {
                 this.form.upload_filename = null
                 this.form.temp_path = null
                 this.fileList = []
-            }, 
+            },
             onSuccess(response, file, fileList) {
                 // console.log(response, file, fileList)
                 this.fileList = fileList
@@ -704,8 +704,8 @@
                 // this.form.items = items
                 // this.calculateTotal()
             },
-            calculateTotal() {      
-                
+            calculateTotal() {
+
                 this.setDataTotals()
 
                 this.calculatePerception()

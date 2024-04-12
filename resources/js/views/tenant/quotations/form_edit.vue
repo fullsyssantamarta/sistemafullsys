@@ -3,7 +3,7 @@
         <!-- <div class="card-header bg-info">
             <h3 class="my-0">Nuevo Comprobante</h3>
         </div> -->
-        <div class="tab-content" v-if="loading_form">
+        <div class="card-body" v-if="loading_form">
             <div class="invoice">
                 <header class="clearfix">
                     <div class="row">
@@ -22,14 +22,14 @@
                             </address>
                         </div>
                         <div class="col-sm-4">
-                        
+
                             <!-- <el-checkbox class="mt-3" v-model="form.active_terms_condition" @change="changeTermsCondition">Términos y condiciones del contrato</el-checkbox> -->
-                               
+
                         </div>
                     </div>
                 </header>
                 <form autocomplete="off" @submit.prevent="submit">
-                    <div class="form-body"> 
+                    <div class="form-body">
                         <div class="row mt-1">
                              <div class="col-lg-6 pb-2">
                                 <div class="form-group" :class="{'has-danger': errors.customer_id}">
@@ -37,8 +37,8 @@
                                         Cliente
                                         <a href="#" @click.prevent="showDialogNewPerson = true">[+ Nuevo]</a>
                                     </label>
-                                    <el-select v-model="form.customer_id" filterable remote class="border-left rounded-left border-info" popper-class="el-select-customers" 
-                                        dusk="customer_id"                                    
+                                    <el-select v-model="form.customer_id" filterable remote class="border-left rounded-left border-info" popper-class="el-select-customers"
+                                        dusk="customer_id"
                                         placeholder="Escriba el nombre o número de documento del cliente"
                                         :remote-method="searchRemoteCustomers"
                                         :loading="loading_search">
@@ -56,17 +56,17 @@
                                     <el-date-picker v-model="form.date_of_issue" type="date" value-format="yyyy-MM-dd" :clearable="false" @change="changeDateOfIssue"></el-date-picker>
                                     <small class="form-control-feedback" v-if="errors.date_of_issue" v-text="errors.date_of_issue[0]"></small>
                                 </div>
-                            </div> 
-                            
+                            </div>
+
                             <div class="col-lg-2">
-                                <div class="form-group" :class="{'has-danger': errors.date_of_due}"> 
+                                <div class="form-group" :class="{'has-danger': errors.date_of_due}">
                                     <label class="control-label">Fec. Vencimiento</label>
                                     <el-date-picker v-model="form.date_of_due" type="date" value-format="yyyy-MM-dd" :clearable="true"></el-date-picker>
                                     <small class="form-control-feedback" v-if="errors.date_of_due" v-text="errors.date_of_due[0]"></small>
                                 </div>
                             </div>
                             <div class="col-lg-2">
-                                <div class="form-group" :class="{'has-danger': errors.delivery_date}"> 
+                                <div class="form-group" :class="{'has-danger': errors.delivery_date}">
                                     <label class="control-label">Fec. Entrega</label>
                                     <el-date-picker v-model="form.delivery_date" type="date" value-format="yyyy-MM-dd" :clearable="true"></el-date-picker>
                                     <small class="form-control-feedback" v-if="errors.delivery_date" v-text="errors.delivery_date[0]"></small>
@@ -74,7 +74,7 @@
                             </div>
                             <div class="col-lg-4">
                                 <div class="form-group" >
-                                    <label class="control-label">Dirección de envío 
+                                    <label class="control-label">Dirección de envío
                                     </label>
                                     <el-input v-model="form.shipping_address"></el-input>
                                     <small class="form-control-feedback" v-if="errors.shipping_address" v-text="errors.shipping_address[0]"></small>
@@ -93,7 +93,7 @@
                             </div>
                             <div class="col-lg-2">
                                 <div class="form-group" >
-                                    <label class="control-label">Número de cuenta 
+                                    <label class="control-label">Número de cuenta
                                     </label>
                                     <el-input v-model="form.account_number"></el-input>
                                     <small class="form-control-feedback" v-if="errors.account_number" v-text="errors.account_number[0]"></small>
@@ -109,7 +109,7 @@
                                 </div>
                             </div>
 
-                            
+
                             <div class="col-lg-8 mt-2" >
 
                                 <table>
@@ -160,7 +160,7 @@
 
 
                             </div>
-                            
+
                             <div class="col-lg-4  mt-2">
                                 <div class="form-group" :class="{'has-danger': errors.exchange_rate_sale}">
                                     <label class="control-label">Descripcion
@@ -170,7 +170,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="row mt-2">
                             <div class="col-md-12">
                                 <div class="table-responsive">
@@ -191,7 +191,7 @@
                                         <tbody v-if="form.items.length > 0">
                                             <tr v-for="(row, index) in form.items" :key="index">
                                                 <td>{{index + 1}}</td>
-                                                <td>{{row.item.name}} 
+                                                <td>{{row.item.name}}
                                                     <template v-if="row.item.presentation">
                                                         {{row.item.presentation.hasOwnProperty('description') ? row.item.presentation.description : ''}}
                                                     </template>
@@ -219,7 +219,7 @@
                                     <button type="button" class="btn waves-effect waves-light btn-primary" @click.prevent="showDialogAddItem = true">+ Agregar Producto</button>
                                 </div>
                             </div>
- 
+
                             <div class="col-md-12" style="display: flex; flex-direction: column; align-items: flex-end;" v-if="form.items.length > 0">
                                 <table>
 
@@ -273,15 +273,15 @@
 
                             </div>
 
-                            <div class="col-md-4"> 
+                            <div class="col-md-4">
                                 <h3 class="text-right" v-if="form.total > 0"><b>TOTAL A PAGAR: </b>{{ ratePrefix() }} {{ form.total }}</h3>
-                            </div> 
-                            
+                            </div>
+
                         </div>
 
                     </div>
 
-                    
+
                     <div class="form-actions text-right mt-4">
                         <el-button @click.prevent="close()">Cancelar</el-button>
                         <el-button class="submit" type="primary" native-type="submit" :loading="loading_submit" v-if="form.items.length > 0">Guardar cambios</el-button>
@@ -290,7 +290,7 @@
             </div>
         </div>
 
-        <quotation-form-item :showDialog.sync="showDialogAddItem" 
+        <quotation-form-item :showDialog.sync="showDialogAddItem"
                            @add="addRow"></quotation-form-item>
 
         <person-form :showDialog.sync="showDialogNewPerson"
@@ -321,7 +321,7 @@
         props: {
             'resourceId': {
                 required: true,
-            
+
                 default: 0
             },
             'typeUser': {
@@ -339,17 +339,17 @@
                 loading_submit: false,
                 loading_form: false,
                 errors: {},
-                form: {}, 
+                form: {},
                 currency_types: [],
                 discount_types: [],
                 charges_types: [],
-                all_customers: [], 
+                all_customers: [],
                 customers: [],
                 company: {},
                 currencies:  [],
                 taxes:  [],
                 establishments: [],
-                establishment: null, 
+                establishment: null,
                 currency_type: {},
                 quotationNewId: null,
                 payment_method_types: [],
@@ -361,24 +361,24 @@
         async created() {
             await this.initForm()
             await this.$http.get(`/${this.resource}/tables`)
-                .then(response => { 
+                .then(response => {
                     this.taxes = response.data.taxes
                     this.currencies = response.data.currencies
-                    this.establishments = response.data.establishments 
+                    this.establishments = response.data.establishments
                     this.all_customers = response.data.customers
-                    this.company = response.data.company 
+                    this.company = response.data.company
                     let find_currency = _.find(this.currencies, {id:170})
                     this.form.currency_id = find_currency ? find_currency.id: null
-                    this.form.establishment_id = (this.establishments.length > 0)?this.establishments[0].id:null 
+                    this.form.establishment_id = (this.establishments.length > 0)?this.establishments[0].id:null
                     this.payment_method_types = response.data.payment_method_types
                     this.payment_destinations = response.data.payment_destinations
 
                     this.changeEstablishment()
-                    this.changeDateOfIssue() 
+                    this.changeDateOfIssue()
                     this.changeCurrencyType()
                     this.allCustomers()
                     this.initRecord()
-                   
+
                 })
             this.loading_form = true
             this.$eventHub.$on('reloadDataPersons', (customer_id) => {
@@ -395,7 +395,7 @@
                 if(this.form.active_terms_condition){
 
                     this.showDialogTermsCondition = true
-                
+
                 }else{
                     this.form.terms_condition = null
                 }
@@ -439,7 +439,7 @@
             {
                 this.$http.get(`/${this.resource}/record/${this.resourceId}` )
                 .then(response => {
-                    
+
                     let dato = response.data.data.quotation
                   //  console.log(dato)
                     this.form.id = dato.id
@@ -460,22 +460,22 @@
                     this.calculateTotal()
                     //console.log(response.data)
                 })
-               
+
             },
 
-            searchRemoteCustomers(input) {  
-                  
-                if (input.length > 0) { 
+            searchRemoteCustomers(input) {
+
+                if (input.length > 0) {
                     this.loading_search = true
                     let parameters = `input=${input}`
 
                     this.$http.get(`/${this.resource}/search/customers?${parameters}`)
-                            .then(response => { 
+                            .then(response => {
                                 this.customers = response.data.customers
                                 this.loading_search = false
                                 if(this.customers.length == 0){this.allCustomers()}
-                            })  
-                } else { 
+                            })
+                } else {
                     this.allCustomers()
                 }
 
@@ -485,7 +485,7 @@
                 this.form = {
                     description: '',
                     prefix:'COT',
-                    establishment_id: null, 
+                    establishment_id: null,
                     date_of_issue: moment().format('YYYY-MM-DD'),
                     time_of_issue: moment().format('HH:mm:ss'),
                     customer_id: null,
@@ -514,7 +514,7 @@
                     taxes: [],
                     total_tax: 0,
                     total_discount: 0,
-                    subtotal: 0, 
+                    subtotal: 0,
                 }
 
                 this.clickAddPayment()
@@ -522,31 +522,31 @@
             resetForm() {
                 this.activePanel = 0
                 this.initForm()
-                
+
                 let find_currency = _.find(this.currencies, {id:170})
                 this.form.currency_id = find_currency ? find_currency.id: null
-                this.form.establishment_id = (this.establishments.length > 0)?this.establishments[0].id:null 
-                this.changeEstablishment() 
+                this.form.establishment_id = (this.establishments.length > 0)?this.establishments[0].id:null
+                this.changeEstablishment()
                 this.changeDateOfIssue()
                 this.changeCurrencyType()
                 this.allCustomers()
-            }, 
+            },
             changeEstablishment() {
                 this.establishment = _.find(this.establishments, {'id': this.form.establishment_id})
-                
-            }, 
+
+            },
             cleanCustomer(){
                 this.form.customer_id = null;
             },
             changeDateOfIssue() {
                 this.form.date_of_due = this.form.date_of_issue
-            }, 
+            },
             allCustomers() {
                 this.customers = this.all_customers
-            }, 
+            },
             addRow(row) {
                 this.form.items.push(JSON.parse(JSON.stringify(row)));
-                
+
                 this.calculateTotal();
             },
             clickRemoveItem(index) {
@@ -677,7 +677,7 @@
                 val.total = Number(total).toFixed(2)
 
             },
-            calculateTotal() {                
+            calculateTotal() {
                 this.setDataTotals()
             },
             ratePrefix(tax = null) {
@@ -746,11 +746,11 @@
             close() {
                 location.href = '/quotations'
             },
-            reloadDataCustomers(customer_id) { 
+            reloadDataCustomers(customer_id) {
                 this.$http.get(`/${this.resource}/search/customer/${customer_id}`).then((response) => {
                     this.customers = response.data.customers
                     this.form.customer_id = customer_id
-                })                  
+                })
             },
         }
     }

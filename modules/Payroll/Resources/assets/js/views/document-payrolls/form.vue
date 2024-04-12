@@ -1,7 +1,7 @@
 <template>
     <div class="card mb-0 pt-2 pt-md-0" v-loading="loading">
 
-        <div class="tab-content" v-if="loading_form">
+        <div class="card-body" v-if="loading_form">
             <div class="invoice">
                 <form autocomplete="off" @submit.prevent="submit">
                     <div class="form-body">
@@ -40,7 +40,7 @@
                                     <small class="form-control-feedback" v-if="errors.worker_id" v-text="errors.worker_id[0]"></small>
                                 </div>
                             </div>
- 
+
 
                             <div class="col-md-3 pb-2">
                                 <div class="form-group" :class="{'has-danger': errors.type_document_id}">
@@ -67,13 +67,13 @@
                                     <small class="form-control-feedback" v-if="errors.payroll_period_id" v-text="errors.payroll_period_id[0]"></small>
                                 </div>
                             </div>
- 
+
                         </div>
 
 
                         <el-tabs v-model="activeName">
                             <el-tab-pane label="Periodo" name="period">
-                                
+
                                 <div class="row">
                                     <div class="col-md-3">
                                         <div class="form-group" :class="{'has-danger': errors['period.admision_date']}">
@@ -107,7 +107,7 @@
                                             <small class="form-control-feedback" v-if="errors['period.issue_date']" v-text="errors['period.issue_date'][0]"></small>
                                         </div>
                                     </div>
- 
+
                                     <div class="col-md-3">
                                         <div class="form-group" :class="{'has-danger': errors['period.worked_time']}">
                                             <label class="control-label">Tiempo trabajado<span class="text-danger"> *</span></label>
@@ -115,12 +115,12 @@
                                             <small class="form-control-feedback" v-if="errors['period.worked_time']" v-text="errors['period.worked_time'][0]"></small>
                                         </div>
                                     </div>
- 
-                                
+
+
                                 </div>
                             </el-tab-pane>
                             <el-tab-pane label="Pagos" name="payments">
-                                
+
                                 <div class="row">
                                     <div class="col-md-3">
                                         <div class="form-group" :class="{'has-danger': errors['payment.payment_method_id']}">
@@ -131,7 +131,7 @@
                                             <small class="form-control-feedback" v-if="errors['payment.payment_method_id']" v-text="errors['payment.payment_method_id'][0]"></small>
                                         </div>
                                     </div>
-                                        
+
                                     <template v-if="show_inputs_payment_method">
                                         <div class="col-md-3">
                                             <div class="form-group" :class="{'has-danger': errors['payment.bank_name']}">
@@ -173,7 +173,7 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <tr v-for="(row, index) in form.payment_dates" :key="index"> 
+                                                <tr v-for="(row, index) in form.payment_dates" :key="index">
                                                     <td>
                                                         <div class="form-group mb-2 mr-2"  >
                                                             <el-date-picker v-model="row.payment_date" type="date" value-format="yyyy-MM-dd" :clearable="false"></el-date-picker>
@@ -193,8 +193,8 @@
 
                             </el-tab-pane>
                             <el-tab-pane label="Devengados" name="accrued">
-                                
-                                <div class="row"> 
+
+                                <div class="row">
 
                                     <template v-if="isAdjustNote">
                                         <div class="col-md-3">
@@ -210,7 +210,7 @@
                                             </div>
                                         </div>
                                     </template>
-                                    
+
                                     <div class="col-md-3">
                                         <div class="form-group" :class="{'has-danger': errors['accrued.worked_days']}">
                                             <label class="control-label">Días trabajados<span class="text-danger"> *</span></label>
@@ -218,7 +218,7 @@
                                             <small class="form-control-feedback" v-if="errors['accrued.worked_days']" v-text="errors['accrued.worked_days'][0]"></small>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="col-md-3">
                                         <div class="form-group" :class="{'has-danger': errors['accrued.salary']}">
                                             <label class="control-label">Salario<span class="text-danger"> *</span></label>
@@ -248,9 +248,9 @@
                                             <button type="button" class="btn btn-md waves-effect waves-light btn-primary" @click.prevent="clickAddExtraHours">Agregar Horas Extras</button>
                                         </div>
                                     </div>
-                                </div>  
+                                </div>
 
-                                
+
                                 <el-tabs type="border-card" v-model="activeNameAccrued" class="mt-4">
 
                                     <el-tab-pane label="Vacaciones" name="accrued-vacations">
@@ -262,7 +262,7 @@
                                                     <h4>Vacaciones disfrutadas</h4>
                                                     <small class="form-control-feedback" v-if="errors['accrued.common_vacation']" v-text="errors['accrued.common_vacation'][0]"></small>
                                                 </div>
-                                            </div> 
+                                            </div>
 
                                             <div class="col-md-12">
                                                 <table>
@@ -278,7 +278,7 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <tr v-for="(row, index) in form.accrued.common_vacation" :key="index"> 
+                                                        <tr v-for="(row, index) in form.accrued.common_vacation" :key="index">
                                                             <td>
                                                                 <div class="form-group mb-2 mr-2">
                                                                     <el-date-picker
@@ -302,14 +302,14 @@
                                                                 </div>
                                                             </td>
                                                             <td>
-                                                                
+
                                                                 <div class="form-group" v-if="errors[`accrued.common_vacation.${index}.payment`]"  :class="{'has-danger': errors[`accrued.common_vacation.${index}.payment`]}">
                                                                     <small class="form-control-feedback"  v-text="errors[`accrued.common_vacation.${index}.payment`][0]"></small>
                                                                 </div>
                                                                 <div class="form-group mb-2 mr-2"  >
                                                                     <el-input-number v-model="row.payment" :min="0" controls-position="right" @change="changePaymentCommonVacation(index)"></el-input-number>
                                                                 </div>
-                                                            </td> 
+                                                            </td>
 
                                                             <td class="series-table-actions text-center">
                                                                 <button  type="button" class="btn waves-effect waves-light btn-xs btn-danger" @click.prevent="clickCancelCommonVacation(index)">
@@ -323,8 +323,8 @@
                                             </div>
                                         </div>
                                         <!-- Vacaciones disfrutadas -->
-        
-                                        <!-- Vacaciones compensadas --> 
+
+                                        <!-- Vacaciones compensadas -->
                                         <div class="row mt-2">
                                             <div class="col-md-12">
                                                 <div class="form-group" :class="{'has-danger': errors['accrued.paid_vacation']}">
@@ -347,7 +347,7 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <tr v-for="(row, index) in form.accrued.paid_vacation" :key="index"> 
+                                                        <tr v-for="(row, index) in form.accrued.paid_vacation" :key="index">
                                                             <td>
                                                                 <div class="form-group mb-2 mr-2">
                                                                     <el-date-picker
@@ -377,7 +377,7 @@
                                                                 <div class="form-group mb-2 mr-2"  >
                                                                     <el-input-number v-model="row.payment" :min="0" controls-position="right" @change="changePaymentPaidVacation(index)"></el-input-number>
                                                                 </div>
-                                                            </td> 
+                                                            </td>
 
                                                             <td class="series-table-actions text-center">
                                                                 <button  type="button" class="btn waves-effect waves-light btn-xs btn-danger" @click.prevent="clickCancelPaidVacation(index)">
@@ -391,11 +391,11 @@
                                             </div>
 
                                         </div>
-                                        <!-- Vacaciones compensadas --> 
+                                        <!-- Vacaciones compensadas -->
 
                                     </el-tab-pane>
                                     <el-tab-pane label="Prestación social" name="accrued-social">
-                                        
+
                                         <div class="row mt-4">
                                             <div class="col-md-6">
                                                 <div class="form-group" :class="{'has-danger': errors['accrued.service_bonus']}">
@@ -425,9 +425,9 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <tr v-for="(row, index) in form.accrued.service_bonus" :key="index"> 
+                                                        <tr v-for="(row, index) in form.accrued.service_bonus" :key="index">
                                                             <td>
-                                                                
+
                                                                 <div class="form-group" v-if="errors[`accrued.service_bonus.${index}.quantity`]"  :class="{'has-danger': errors[`accrued.service_bonus.${index}.quantity`]}">
                                                                     <small class="form-control-feedback"  v-text="errors[`accrued.service_bonus.${index}.quantity`][0]"></small>
                                                                 </div>
@@ -447,7 +447,7 @@
                                                                 </div>
                                                             </td>
                                                             <td>
-                                                                
+
                                                                 <div class="form-group" v-if="errors[`accrued.service_bonus.${index}.paymentNS`]"  :class="{'has-danger': errors[`accrued.service_bonus.${index}.paymentNS`]}">
                                                                     <small class="form-control-feedback"  v-text="errors[`accrued.service_bonus.${index}.paymentNS`][0]"></small>
                                                                 </div>
@@ -484,9 +484,9 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <tr v-for="(row, index) in form.accrued.severance" :key="index"> 
+                                                        <tr v-for="(row, index) in form.accrued.severance" :key="index">
                                                             <td>
-                                                                
+
                                                                 <div class="form-group" v-if="errors[`accrued.severance.${index}.payment`]"  :class="{'has-danger': errors[`accrued.severance.${index}.payment`]}">
                                                                     <small class="form-control-feedback"  v-text="errors[`accrued.severance.${index}.payment`][0]"></small>
                                                                 </div>
@@ -525,12 +525,12 @@
                                             <!-- Cesantías -->
                                         </div>
 
-                                        
+
 
                                     </el-tab-pane>
 
                                     <el-tab-pane label="Novedades" name="accrued-novelty">
-                                        
+
                                         <!-- Incapacidades -->
                                         <div class="row mt-2">
                                             <div class="col-md-12">
@@ -554,7 +554,7 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <tr v-for="(row, index) in form.accrued.work_disabilities" :key="index"> 
+                                                        <tr v-for="(row, index) in form.accrued.work_disabilities" :key="index">
                                                             <td>
                                                                 <div class="form-group mb-2 mr-2">
                                                                     <el-date-picker
@@ -626,7 +626,7 @@
                                     </el-tab-pane>
 
                                     <el-tab-pane label="Otros" name="accrued-others">
-                                        
+
                                         <div class="row mt-2">
                                             <div class="col-md-6">
                                                 <div class="form-group" :class="{'has-danger': errors['accrued.bonuses']}">
@@ -635,7 +635,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
-                                                
+
                                                 <div class="form-group" :class="{'has-danger': errors['accrued.aid']}">
                                                     <h4>Ayudas</h4>
                                                     <small class="form-control-feedback" v-if="errors['accrued.aid']" v-text="errors['accrued.aid'][0]"></small>
@@ -656,7 +656,7 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <tr v-for="(row, index) in form.accrued.bonuses" :key="index">  
+                                                        <tr v-for="(row, index) in form.accrued.bonuses" :key="index">
                                                             <td>
                                                                 <div class="form-group" v-if="errors[`accrued.bonuses.${index}.salary_bonus`]"  :class="{'has-danger': errors[`accrued.bonuses.${index}.salary_bonus`]}">
                                                                     <small class="form-control-feedback"  v-text="errors[`accrued.bonuses.${index}.salary_bonus`][0]"></small>
@@ -685,7 +685,7 @@
                                                 </table>
                                             </div>
                                             <!-- Bonificaciones -->
-                                            
+
                                             <!-- Ayudas -->
                                             <div class="col-md-6">
                                                 <table>
@@ -700,7 +700,7 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <tr v-for="(row, index) in form.accrued.aid" :key="index">  
+                                                        <tr v-for="(row, index) in form.accrued.aid" :key="index">
                                                             <td>
                                                                 <div class="form-group" v-if="errors[`accrued.aid.${index}.salary_assistance`]"  :class="{'has-danger': errors[`accrued.aid.${index}.salary_assistance`]}">
                                                                     <small class="form-control-feedback"  v-text="errors[`accrued.aid.${index}.salary_assistance`][0]"></small>
@@ -730,7 +730,7 @@
                                             </div>
                                             <!-- Ayudas -->
                                         </div>
-                                        
+
                                         <div class="row mt-4">
                                             <div class="col-md-6">
                                                 <div class="form-group" :class="{'has-danger': errors['accrued.commissions']}">
@@ -759,9 +759,9 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <tr v-for="(row, index) in form.accrued.commissions" :key="index"> 
+                                                        <tr v-for="(row, index) in form.accrued.commissions" :key="index">
                                                             <td>
-                                                                
+
                                                                 <div class="form-group" v-if="errors[`accrued.commissions.${index}.commission`]"  :class="{'has-danger': errors[`accrued.commissions.${index}.commission`]}">
                                                                     <small class="form-control-feedback"  v-text="errors[`accrued.commissions.${index}.commission`][0]"></small>
                                                                 </div>
@@ -784,7 +784,7 @@
                                             <div class="col-md-1">
                                             </div>
                                             <!-- Comisiones -->
-                                            
+
                                             <!-- Pagos a terceros -->
                                             <div class="col-md-5">
                                                 <table>
@@ -798,9 +798,9 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <tr v-for="(row, index) in form.accrued.third_party_payments" :key="index"> 
+                                                        <tr v-for="(row, index) in form.accrued.third_party_payments" :key="index">
                                                             <td>
-                                                                
+
                                                                 <div class="form-group" v-if="errors[`accrued.third_party_payments.${index}.third_party_payment`]"  :class="{'has-danger': errors[`accrued.third_party_payments.${index}.third_party_payment`]}">
                                                                     <small class="form-control-feedback"  v-text="errors[`accrued.third_party_payments.${index}.third_party_payment`][0]"></small>
                                                                 </div>
@@ -825,7 +825,7 @@
                                             <!-- Pagos a terceros -->
                                         </div>
 
-                                        
+
                                         <div class="row mt-4">
                                             <div class="col-md-6">
                                                 <div class="form-group" :class="{'has-danger': errors['accrued.advances']}">
@@ -854,9 +854,9 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <tr v-for="(row, index) in form.accrued.advances" :key="index"> 
+                                                        <tr v-for="(row, index) in form.accrued.advances" :key="index">
                                                             <td>
-                                                                
+
                                                                 <div class="form-group" v-if="errors[`accrued.advances.${index}.advance`]"  :class="{'has-danger': errors[`accrued.advances.${index}.advance`]}">
                                                                     <small class="form-control-feedback"  v-text="errors[`accrued.advances.${index}.advance`][0]"></small>
                                                                 </div>
@@ -879,7 +879,7 @@
                                             <div class="col-md-1">
                                             </div>
                                             <!-- anticipo -->
-                                            
+
                                             <!-- Compensaciones -->
                                             <div class="col-md-6">
                                                 <table>
@@ -894,7 +894,7 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <tr v-for="(row, index) in form.accrued.compensations" :key="index"> 
+                                                        <tr v-for="(row, index) in form.accrued.compensations" :key="index">
                                                             <td>
                                                                 <div class="form-group" v-if="errors[`accrued.compensations.${index}.ordinary_compensation`]"  :class="{'has-danger': errors[`accrued.compensations.${index}.ordinary_compensation`]}">
                                                                     <small class="form-control-feedback"  v-text="errors[`accrued.compensations.${index}.ordinary_compensation`][0]"></small>
@@ -928,7 +928,7 @@
                                         </div>
 
                                         <div class="row mt-4">
-                                            
+
                                             <div class="col-md-12">
                                                 <div class="form-group" :class="{'has-danger': errors['accrued.epctv_bonuses']}">
                                                     <h4>Bono EPCTVs</h4>
@@ -952,7 +952,7 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <tr v-for="(row, index) in form.accrued.epctv_bonuses" :key="index"> 
+                                                        <tr v-for="(row, index) in form.accrued.epctv_bonuses" :key="index">
                                                             <td>
                                                                 <div class="form-group" v-if="errors[`accrued.epctv_bonuses.${index}.paymentS`]"  :class="{'has-danger': errors[`accrued.epctv_bonuses.${index}.paymentS`]}">
                                                                     <small class="form-control-feedback"  v-text="errors[`accrued.epctv_bonuses.${index}.paymentS`][0]"></small>
@@ -968,7 +968,7 @@
                                                                 <div class="form-group mb-2 mr-2"  >
                                                                     <el-input-number v-model="row.paymentNS" :min="0.01" controls-position="right" @change="changeEpctvBonus(index)"></el-input-number>
                                                                 </div>
-                                                            </td> 
+                                                            </td>
                                                             <td>
                                                                 <div class="form-group" v-if="errors[`accrued.epctv_bonuses.${index}.salary_food_payment`]"  :class="{'has-danger': errors[`accrued.epctv_bonuses.${index}.salary_food_payment`]}">
                                                                     <small class="form-control-feedback"  v-text="errors[`accrued.epctv_bonuses.${index}.salary_food_payment`][0]"></small>
@@ -976,7 +976,7 @@
                                                                 <div class="form-group mb-2 mr-2"  >
                                                                     <el-input-number v-model="row.salary_food_payment" :min="0.01" controls-position="right" @change="changeEpctvBonus(index)"></el-input-number>
                                                                 </div>
-                                                            </td> 
+                                                            </td>
                                                             <td>
                                                                 <div class="form-group" v-if="errors[`accrued.epctv_bonuses.${index}.non_salary_food_payment`]"  :class="{'has-danger': errors[`accrued.epctv_bonuses.${index}.non_salary_food_payment`]}">
                                                                     <small class="form-control-feedback"  v-text="errors[`accrued.epctv_bonuses.${index}.non_salary_food_payment`][0]"></small>
@@ -984,7 +984,7 @@
                                                                 <div class="form-group mb-2 mr-2"  >
                                                                     <el-input-number v-model="row.non_salary_food_payment" :min="0.01" controls-position="right" @change="changeEpctvBonus(index)"></el-input-number>
                                                                 </div>
-                                                            </td> 
+                                                            </td>
 
                                                             <td class="series-table-actions text-center">
                                                                 <button  type="button" class="btn waves-effect waves-light btn-xs btn-danger" @click.prevent="clickCancelEpctvBonus(index)">
@@ -1023,9 +1023,9 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <tr v-for="(row, index) in form.accrued.other_concepts" :key="index">  
+                                                        <tr v-for="(row, index) in form.accrued.other_concepts" :key="index">
                                                             <td>
-                                                                
+
                                                                 <template v-if="errors[`accrued.other_concepts.${index}.description_concept`]">
                                                                     <div class="form-group" :class="{'has-danger': errors[`accrued.other_concepts.${index}.description_concept`]}">
                                                                         <small class="form-control-feedback" v-text="errors[`accrued.other_concepts.${index}.description_concept`][0]"></small>
@@ -1063,10 +1063,10 @@
                                                     </tbody>
                                                 </table>
                                             </div>
-                                            
+
                                         </div>
                                         <!-- Otros conceptos -->
-                                        
+
                                         <!-- Huelgas Legales -->
                                         <div class="row mt-4">
                                             <div class="col-md-12">
@@ -1074,7 +1074,7 @@
                                                     <h4>Huelgas Legales</h4>
                                                     <small class="form-control-feedback" v-if="errors['accrued.legal_strike']" v-text="errors['accrued.legal_strike'][0]"></small>
                                                 </div>
-                                            </div> 
+                                            </div>
 
                                             <div class="col-md-12">
                                                 <table>
@@ -1090,7 +1090,7 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <tr v-for="(row, index) in form.accrued.legal_strike" :key="index"> 
+                                                        <tr v-for="(row, index) in form.accrued.legal_strike" :key="index">
                                                             <td>
                                                                 <div class="form-group mb-2 mr-2">
                                                                     <el-date-picker
@@ -1114,7 +1114,7 @@
                                                                 </div>
                                                             </td>
                                                             <!-- <td>
-                                                                
+
                                                                 <div class="form-group" v-if="errors[`accrued.legal_strike.${index}.payment`]"  :class="{'has-danger': errors[`accrued.legal_strike.${index}.payment`]}">
                                                                     <small class="form-control-feedback"  v-text="errors[`accrued.legal_strike.${index}.payment`][0]"></small>
                                                                 </div>
@@ -1137,7 +1137,7 @@
                                         <!-- Huelgas Legales -->
 
                                     </el-tab-pane>
-                                    
+
                                     <el-tab-pane label="Opcionales" name="accrued-optional">
                                         <div class="row mt-2 mb-4">
                                             <div class="col-md-3">
@@ -1155,7 +1155,7 @@
                                                     <small class="form-control-feedback" v-if="errors['accrued.endowment']" v-text="errors['accrued.endowment'][0]"></small>
                                                 </div>
                                             </div>
-                                            
+
                                             <div class="col-md-3">
                                                 <div class="form-group" :class="{'has-danger': errors['accrued.sustenance_support']}">
                                                     <label class="control-label">Apoyo de sustento</label>
@@ -1163,7 +1163,7 @@
                                                     <small class="form-control-feedback" v-if="errors['accrued.sustenance_support']" v-text="errors['accrued.sustenance_support'][0]"></small>
                                                 </div>
                                             </div>
-                                            
+
                                             <div class="col-md-3">
                                                 <div class="form-group" :class="{'has-danger': errors['accrued.withdrawal_bonus']}">
                                                     <label class="control-label">Bono de retiro</label>
@@ -1171,7 +1171,7 @@
                                                     <small class="form-control-feedback" v-if="errors['accrued.withdrawal_bonus']" v-text="errors['accrued.withdrawal_bonus'][0]"></small>
                                                 </div>
                                             </div>
-                                            
+
                                             <div class="col-md-3">
                                                 <div class="form-group" :class="{'has-danger': errors['accrued.compensation']}">
                                                     <label class="control-label">Indemnización</label>
@@ -1179,7 +1179,7 @@
                                                     <small class="form-control-feedback" v-if="errors['accrued.compensation']" v-text="errors['accrued.compensation'][0]"></small>
                                                 </div>
                                             </div>
-                                            
+
                                             <div class="col-md-3">
                                                 <div class="form-group" :class="{'has-danger': errors['accrued.salary_viatics']}">
                                                     <label class="control-label">Manutención y/o alojamiento</label>
@@ -1187,7 +1187,7 @@
                                                     <small class="form-control-feedback" v-if="errors['accrued.salary_viatics']" v-text="errors['accrued.salary_viatics'][0]"></small>
                                                 </div>
                                             </div>
-                                            
+
                                             <div class="col-md-3">
                                                 <div class="form-group" :class="{'has-danger': errors['accrued.non_salary_viatics']}">
                                                     <label class="control-label">Manutención y/o alojamiento no salariales</label>
@@ -1195,7 +1195,7 @@
                                                     <small class="form-control-feedback" v-if="errors['accrued.non_salary_viatics']" v-text="errors['accrued.non_salary_viatics'][0]"></small>
                                                 </div>
                                             </div>
-                                            
+
                                             <div class="col-md-3">
                                                 <div class="form-group" :class="{'has-danger': errors['accrued.refund']}">
                                                     <label class="control-label">Reintegro</label>
@@ -1204,14 +1204,14 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                     </el-tab-pane>
                                 </el-tabs>
 
                             </el-tab-pane>
                             <el-tab-pane label="Deducciones" name="deduction">
-                                
-                                <div class="row"> 
+
+                                <div class="row">
                                     <div class="col-md-3">
                                         <div class="form-group" :class="{'has-danger': errors['deduction.eps_type_law_deductions_id']}">
                                             <label class="control-label">EPS - Deducciones por ley
@@ -1255,7 +1255,7 @@
 
                                     <!-- fondossp -->
                                     <template>
-                                        
+
                                         <div class="col-md-3">
                                             <div class="form-group" :class="{'has-danger': errors['deduction.fondossp_type_law_deductions_id']}">
                                                 <label class="control-label">Fondo de seguridad pensional</label>
@@ -1275,7 +1275,7 @@
                                             </div>
                                         </div>
 
-                                        
+
                                         <div class="col-md-3">
                                             <div class="form-group" :class="{'has-danger': errors['deduction.fondossp_sub_type_law_deductions_id']}">
                                                 <label class="control-label">Fondo de subsistencia</label>
@@ -1297,7 +1297,7 @@
 
                                     </template>
                                     <!-- fondossp -->
-                                    
+
                                     <div class="col-md-3">
                                         <div class="form-group" :class="{'has-danger': errors['deduction.deductions_total']}">
                                             <label class="control-label">Total deducciones<span class="text-danger"> *</span></label>
@@ -1306,10 +1306,10 @@
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <el-tabs type="border-card" v-model="activeNameDeduction" class="mt-4">
                                     <el-tab-pane label="Otros" name="deduction-others">
-                                        
+
                                         <div class="row mt-2">
                                             <div class="col-md-6">
                                                 <div class="form-group">
@@ -1335,7 +1335,7 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <tr v-for="(row, index) in form.deduction.labor_union" :key="index"> 
+                                                        <tr v-for="(row, index) in form.deduction.labor_union" :key="index">
                                                             <td>
                                                                 <div class="form-group" v-if="errors[`deduction.labor_union.${index}.percentage`]"  :class="{'has-danger': errors[`deduction.labor_union.${index}.percentage`]}">
                                                                     <small class="form-control-feedback"  v-text="errors[`deduction.labor_union.${index}.percentage`][0]"></small>
@@ -1363,7 +1363,7 @@
                                                 </table>
                                             </div>
                                             <!-- Sindicatos -->
-                                            
+
                                             <!-- Sanciones -->
                                             <div class="col-md-6">
                                                 <table>
@@ -1377,7 +1377,7 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <tr v-for="(row, index) in form.deduction.sanctions" :key="index"> 
+                                                        <tr v-for="(row, index) in form.deduction.sanctions" :key="index">
                                                             <td>
                                                                 <div class="form-group" v-if="errors[`deduction.sanctions.${index}.public_sanction`]"  :class="{'has-danger': errors[`deduction.sanctions.${index}.public_sanction`]}">
                                                                     <small class="form-control-feedback"  v-text="errors[`deduction.sanctions.${index}.public_sanction`][0]"></small>
@@ -1417,7 +1417,7 @@
 
                                     </el-tab-pane>
                                     <el-tab-pane label="Opcionales" name="deduction-optionals">
-                                        
+
                                         <!-- opcionales -->
                                         <div class="row mt-2 mb-2">
 
@@ -1498,7 +1498,7 @@
 
                             </el-tab-pane>
                         </el-tabs>
- 
+
                     </div>
 
 
@@ -1511,15 +1511,15 @@
 
             <worker-form :showDialog.sync="showDialogNewWorker"
                         :external="true"></worker-form>
- 
 
-            <document-payroll-options :showDialog.sync="showDialogDocumentPayrollOptions"     
+
+            <document-payroll-options :showDialog.sync="showDialogDocumentPayrollOptions"
                             :recordId="recordId"
                             :showDownload="true"
                             :showClose="false">
                             </document-payroll-options>
-                            
-            <document-payroll-extra-hours :showDialog.sync="showDialogDocumentPayrollExtraHours"     
+
+            <document-payroll-extra-hours :showDialog.sync="showDialogDocumentPayrollExtraHours"
                             :form="form"
                             :errors="errors"
                             @sumTotalsExtraHoursForm="sumTotalsExtraHoursForm"
@@ -1527,7 +1527,7 @@
                             >
                             </document-payroll-extra-hours>
         </div>
-        <div class="tab-content" v-else>
+        <div class="card-body" v-else>
             <div class="invoice">
                 <div class="row mt-5 mb-5">
                 </div>
@@ -1536,14 +1536,14 @@
 
     </div>
 </template>
- 
-<script> 
 
-    import WorkerForm from '../workers/form.vue' 
-    import DocumentPayrollOptions from './partials/options.vue' 
-    import DocumentPayrollExtraHours from './partials/extra_hours.vue' 
-    import DocumentPayrollLicenses from './partials/licenses.vue' 
-    import DocumentPayrollDeductionOthers from './partials/deduction_others.vue' 
+<script>
+
+    import WorkerForm from '../workers/form.vue'
+    import DocumentPayrollOptions from './partials/options.vue'
+    import DocumentPayrollExtraHours from './partials/extra_hours.vue'
+    import DocumentPayrollLicenses from './partials/licenses.vue'
+    import DocumentPayrollDeductionOthers from './partials/deduction_others.vue'
     import {documentPayrollMixin} from '../../mixins/document_payroll'
     import {getValueIfNull} from '../../helpers/functions'
 
@@ -1551,10 +1551,10 @@
         props: ['affected_document_payroll_id', 'type_payroll_adjust_note_id'],
         mixins: [documentPayrollMixin],
         components: {
-            WorkerForm, 
-            DocumentPayrollOptions, 
-            DocumentPayrollExtraHours, 
-            DocumentPayrollLicenses, 
+            WorkerForm,
+            DocumentPayrollOptions,
+            DocumentPayrollExtraHours,
+            DocumentPayrollLicenses,
             DocumentPayrollDeductionOthers
         },
         data() {
@@ -1569,9 +1569,9 @@
                 all_workers: [],
                 workers: [],
                 payroll_periods: [],
-                payment_methods: [], 
-                type_law_deductions: [], 
-                type_documents: [], 
+                payment_methods: [],
+                type_law_deductions: [],
+                type_documents: [],
                 resolutions:[],
                 type_disabilities: [],
                 showDialogNewWorker: false,
@@ -1588,7 +1588,7 @@
                 quantity_days_year: 360,
                 loading: false
             }
-        }, 
+        },
         async created() {
 
             await this.initForm()
@@ -1597,7 +1597,7 @@
             await this.checkDocumentPayrollAdjustNote()
 
             this.loading_form = true
-        }, 
+        },
         computed: {
             getPercentageEpsTypeLawDeduction: function () {
                 return this.getTypeLawDeduction(this.form.deduction.eps_type_law_deductions_id)
@@ -1625,7 +1625,7 @@
                 {
                     this.loading = true
                     await this.$http.get(`/${this.resource_adjust_note}/record/${this.affected_document_payroll_id}`).then(response => {
-                        
+
                         this.setFormDataAdjustNote(response.data.data)
                         // console.log(response)
                     })
@@ -1634,13 +1634,13 @@
                     })
                 }
 
-            }, 
+            },
             setFormDataAdjustNote(data){
 
                 this.form.period = data.period
                 this.form.payroll_period_id = data.payroll_period_id
                 this.form.worker_id = data.worker_id
-                this.form.payment = data.payment 
+                this.form.payment = data.payment
                 this.form.payment_dates = data.payment_dates
                 this.form.number_full = data.number_full
                 this.form.type_payroll_adjust_note_id = this.type_payroll_adjust_note_id //tipo nómina ajuste (reemplazo)
@@ -1649,10 +1649,10 @@
                 this.reloadDataWorkers(this.form.worker_id)
 
                 // devengados
-                this.form.accrued.total_base_salary = parseFloat(data.worker_total_base_salary) //asignar salario base 
+                this.form.accrued.total_base_salary = parseFloat(data.worker_total_base_salary) //asignar salario base
 
-                this.form.accrued.worked_days = data.accrued.worked_days 
-                this.form.accrued.salary = data.accrued.salary 
+                this.form.accrued.worked_days = data.accrued.worked_days
+                this.form.accrued.salary = data.accrued.salary
                 this.form.accrued.accrued_total = data.accrued.accrued_total
 
                 this.form.accrued.transportation_allowance = getValueIfNull(data.accrued.transportation_allowance, undefined)
@@ -1696,10 +1696,10 @@
                 // deducciones
 
                 this.form.deduction.eps_type_law_deductions_id = data.deduction.eps_type_law_deductions_id
-                this.form.deduction.eps_deduction = data.deduction.eps_deduction 
+                this.form.deduction.eps_deduction = data.deduction.eps_deduction
                 this.form.deduction.pension_type_law_deductions_id = data.deduction.pension_type_law_deductions_id
-                this.form.deduction.pension_deduction = data.deduction.pension_deduction 
-                this.form.deduction.deductions_total = data.deduction.deductions_total 
+                this.form.deduction.pension_deduction = data.deduction.pension_deduction
+                this.form.deduction.deductions_total = data.deduction.deductions_total
 
                 this.form.deduction.fondossp_type_law_deductions_id = getValueIfNull(data.deduction.fondossp_type_law_deductions_id, undefined)
                 this.form.deduction.fondosp_deduction_SP = getValueIfNull(data.deduction.fondosp_deduction_SP, undefined)
@@ -1736,7 +1736,7 @@
                 // await this.calculateTotal()
 
                 await this.changeWorkedDays()
-                
+
             },
             getValueFromInputUndefined(value){
                 return value ? value : 0 //obtener el valor de un input que puede ser un campo undefined
@@ -1778,7 +1778,7 @@
 
             },
             changeFondosspSubTypeLawDeduction(){
-                
+
                 if(this.form.deduction.fondossp_sub_type_law_deductions_id)
                 {
                     this.form.deduction.fondosp_deduction_sub = this.getTotalLawDeduction(this.form.deduction.fondossp_sub_type_law_deductions_id)
@@ -1804,7 +1804,7 @@
                     this.form.deduction.pension_deduction = 0
 
                     this.form_disabled.inputs_type_worker_sena = true
-                    
+
                     this.form.deduction.fondossp_type_law_deductions_id = undefined
                     this.form.deduction.fondosp_deduction_SP = undefined
                     this.form.deduction.fondossp_sub_type_law_deductions_id = undefined
@@ -1830,7 +1830,7 @@
                     this.changeFondosspTypeLawDeduction()
                     this.changeFondosspSubTypeLawDeduction()
                 }
-                
+
             },
             clickAddExtraHours(){
 
@@ -1849,7 +1849,7 @@
             changePeriodSettlement(){
 
                 this.form.period.worked_time = moment(this.form.period.settlement_end_date).diff(moment(this.form.period.settlement_start_date), 'days', true)
-                
+
             },
             setInitialDataPeriod(){
 
@@ -1882,12 +1882,12 @@
                         bank_name: null,
                         account_type: null,
                         account_number: null,
-                    }, 
-                    payment_dates: [], 
+                    },
+                    payment_dates: [],
                     accrued :{
-                        worked_days: this.quantity_days_month, 
+                        worked_days: this.quantity_days_month,
                         total_base_salary: 0, //salario base del empleado (equivalente a 30 dias), no se afecta por los dias trabajados
-                        salary: 0, 
+                        salary: 0,
                         accrued_total: 0,
                         transportation_allowance: undefined, //se usa undefined ya que el componente input-number le asigna 0 al valor null
                         telecommuting: undefined,
@@ -1929,22 +1929,22 @@
                     },
                     deduction: {
                         eps_type_law_deductions_id: 1,
-                        eps_deduction: 0, 
+                        eps_deduction: 0,
                         pension_type_law_deductions_id: 5,
-                        pension_deduction: 0, 
-                        deductions_total: 0, 
-                        
+                        pension_deduction: 0,
+                        deductions_total: 0,
+
                         fondossp_type_law_deductions_id: undefined,
                         fondosp_deduction_SP: undefined,
                         fondossp_sub_type_law_deductions_id: undefined,
                         fondosp_deduction_sub: undefined,
 
-                        afc: undefined, 
+                        afc: undefined,
                         refund: undefined,
                         debt: undefined,
                         education: undefined,
-                        
-                        voluntary_pension: undefined, 
+
+                        voluntary_pension: undefined,
                         withholding_at_source: undefined,
                         cooperative: undefined,
                         tax_liens: undefined,
@@ -1961,7 +1961,7 @@
 
                 this.errors = {}
 
-                
+
                 this.form_disabled = {
                     payroll_period_id : false,
                     admision_date : false,
@@ -1990,7 +1990,7 @@
             },
             // sindicatos
             recalculateLaborUnion(){
-                
+
                 this.form.deduction.labor_union.forEach((element, index) => {
                     this.setDeductionLaborUnion(index)
                 })
@@ -2000,7 +2000,7 @@
 
                 this.setDeductionLaborUnion(index)
                 this.calculateTotalDeduction()
-                
+
             },
             setDeductionLaborUnion(index){
                 this.form.deduction.labor_union[index].deduction = this.roundNumber(this.form.accrued.total_base_salary * this.percentageToFactor(this.form.deduction.labor_union[index].percentage))
@@ -2009,7 +2009,7 @@
 
                 const salary_validation = this.salaryValidation()
                 if(!salary_validation.success) return this.$message.warning(salary_validation.message)
-                
+
                 this.form.deduction.labor_union.push({
                     percentage :  0,
                     deduction :  0,
@@ -2026,7 +2026,7 @@
                 this.calculateTotalDeduction()
             },
             clickAddSanction(){
-                
+
                 this.form.deduction.sanctions.push({
                     public_sanction :  0,
                     private_sanction :  0,
@@ -2136,22 +2136,22 @@
                 const url = (this.isAdjustNote) ? `/${this.resource_adjust_note}/tables/${this.type_payroll_adjust_note_id}` : `/${this.resource}/tables`
 
                 this.loading = true
-                
+
                 await this.$http.get(`${url}`)
                     .then(response => {
-                        
+
                         this.all_workers = response.data.workers
-                        this.workers = response.data.workers 
-                        
-                        this.payroll_periods = response.data.payroll_periods 
-                        this.payment_methods = response.data.payment_methods 
-                        this.type_law_deductions = response.data.type_law_deductions 
-                        // this.type_documents = response.data.type_documents 
+                        this.workers = response.data.workers
+
+                        this.payroll_periods = response.data.payroll_periods
+                        this.payment_methods = response.data.payment_methods
+                        this.type_law_deductions = response.data.type_law_deductions
+                        // this.type_documents = response.data.type_documents
                         this.resolutions = response.data.resolutions
                         this.type_disabilities = response.data.type_disabilities
                         this.advanced_configuration = response.data.advanced_configuration
 
-                        this.filterWorkers(); 
+                        this.filterWorkers();
                     })
                     .then(()=> {
                         this.loading = false
@@ -2165,7 +2165,7 @@
                     this.form.resolution_number = resolution.resolution_number
                 }
 
-            }, 
+            },
             searchRemoteWorkers(input) {
 
                 if (input.length > 2) {
@@ -2190,14 +2190,14 @@
             resetForm() {
                 this.activeName = 'period'
                 this.initForm()
-            },  
-            filterWorkers() { 
+            },
+            filterWorkers() {
                 this.workers = this.all_workers
-            }, 
+            },
             close() {
                 location.href = `/${this.resource}`
             },
-            reloadDataWorkers(worker_id) { 
+            reloadDataWorkers(worker_id) {
                 this.$http.get(`/payroll/workers/search-by-id/${worker_id}`).then((response) => {
                     this.workers = response.data.workers
                     this.form.worker_id = worker_id
@@ -2247,9 +2247,9 @@
                 let fondosp_deduction_sub = this.getValueFromInputUndefined(this.form.deduction.fondosp_deduction_sub)
 
 
-                this.form.deduction.deductions_total = this.roundNumber( 
-                                                            parseFloat(this.form.deduction.eps_deduction) 
-                                                            + parseFloat(this.form.deduction.pension_deduction) 
+                this.form.deduction.deductions_total = this.roundNumber(
+                                                            parseFloat(this.form.deduction.eps_deduction)
+                                                            + parseFloat(this.form.deduction.pension_deduction)
                                                             + total_labor_union
                                                             + total_sanctions
                                                             + total_orders
@@ -2273,7 +2273,7 @@
             sumEpctvBonuses(){
                 return _.sumBy(this.form.accrued.epctv_bonuses, (row) => {
                     return this.getValueFromInputUndefined(row['paymentS']) + this.getValueFromInputUndefined(row['paymentNS']) + this.getValueFromInputUndefined(row['salary_food_payment']) + this.getValueFromInputUndefined(row['non_salary_food_payment'])
-                }) 
+                })
             },
             calculateTotalAccrued(){
 
@@ -2290,9 +2290,9 @@
                 let total_paid_vacation = this.sumValueFromArray(this.form.accrued.paid_vacation, 'payment')
 
                 let total_bonuses = this.sumValueArrayValidateProperty(this.form.accrued.bonuses, 'salary_bonus') + this.sumValueArrayValidateProperty(this.form.accrued.bonuses, 'non_salary_bonus')
-                
+
                 let total_aid = this.sumValueArrayValidateProperty(this.form.accrued.aid, 'salary_assistance') + this.sumValueArrayValidateProperty(this.form.accrued.aid, 'non_salary_assistance')
-                
+
                 let total_other_concepts = this.sumValueArrayValidateProperty(this.form.accrued.other_concepts, 'salary_concept') + this.sumValueArrayValidateProperty(this.form.accrued.other_concepts, 'non_salary_concept')
 
                 let total_commissions = this.sumValueFromArray(this.form.accrued.commissions, 'commission')
@@ -2311,7 +2311,7 @@
 
 
                 this.form.accrued.accrued_total = this.roundNumber(
-                                                    parseFloat(this.form.accrued.salary) 
+                                                    parseFloat(this.form.accrued.salary)
                                                     + (this.form.accrued.transportation_allowance ? parseFloat(this.form.accrued.transportation_allowance) : 0)
                                                     + this.form.accrued.total_extra_hours
                                                     + total_work_disability
@@ -2372,7 +2372,7 @@
                 // this.calculateTotalAccrued()
                 this.calculateTotal()
             },
-            async changeWorker() { 
+            async changeWorker() {
 
                 // let worker = await _.find(this.workers, {id : this.form.worker_id})
                 this.form.select_worker = await _.find(this.workers, {id : this.form.worker_id})
@@ -2381,10 +2381,10 @@
                 {
                     //autocompletar campos
                     await this.autocompleteDataFromWorker(this.form.select_worker)
-    
+
                     //recalcular campos que utilizan el salario base del empleado para calculos, estos se ven afectados por el mismo
                     await this.recalculateData()
-    
+
                     await this.calculateTotal()
                 }
 
@@ -2398,7 +2398,7 @@
             async recalculateData(){
 
                 // recalcular campos devengados
-                
+
                 await this.calculateTransportationAllowance()
 
                 //recalcular pagos(totales) de las horas extras, estas se calculan en base al salario base
@@ -2447,7 +2447,7 @@
 
             },
             changePayrollPeriod(){
-                
+
                 let payroll_period = _.find(this.payroll_periods, { id : this.form.payroll_period_id })
                 this.cleanPaymentDates()
 
@@ -2459,7 +2459,7 @@
 
                 // quincenal
                 if(payroll_period.id == 4){
-                    
+
                     const start_date = moment().startOf('month')
                     const end_date = moment().endOf('month').format('YYYY-MM-DD')
                     let add_quantity_days = parseInt(moment().daysInMonth() / 2) - 1
@@ -2470,7 +2470,7 @@
 
                     // fin de mes
                     this.clickAddPaymentDate(end_date)
-                    
+
                 }
 
             },
@@ -2527,7 +2527,7 @@
 
                     this.form_disabled.payment = false
                 }
-                
+
                 this.changePaymentMethod()
 
             },
@@ -2590,7 +2590,7 @@
                 }).then(() => {
                     this.loading_submit = false;
                 });
-            }, 
+            },
         }
     }
 </script>

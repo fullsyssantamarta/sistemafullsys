@@ -3,7 +3,7 @@
         <div class="card-header bg-info">
             Nueva Nota ({{ note.prefix }}-{{ note.number }})
         </div>
-        <div class="tab-content" v-if="loading_form">
+        <div class="card-body" v-if="loading_form">
             <div class="invoice">
                 <form autocomplete="off" @submit.prevent="submit">
                     <div class="form-body">

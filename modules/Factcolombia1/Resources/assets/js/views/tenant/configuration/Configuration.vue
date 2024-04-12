@@ -3,7 +3,7 @@
         <div class="card-header bg-info">
             <h3 class="my-0">Configuracion de la Empresa</h3>
         </div>
-        <div class="tab-content">
+        <div class="card-body">
             <div class="general-data">
                 <form autocomplete="off">
                     <div class="form-body">
@@ -238,7 +238,7 @@
             </div>
         </div>
 
-        <div class="tab-content">
+        <div class="card-body">
             <div class="certificado">
                 <form autocomplete="off">
                     <div class="form-body">
@@ -288,7 +288,7 @@
             </div>
         </div>
 
-        <div class="tab-content">
+        <div class="card-body">
             <div class="resolution">
                 <form autocomplete="off">
                     <div class="form-body">

@@ -3,7 +3,7 @@
         <div class="card-header bg-info">
             <h3 class="my-0">Nuevo Ingreso</h3>
         </div>
-        <div class="tab-content">
+        <div class="card-body">
             <form autocomplete="off" @submit.prevent="submit">
                 <div class="form-body">
 
@@ -70,7 +70,7 @@
                             <div class="form-group" :class="{'has-danger': errors.customer}">
                                 <label class="control-label">
                                     Cliente
-                                </label>                                
+                                </label>
                                 <el-input v-model="form.customer"></el-input>
                                 <small class="form-control-feedback" v-if="errors.customer" v-text="errors.customer[0]"></small>
                             </div>
@@ -241,7 +241,7 @@
                 this.reloadDataSuppliers(customer)
            })
         },
-        methods: {  
+        methods: {
             initForm() {
                 this.errors = {}
                 this.form = {
@@ -326,7 +326,7 @@
                 if(validate.acum_total != parseFloat(this.form.total) || validate.error_by_item > 0) {
                     return this.$message.error('Los montos ingresados no coinciden con el monto total o son incorrectos');
                 }
-                
+
                 this.loading_submit = true
                 this.$http.post(`/${this.resource}`, this.form)
                     .then(response => {

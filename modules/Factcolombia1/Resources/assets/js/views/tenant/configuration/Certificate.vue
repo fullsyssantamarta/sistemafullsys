@@ -3,7 +3,7 @@
         <div class="card-header bg-info">
             <h3 class="my-0">Certificado Digital</h3>
         </div>
-        <div class="tab-content">
+        <div class="card-body">
             <div class="certificado">
                 <form autocomplete="off">
                     <div class="form-body">
@@ -120,7 +120,7 @@
             async getCompany(){
                 await this.$http.post(`/company`).then(response => {
                     this.company = response.data
-                    
+
                     if(this.company.response_certificate){
                         const parse_certificate = JSON.parse(this.company.response_certificate)
                         this.response_message_certificate = `${parse_certificate.message} - ${parse_certificate.certificado.name}`

@@ -1,12 +1,23 @@
+@php
+    $currentRouteName = request()->route()->getName();
+    $sidebar_collapse = $vc_compact_sidebar->compact_sidebar == true ? 'sidebar-left-collapsed' : '';
+    $is_dark_header = $visual->header == 'dark' ? 'header-dark' : '';
+    $is_dark_sidebar = ($visual->sidebars == 'dark' || $visual->bg == 'dark') ? 'sidebar-dark' : 'sidebar-white sidebar-light';
+    $is_dark_theme = $visual->bg == 'dark' ? 'dark' : '';
+
+    $paths = [
+        'tenant.co-documents-aiu.create',
+        'tenant.co-documents-health.create',
+        'tenant.co-documents.create',
+        'tenant.purchases.create',
+        'tenant.purchase-orders.create',
+    ];
+    $is_form = in_array($currentRouteName, $paths) ? 'newinvoice' : '';
+@endphp
 <!DOCTYPE html>
 <html
     lang="{{ str_replace('_', '-', app()->getLocale()) }}"
-    class="fixed no-mobile-device custom-scroll
-        {{$vc_compact_sidebar->compact_sidebar == true ? 'sidebar-left-collapsed' : ''}}
-        {{$visual->header == 'dark' ? 'header-dark' : ''}}
-        {{$visual->sidebars == 'dark' ? '' : 'sidebar-light'}}
-        {{$visual->bg == 'dark' ? 'dark' : ''}}
-        ">
+    class="fixed no-mobile-device custom-scroll {{$sidebar_collapse}} {{ $is_dark_header }} {{ $is_dark_sidebar }} {{ $is_dark_theme}} {{ $is_form }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -58,6 +69,7 @@
 
     <link rel="stylesheet" href="{{ asset('porto-light/css/theme.css') }}" />
     <link rel="stylesheet" href="{{ asset('porto-light/css/custom.css') }}" />
+    <link rel="stylesheet" href="{{ asset('porto-light/css/skins/theme-modern.css')}}" />
 
     @if (file_exists(public_path('theme/custom_styles.css')))
         <link rel="stylesheet" href="{{ asset('theme/custom_styles.css') }}" />
@@ -91,9 +103,7 @@
             color: #0088CC;
         }
 
-        ul.nav-main > li.nav-active > a {
-            box-shadow: 2px 0 0 #0088CC inset;
-        }
+
         .el-checkbox__label {
             font-size: 13px;
         }
