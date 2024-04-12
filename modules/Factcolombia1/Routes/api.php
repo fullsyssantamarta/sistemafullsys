@@ -22,6 +22,7 @@ if ($currentHostname) {
             Route::prefix('co-documents')->group(function() {
                 Route::get('tables', 'Api\Tenant\DocumentController@tables');
                 Route::post('', 'Api\Tenant\DocumentController@store');
+                Route::get('items-search', 'Api\Tenant\DocumentController@searchItems');
             });
         });
     });
