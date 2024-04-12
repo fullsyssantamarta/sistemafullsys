@@ -4,7 +4,7 @@ $hostname = app(Hyn\Tenancy\Contracts\CurrentHostname::class);
 if ($hostname) {
     Route::domain($hostname->fqdn)->group(function() {
 
-        Route::post('login', 'Tenant\Api\MobileController@login');
+        Route::post('login', 'Api\Tenant\AuthController@login');
 
         Route::middleware(['auth:api', 'locked.tenant'])->group(function() {
             //MOBILE
