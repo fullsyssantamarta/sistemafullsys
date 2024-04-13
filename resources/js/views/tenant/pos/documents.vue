@@ -9,19 +9,19 @@
             </div>
         </div>
         <div class="card mb-0">
-            <div class="data-table-visible-columns">
-                <el-dropdown :hide-on-click="false">
-                    <el-button type="primary">
-                        Mostrar/Ocultar columnas<i class="el-icon-arrow-down el-icon--right"></i>
-                    </el-button>
-                    <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item v-for="(column, index) in columns" :key="index">
-                            <el-checkbox v-model="column.visible">{{ column.title }}</el-checkbox>
-                        </el-dropdown-item>
-                    </el-dropdown-menu>
-                </el-dropdown>
-            </div>
-            <div class="card-body">
+            <div class="card-body pt-0">
+                <div class="row p-2 justify-content-end">
+                    <el-dropdown :hide-on-click="false">
+                        <el-button type="primary">
+                            Mostrar/Ocultar columnas<i class="el-icon-arrow-down el-icon--right"></i>
+                        </el-button>
+                        <el-dropdown-menu slot="dropdown">
+                            <el-dropdown-item v-for="(column, index) in columns" :key="index">
+                                <el-checkbox v-model="column.visible">{{ column.title }}</el-checkbox>
+                            </el-dropdown-item>
+                        </el-dropdown-menu>
+                    </el-dropdown>
+                </div>
                 <data-table :resource="resource">
                     <tr slot="heading">
                         <th>#</th>

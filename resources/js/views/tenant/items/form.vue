@@ -75,7 +75,7 @@
                     <div class="col-md-6">
                         <div class="form-group" :class="{'has-danger': errors.tax_id}">
                             <label class="control-label">Impuesto (Venta)</label>
-                            <a href="#" class="control-label font-weight-bold text-info" @click="form.tax_id = null"> [ * Excluido]</a>
+                            <a href="#" class="control-label" @click="form.tax_id = null"> [ * Excluido]</a>
                             <el-select v-model="form.tax_id" filterable>
                                 <el-option v-for="option in taxes" :key="option.id" :value="option.id" :label="option.name"></el-option>
                             </el-select>
@@ -100,9 +100,9 @@
                                 Categoría
                             </label>
 
-                            <a href="#" v-if="form_category.add == false" class="control-label font-weight-bold text-info" @click="form_category.add = true"> [ + Nuevo]</a>
-                            <a href="#" v-if="form_category.add == true" class="control-label font-weight-bold text-info" @click="saveCategory()"> [ + Guardar]</a>
-                            <a href="#" v-if="form_category.add == true" class="control-label font-weight-bold text-danger" @click="form_category.add = false"> [ Cancelar]</a>
+                            <a href="#" v-if="form_category.add == false" class="control-label" @click="form_category.add = true"> [ + Nuevo]</a>
+                            <a href="#" v-if="form_category.add == true" class="control-label" @click="saveCategory()"> [ + Guardar]</a>
+                            <a href="#" v-if="form_category.add == true" class="control-label text-danger" @click="form_category.add = false"> [ Cancelar]</a>
                             <el-input   v-if="form_category.add == true" v-model="form_category.name" dusk="item_code" style="margin-bottom:1.5%;"></el-input>
 
                             <el-select v-if="form_category.add == false" v-model="form.category_id" filterable clearable>
@@ -118,9 +118,9 @@
                                 Marca
                             </label>
 
-                            <a href="#" v-if="form_brand.add == false" class="control-label font-weight-bold text-info" @click="form_brand.add = true"> [ + Nuevo]</a>
-                            <a href="#" v-if="form_brand.add == true" class="control-label font-weight-bold text-info" @click="saveBrand()"> [ + Guardar]</a>
-                            <a href="#" v-if="form_brand.add == true" class="control-label font-weight-bold text-danger" @click="form_brand.add = false"> [ Cancelar]</a>
+                            <a href="#" v-if="form_brand.add == false" class="control-label" @click="form_brand.add = true"> [ + Nuevo]</a>
+                            <a href="#" v-if="form_brand.add == true" class="control-label" @click="saveBrand()"> [ + Guardar]</a>
+                            <a href="#" v-if="form_brand.add == true" class="control-label text-danger" @click="form_brand.add = false"> [ Cancelar]</a>
                             <el-input   v-if="form_brand.add == true" v-model="form_brand.name" dusk="item_code" style="margin-bottom:1.5%;"></el-input>
 
                             <el-select v-if="form_brand.add == false" v-model="form.brand_id" filterable clearable >
@@ -283,7 +283,7 @@
                             <el-tooltip class="item" effect="dark" content="Aplica para realizar compra/venta en presentacion de diferentes precios y/o cantidades" placement="top">
                                 <i class="fa fa-info-circle"></i>
                             </el-tooltip>
-                             <a href="#" class="control-label font-weight-bold text-info" @click="clickAddRow"> [ + Nuevo]</a>
+                             <a href="#" class="control-label" @click="clickAddRow"> [ + Nuevo]</a>
                         </h5>
                     </div>
 
@@ -393,7 +393,7 @@
                             <el-tooltip class="item" effect="dark" content="Diferentes presentaciones para la venta del producto" placement="top">
                                 <i class="fa fa-info-circle"></i>
                             </el-tooltip>
-                            <a href="#" class="control-label font-weight-bold text-info" @click.prevent="clickAddAttribute">[+ Agregar]</a>
+                            <a href="#" class="control-label" @click.prevent="clickAddAttribute">[+ Agregar]</a>
                         </h5>
                     </div>
                     <div v-if="form.attributes.length > 0" class="col-md-12">

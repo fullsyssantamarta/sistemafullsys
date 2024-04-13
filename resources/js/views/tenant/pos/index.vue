@@ -53,23 +53,17 @@
                     </div>
                 </div> <br>
 
-                <div v-if="place == 'cat'" class="row">
-
-                    <template v-for="(item, index) in categories">
-                        <div class="col-md-2" :key="index">
-                            <div @click="filterCategorie(item.id)" class="card">
-                                <div :style="{ backgroundColor: item.color}" class="card-body pointer" style="font-weight: bold;color: white;font-size: 18px;">
-                                    {{item.name}}
-                                </div>
+                <div v-if="place == 'cat'" class="row no-gutters">
+                    <div v-for="(item, index) in categories" class="col" :key="index">
+                        <div @click="filterCategorie(item.id)" class="card p-0 m-0 mb-1 mr-1 text-center">
+                            <div :style="{ backgroundColor: item.color}" class="card-body pointer rounded-0" style="font-weight: bold;color: white;font-size: 18px;">
+                                {{item.name}}
                             </div>
-
                         </div>
-
-                    </template>
-
+                    </div>
                 </div>
 
-                <div v-if="place == 'prod' || place == 'cat2'" class="row">
+                <div v-if="place == 'prod' || place == 'cat2'" class="row pos-items">
                     <template v-for="(item,index) in items">
                         <div v-bind:class="classObjectCol" :key="index">
                             <section class="card ">
@@ -348,9 +342,9 @@
                         </div>
                     </div>
                     <div class="row text-white m-0 p-0 h-50 d-flex align-items-center" @click="clickPayment" v-bind:class="[form.total > 0 ? 'bg-info pointer' : 'bg-dark']">
-                        <div class="col-6 text-center">
-                            <i class="fas fa-chevron-circle-right fa fw h5"></i>
-                            <span class="font-weight-semibold h5">PAGO</span>
+                        <div class="col-6 text-center h5">
+                            <i class="fa fa-chevron-circle-right"></i>
+                            <span class="font-weight-semibold">PAGO</span>
                         </div>
                         <div class="col-6 text-center">
                             <h5 class="font-weight-semibold h5">{{currency.symbol}} {{ form.total }}</h5>

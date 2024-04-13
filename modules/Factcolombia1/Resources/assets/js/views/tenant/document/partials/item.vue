@@ -85,7 +85,7 @@
                     <div class="col-md-5">
                         <div class="form-group" :class="{'has-danger': errors.tax_id}">
                             <label class="control-label">Impuesto</label>
-                            <a href="#" class="control-label font-weight-bold text-info" @click="form.tax_id = null"> [ * Excluido]</a>
+                            <a href="#" class="control-label" @click="form.tax_id = null"> [ * Excluido]</a>
                             <el-select v-model="form.tax_id"  filterable>
                                 <el-option v-for="option in itemTaxes" :key="option.id" :value="option.id" :label="option.name"></el-option>
                             </el-select>

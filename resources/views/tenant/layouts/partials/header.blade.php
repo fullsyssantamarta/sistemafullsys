@@ -8,7 +8,7 @@
             <i class="fas fa-bars" aria-label="Toggle sidebar"></i>
         </div>
         <div class="d-md-none ml-1 d-lg-block" style="height: inherit;">
-            <a href="{{ route('tenant.documents.create') }}"
+            <a href="{{ route('tenant.co-documents.create') }}"
                 title="Nueva Factura Electrónica"
                 class="topbar-links"
                 data-placement="bottom"
@@ -25,12 +25,12 @@
                 <span>POS</span>
             </a>
             <a href="{{ route('tenant.purchases.create') }}"
-                title="Nueva Compra"
+                title="Generar Compra"
                 class="topbar-links"
                 data-placement="bottom"
                 data-toggle="tooltip">
                 <i aria-hidden="true" class="fas fa-fw fa-plus"></i>
-                <span>NC</span>
+                <span>GC</span>
             </a>
             <a href="{{ route('tenant.items.index') }}"
                 title="Listado de Productos"

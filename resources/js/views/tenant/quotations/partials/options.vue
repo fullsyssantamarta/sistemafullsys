@@ -66,7 +66,7 @@
       <div class="row" v-if="generate">
         <!-- <div class="col-lg-12 pb-2">
           <div class="form-group">
-            <label class="control-label font-weight-bold text-info">
+            <label class="control-label">
               Cliente
             </label>
             <el-select

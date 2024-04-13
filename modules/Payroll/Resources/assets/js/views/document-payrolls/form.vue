@@ -16,7 +16,7 @@
 
                             <div class="col-md-6 pb-2">
                                 <div class="form-group" :class="{'has-danger': errors.worker_id}">
-                                    <label class="control-label font-weight-bold text-info">
+                                    <label class="control-label">
                                         Empleados<span class="text-danger"> *</span>
                                         <el-tooltip class="item" effect="dark" content="Escribir al menos 3 caracteres para buscar" placement="top-start">
                                             <i class="fa fa-info-circle"></i>

@@ -18,7 +18,7 @@
 html, body {
     background: #f3f4fb;
     font-family: "Inter", sans-serif !important;
-    color: #A0ABB8 !important;
+    /* color: #A0ABB8 !important; */
 }
 
 h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
@@ -141,8 +141,7 @@ ul.nav-main li.nav-parent > a:after {
 
 .el-input__inner,
 .el-textarea__inner {
-    border: 1px solid #EAEEF7;
-    color: #031a6e;
+    border: 1px solid #ccc;
     background-color: #f2f4fa61;
 }
 .el-input__inner:hover {
@@ -169,8 +168,8 @@ html.fixed.sidebar-white .sidebar-left a:focus {
     border: 1px solid #eaeef7;
 }
 .el-dialog__wrapper {
-    background: rgb(243 244 251 / 65%) !important;
-    backdrop-filter: blur(10px);
+    background: rgb(0 0 0 / 65%) !important;
+    backdrop-filter: blur(1px);
 }
 .v-modal{
     background: #fff;
@@ -455,8 +454,9 @@ html.sidebar-light:not(.dark) .page-header .breadcrumbs span {
     text-shadow: 0 0 2px rgb(0 0 0 / 20%);
 }
 .row.no-gutters .col .card div:hover{
-    transform:scale(1.15);
+    /* transform:scale(1.15); */
     z-index:1;
+    opacity: .9;
 }
 .row.no-gutters .col:nth-child(2n) .card div,
 .testimonial-group div .col-sm-3.pointer:nth-child(2n) {
@@ -537,6 +537,10 @@ html.sidebar-light:not(.dark) .style-switcher {
     margin-bottom: 20px;
     margin: 10px;
     border: 1px solid #E0E6F7 !important;
+}
+.pos-items .card-body {
+    margin-bottom: 0px;
+    margin: 0px;
 }
 .dashboard .card-body, .dashboard .card-header+.card-body, .dashboard .card-header {
     margin: 0 0 5px 0;

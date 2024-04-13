@@ -73,7 +73,7 @@
                     </div>
 
                     <div class="col-md-6">
-                        
+
                         <div class="form-group" :class="{'has-danger': errors.tax_id}">
                             <label class="control-label">Impuesto (Venta)</label>
                             <el-select v-model="form.tax_id" filterable>
@@ -106,7 +106,7 @@
                             <small class="form-control-feedback" v-if="errors.internal_id" v-text="errors.internal_id[0]"></small>
                         </div>
                     </div>
-                     
+
                     <div class="col-md-3" v-show="recordId==null">
                         <div class="form-group" :class="{'has-danger': errors.stock}">
                             <label class="control-label">Stock Inicial</label>
@@ -144,7 +144,7 @@
                             <el-input v-model="form.percentage_perception"></el-input>
                         </div>
                     </div> -->
- 
+
 
                     <div v-if="attribute_types.length > 0" class="col-md-12">
                         <h5 class="separator-title ">
@@ -152,7 +152,7 @@
                             <el-tooltip class="item" effect="dark" content="Diferentes presentaciones para la venta del producto" placement="top">
                                 <i class="fa fa-info-circle"></i>
                             </el-tooltip>
-                            <a href="#" class="control-label font-weight-bold text-info" @click.prevent="clickAddAttribute">[+ Agregar]</a>
+                            <a href="#" class="control-label" @click.prevent="clickAddAttribute">[+ Agregar]</a>
                         </h5>
                     </div>
                     <div v-if="form.attributes.length > 0" class="col-md-12">
@@ -211,7 +211,7 @@
                             <div class="row">
 
                                 <div class="short-div col-md-8">
-                                    
+
                                     <div class="form-group" :class="{'has-danger': errors.purchase_tax_id}">
                                         <label class="control-label">Impuesto (Compra)</label>
                                         <el-select v-model="form.purchase_tax_id" filterable>

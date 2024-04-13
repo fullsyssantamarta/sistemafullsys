@@ -9,10 +9,10 @@
                         <div class="form-group">
                             <label class="control-label font-custom"><strong>Filtros de busqueda</strong></label>
                             <template v-if="!see_more">
-                                <a class="control-label font-weight-bold text-info font-custom" href="#" @click="clickSeeMore"><strong> [+ Ver más]</strong></a>
+                                <a class="control-label font-custom" href="#" @click="clickSeeMore"><strong> [+ Ver más]</strong></a>
                             </template>
                             <template v-else>
-                                <a class="control-label font-weight-bold text-info font-custom" href="#" @click="clickSeeMore"><strong> [- Ver menos]</strong></a>
+                                <a class="control-label font-custom" href="#" @click="clickSeeMore"><strong> [- Ver menos]</strong></a>
                             </template>
                         </div>
                     </div>

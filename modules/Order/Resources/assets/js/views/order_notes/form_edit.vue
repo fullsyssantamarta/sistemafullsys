@@ -28,7 +28,7 @@
                         <div class="row mt-1">
                              <div class="col-lg-6 pb-2">
                                 <div class="form-group" :class="{'has-danger': errors.customer_id}">
-                                    <label class="control-label font-weight-bold text-info">
+                                    <label class="control-label">
                                         Cliente
                                         <a href="#" @click.prevent="showDialogNewPerson = true">[+ Nuevo]</a>
                                     </label>

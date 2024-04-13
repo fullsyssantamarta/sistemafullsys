@@ -5,12 +5,10 @@
                 <form autocomplete="off" @submit.prevent="submit">
                     <div class="form-body">
                         <div class="row">
-                        </div>
-                        <div class="row mt-4">
 
                             <div class="col-lg-6 pb-2">
                                 <div class="form-group" :class="{'has-danger': errors.customer_id}">
-                                    <label class="control-label font-weight-bold text-info">
+                                    <label class="control-label">
                                         Clientes
                                         <a href="#" @click.prevent="showDialogNewPerson = true">[+ Nuevo]</a>
                                     </label>
