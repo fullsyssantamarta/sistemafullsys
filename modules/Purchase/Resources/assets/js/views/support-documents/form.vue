@@ -74,7 +74,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-lg-2">
                                 <div class="form-group" :class="{'has-danger': errors.payment_method_id}">
                                     <label class="control-label">Medio de pago</label>
@@ -86,6 +85,19 @@
                             </div>
                         </div>
 
+                        <div class="row mt-2">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="control-label">Observaciones</label>
+                                    <el-input
+                                            type="textarea"
+                                            autosize
+                                            :rows="1"
+                                            v-model="form.observation">
+                                    </el-input>
+                                </div>
+                            </div>
+                        </div>
 
                         <div class="row mt-4">
                             <div class="col-md-12">
@@ -356,7 +368,6 @@
 
             },
             initForm() {
-
                 this.form = {
                     type_document_id: null,
                     currency_id: null,
@@ -382,10 +393,9 @@
 
                 this.errors = {}
                 this.$eventHub.$emit('eventInitForm')
-
                 this.initInputPerson()
-
             },
+
             initInputPerson(){
                 this.input_person = {
                     number:null,
