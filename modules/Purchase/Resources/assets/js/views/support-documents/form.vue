@@ -590,52 +590,41 @@
             },
             changeSupplier() {
             },
-            async submit() {
 
-                if(!this.form.type_document_id)
-                {
+            async submit() {
+                if(!this.form.type_document_id){
                     return this.$message.error('Debe seleccionar una Resolución')
                 }
 
                 if(!this.form.supplier_id){
                     return this.$message.error('Debe seleccionar un proveedor')
                 }
-
                 this.form.data_api = await this.createDataApi()
-
-
                 this.loading_submit = true
                 this.$http.post(`/${this.resource}`, this.form).then(response => {
-
-                    if (response.data.success)
-                    {
+                    if (response.data.success){
                         this.resetForm()
                         // console.log(response)
                         this.recordNewId = response.data.data.id
                         // this.$message.success(response.data.message)
                         this.showDialogOptions = true
                     }
-                    else
-                    {
+                    else{
                         this.$message.error(response.data.message)
                     }
 
                 }).catch(error => {
-
                     if (error.response.status === 422) {
                         this.errors = error.response.data
                     }
                     else {
                         this.$message.error(error.response.data.message)
                     }
-
                 }).then(() => {
                     this.loading_submit = false
                 })
             },
         }
-
-
     }
 </script>
 
