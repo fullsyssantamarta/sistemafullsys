@@ -16,6 +16,7 @@ export const operations_api = {
                 resolution_number: this.form.resolution_number,
                 date: this.form.date_of_issue,
                 time: this.form.time_of_issue,
+                notes: this.form.observation,
                 sendmail: false,
                 seller: {},
                 payment_form: {},
@@ -24,16 +25,15 @@ export const operations_api = {
                 invoice_lines: {},
                 with_holding_tax_total: {},
             }
-
             form_api.seller =  await this.getSeller()
             form_api.payment_form =  await this.getPaymentForm()
             form_api.legal_monetary_totals = await this.getLegacyMonetaryTotal()
             form_api.allowance_charges = await this.getAllowanceCharge(form_api.legal_monetary_totals.allowance_total_amount, form_api.legal_monetary_totals.line_extension_amount)
             form_api.invoice_lines = await this.getInvoiceLines()
             form_api.with_holding_tax_total = await this.getWithHolding();
-
             return form_api
         },
+
         async createDataApiForAdjustNote()
         {
             let form_api = {

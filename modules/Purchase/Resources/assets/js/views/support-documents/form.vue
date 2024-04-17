@@ -74,7 +74,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-lg-2">
                                 <div class="form-group" :class="{'has-danger': errors.payment_method_id}">
                                     <label class="control-label">Medio de pago</label>
@@ -86,6 +85,19 @@
                             </div>
                         </div>
 
+                        <div class="row mt-2">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="control-label">Observaciones</label>
+                                    <el-input
+                                            type="textarea"
+                                            autosize
+                                            :rows="1"
+                                            v-model="form.observation">
+                                    </el-input>
+                                </div>
+                            </div>
+                        </div>
 
                         <div class="row mt-4">
                             <div class="col-md-12">
@@ -356,7 +368,6 @@
 
             },
             initForm() {
-
                 this.form = {
                     type_document_id: null,
                     currency_id: null,
@@ -382,10 +393,9 @@
 
                 this.errors = {}
                 this.$eventHub.$emit('eventInitForm')
-
                 this.initInputPerson()
-
             },
+
             initInputPerson(){
                 this.input_person = {
                     number:null,
@@ -580,52 +590,41 @@
             },
             changeSupplier() {
             },
-            async submit() {
 
-                if(!this.form.type_document_id)
-                {
+            async submit() {
+                if(!this.form.type_document_id){
                     return this.$message.error('Debe seleccionar una Resolución')
                 }
 
                 if(!this.form.supplier_id){
                     return this.$message.error('Debe seleccionar un proveedor')
                 }
-
                 this.form.data_api = await this.createDataApi()
-
-
                 this.loading_submit = true
                 this.$http.post(`/${this.resource}`, this.form).then(response => {
-
-                    if (response.data.success)
-                    {
+                    if (response.data.success){
                         this.resetForm()
                         // console.log(response)
                         this.recordNewId = response.data.data.id
                         // this.$message.success(response.data.message)
                         this.showDialogOptions = true
                     }
-                    else
-                    {
+                    else{
                         this.$message.error(response.data.message)
                     }
 
                 }).catch(error => {
-
                     if (error.response.status === 422) {
                         this.errors = error.response.data
                     }
                     else {
                         this.$message.error(error.response.data.message)
                     }
-
                 }).then(() => {
                     this.loading_submit = false
                 })
             },
         }
-
-
     }
 </script>
 
