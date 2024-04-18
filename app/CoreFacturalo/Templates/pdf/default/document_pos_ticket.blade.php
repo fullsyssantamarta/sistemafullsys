@@ -105,7 +105,6 @@
         <td> <h6>Tipo Venta: CONTADO 0 días </h6></td>
     </tr>
 </table>
-<p>cude: {{ $document->cude }}</p>
 <table class="full-width">
     <thead class="">
     <tr>
@@ -244,11 +243,13 @@
                     <tr>
                         <td><h6>Compañia: {{ $request_api['software_manufacturer']['business_name'] }}</h6></td>
                     </tr>
-                    <br>
                 @endif
             </td>
         @endif
     </tr>
 </table>
+@if($is_epos)
+    <p>cude: {{ $document->cude }}</p>
+@endif
 </body>
 </html>
