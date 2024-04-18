@@ -8,8 +8,9 @@ use Modules\Factcolombia1\Http\Controllers\Tenant\DocumentController as WebDocum
 use Modules\Factcolombia1\Http\Resources\Tenant\DocumentCollection;
 use Modules\Factcolombia1\Http\Requests\Tenant\DocumentRequest;
 use Modules\Factcolombia1\Http\Resources\Tenant\PersonCollection;
-use Modules\Factcolombia1\Models\Tenant\Document;
-use App\Http\Resources\Tenant\ItemCollection;
+use Modules\Factcolombia1\Http\Resources\Tenant\ItemApiCollection;
+// use Modules\Factcolombia1\Models\Tenant\Document;
+use App\Models\Tenant\Document;
 use App\Models\Tenant\Person;
 use App\Models\Tenant\Item;
 
@@ -35,7 +36,7 @@ class DocumentController extends Controller
                     ->orwhere('internal_id', 'like', '%' .$request->name . '%');
             });
 
-        return new ItemCollection($records->paginate(config('tenant.items_per_page')));
+        return new ItemApiCollection($records->paginate(config('tenant.items_per_page')));
     }
 
     public function searchDocuments(Request $request)
