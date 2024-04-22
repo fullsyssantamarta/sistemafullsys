@@ -536,6 +536,12 @@ class DocumentPosController extends Controller
             $this->createPdf($this->sale_note,"ticket", $this->sale_note->filename);
 //        });
         }catch(\Exception $e){
+//            \Log::debug(json_encode([
+//                'success' => false,
+//                'message' => $e->getMessage(),
+//                'line' => $e->getLine(),
+//                'trace' => $e->getTrace(),
+//            ]));
             DB::connection('tenant')->rollBack();
             return [
                 'success' => false,
