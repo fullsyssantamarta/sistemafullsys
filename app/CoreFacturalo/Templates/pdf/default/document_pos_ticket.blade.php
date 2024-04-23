@@ -58,27 +58,33 @@
         <td colspan="2"><h5 >Nit: {{ $company->identification_number }} - {{ $company->type_regime->name}} </h5></td>
     </tr>
     <tr>
-        <td width="50%"><h6>{{ $sucursal->description }} </h6></td>
-        <td class=""><h6>{{ ($establishment->email !== '-')? $establishment->email : '' }}</h6></td>
+        <td colspan="2"><h5>{{ ($establishment->email !== '-') ? $establishment->email : '' }}</h6></td>
     </tr>
     <tr>
-        <td colspan="2"> <h6>Documento Equivalente POS #: {{ $tittle }}</h6> </td>
+        <td><h6>{{ $sucursal->description }}</h6></td>
     </tr>
+    <br>
+    <tr>
+        @if($is_epos)
+            <td colspan="2"> <h6>DOCUMENTO EQUIVALENTE ELECTRONICO DEL TIQUETE DE MAQUINA REGISTRADORA CON SISTEMA P.O.S. No: {{ $tittle }}</h6> </td>
+        @else
+            <td colspan="2"> <h6>Documento Equivalente POS #: {{ $tittle }}</h6> </td>
+        @endif
+    </tr>
+    <br>
     @if($is_epos)
+        <?php
+            if(is_string($document->request_api))
+                $request_api = json_decode($document->request_api, true);
+            else
+                $request_api = json_decode(json_encode($document->request_api), true);
+        ?>
         <tr>
-            <td><h6>Serial de caja: {{ $document->request_api->cash_information->plate_number }}</h6></td>
-            <td class=""><h6>Tipo de caja: {{ $document->request_api->cash_information->cash_type }}</h6></td>
+            <td><h6>Serial de caja: {{ $request_api['cash_information']['plate_number'] }}</h6></td>
+            <td class=""><h6>Tipo de caja: {{ $request_api['cash_information']['cash_type'] }}</h6></td>
         </tr>
         <tr>
-            <td><h6>Cajero:  {{ $document->request_api->cash_information->cashier }} </h6></td>
-            <td class=""><h6>Caja: 01</h6></td>
-        </tr>
-        <tr>
-            <td><h6>Software: {{ $document->request_api->software_manufacturer->software_name }}</h6></td>
-            <td><h6>Fabricante: {{ $document->request_api->software_manufacturer->name }}</h6></td>
-        </tr>
-        <tr>
-            <td colspan="2"><h6>Compañia: {{ $document->request_api->software_manufacturer->business_name }}</h6></td>
+            <td><h6>Cajero:  {{ $request_api['cash_information']['cashier'] }} </h6></td>
         </tr>
     @endif
     <tr>
@@ -98,9 +104,7 @@
     <tr>
         <td> <h6>Tipo Venta: CONTADO 0 días </h6></td>
     </tr>
-
 </table>
-
 <table class="full-width">
     <thead class="">
     <tr>
@@ -229,9 +233,23 @@
         @else
             <td class="text-center">
                 <h6>GRACIAS POR SU COMPRA</h6>
+                @if($is_epos)
+                    <tr>
+                        <td><h6>Software: {{ $request_api['software_manufacturer']['software_name'] }}</h6></td>
+                    </tr>
+                    <tr>
+                        <td><h6>Fabricante: {{ $request_api['software_manufacturer']['name'] }}</h6></td>
+                    </tr>
+                    <tr>
+                        <td><h6>Compañia: {{ $request_api['software_manufacturer']['business_name'] }}</h6></td>
+                    </tr>
+                @endif
             </td>
         @endif
     </tr>
 </table>
+@if($is_epos)
+    <p>cude: {{ $document->cude }}</p>
+@endif
 </body>
 </html>
