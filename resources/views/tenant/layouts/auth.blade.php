@@ -5,8 +5,9 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        {{--    <title>{{ config('app.name', 'Facturación Electrónica') }}</title>--}}
-        <title>{{ $vc_company->trade_name }}</title>
+        {{--    <title>{{ config('app.name', 'Factura Fácil') }}</title>--}}
+        <title>Factura Fácil</title>
+        <link rel="icon" type="image/x-icon" href="https://factufacil.com.co/wp-content/uploads/2023/11/cropped-favicon.png">
 
         <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800|Shadows+Into+Light" rel="stylesheet" type="text/css">
 
