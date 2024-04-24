@@ -579,11 +579,11 @@
                                         Reporte Inventario
                                     </a>
                                 </li>
-                                {{-- <li class="{{(($path[0] === 'reports') && ($path[1] === 'valued-kardex')) ? 'nav-active' : ''}}">
+                                <li class="{{(($path[0] === 'reports') && ($path[1] === 'valued-kardex')) ? 'nav-active' : ''}}">
                                     <a class="nav-link" href="{{route('reports.valued_kardex.index')}}">
                                         Kardex valorizado
                                     </a>
-                                </li> --}}
+                                </li>
                             </ul>
                         </li>
                         @endif
@@ -1069,11 +1069,11 @@
                                     </a>
                                 </li>
 
-                                {{-- <li class="{{($path[0] === 'co-advanced-configuration') ? 'nav-active' : ''}}">
+                                <li class="{{($path[0] === 'co-advanced-configuration') ? 'nav-active' : ''}}">
                                     <a class="nav-link" href="{{route('tenant.co-advanced-configuration.index')}}">
                                         Avanzado
                                     </a>
-                                </li> --}}
+                                </li> 
                             </ul>
                         </li>
                     @endif

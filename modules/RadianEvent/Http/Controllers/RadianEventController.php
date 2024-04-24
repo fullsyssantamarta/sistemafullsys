@@ -178,6 +178,85 @@ class RadianEventController extends Controller
      * @param  Request $request
      * @return array
      */
+
+     public function upload(Request $request)
+     {
+         if ($request->hasFile('file'))
+         {
+             try {
+                 $folder = "radian_reception_documents";
+                 $file = $request->file('file');
+                 $file_content = file_get_contents($file);
+     
+                 $filename = $file->getClientOriginalName();
+                 $extension = $file->getClientOriginalExtension();
+     
+                 if ($extension === 'zip') {
+                     // Extraer el archivo XML del archivo ZIP
+                     $zip = new \ZipArchive();
+                     if ($zip->open($file) === true) {
+                         $xmlFilename = null;
+                         for ($i = 0; $i < $zip->numFiles; $i++) {
+                             $filename = $zip->getNameIndex($i);
+                             if (pathinfo($filename, PATHINFO_EXTENSION) === 'xml') {
+                                 $xmlFilename = $filename;
+                                 break;
+                             }
+                         }
+                         if ($xmlFilename === null) {
+                             throw new Exception('No se encontró un archivo XML en el archivo ZIP.');
+                         }
+                         $file_content = $zip->getFromName($xmlFilename);
+                         $zip->close();
+                         $filename = $xmlFilename;
+                         $extension = 'xml';
+                     } else {
+                         throw new Exception('No se pudo abrir el archivo ZIP.');
+                     }
+                 }
+     
+                 if ($extension === 'pdf') {
+                     // Procesar archivo PDF
+                     $exist_record = ReceivedDocument::where('xml', str_replace('.pdf', '.xml', $filename))->first();
+                     if (!$exist_record) return $this->getGeneralResponse(false, 'Debe cargar el xml previamente.');
+                     Storage::disk('tenant')->put($folder . DIRECTORY_SEPARATOR . $filename, $file_content);
+                     return $this->getGeneralResponse(true, 'Archivo PDF cargado correctamente.');
+                 } elseif ($extension === 'xml') {
+                     // Procesar archivo XML
+                     if (Storage::disk('tenant')->exists($folder . DIRECTORY_SEPARATOR . $filename)) throw new Exception('El archivo ya fue cargado');
+                     $company = ServiceCompany::select('identification_number', 'api_token')->firstOrFail();
+                     $connection_api = new HttpConnectionApi($company->api_token);
+                     $params = [
+                         'xml_document' => base64_encode($file_content),
+                         'company_idnumber' => $company->identification_number,
+                     ];
+                     $url = "process-seller-document-reception";
+                     $send_request_to_api = $connection_api->sendRequestToApi($url, $params, 'POST');
+                     if (!$send_request_to_api['success']) throw new Exception($send_request_to_api['message']);
+                     Storage::disk('tenant')->put($folder . DIRECTORY_SEPARATOR . $filename, $file_content);
+                     $data = $send_request_to_api['data'];
+                     $data['xml'] = $filename;
+                     $data['pdf'] = str_replace('.xml', '.pdf', $filename);
+                     ReceivedDocument::create($data);
+                     return $this->getGeneralResponse(true, 'Archivo XML cargado correctamente.');
+                 } else {
+                     throw new Exception('Tipo de archivo no soportado. Por favor, suba un archivo XML, PDF o ZIP.');
+                 }
+             } catch (Exception $e) {
+                 return [
+                     'success' => false,
+                     'message' => $e->getMessage()
+                 ];
+             }
+         }
+     
+         return [
+             'success' => false,
+             'message' => __('app.actions.upload.error'),
+         ];
+     }
+
+    /*
     public function upload(Request $request)
     {
         if ($request->hasFile('file'))
@@ -259,5 +338,6 @@ class RadianEventController extends Controller
             'message' =>  __('app.actions.upload.error'),
         ];
     }
+    */
 
 }

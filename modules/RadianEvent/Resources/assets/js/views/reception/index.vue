@@ -26,7 +26,7 @@
                                     :on-error="errorUpload"
                                     :limit="1"
                                     :on-success="successUpload">
-                                <el-button slot="trigger" type="primary">Seleccione un archivo (xml/pdf)</el-button>
+                                    <el-button slot="trigger" type="primary">Seleccione un archivo (xml/pdf/zip)</el-button>
                             </el-upload>
                         </div>
                     </div>
