@@ -90,8 +90,11 @@
 
                     <div class="col-md-4">
                         <div class="form-group" :class="{'has-danger': errors.description}">
-                            <label class="control-label">Descripcion<span class="text-danger">*</span></label>
-                            <el-input v-model="form.description" ></el-input>
+                            <label class="control-label">Activar o Desactivar Resolución<span class="text-danger">*</span></label>
+                            <el-select v-model="form.description" placeholder="Selecciona un estado">
+                                <el-option :value="'1'" label="Activa"></el-option>
+                                <el-option :value="'0'" label="Inactiva"></el-option>
+                            </el-select>
                             <small class="form-control-feedback" v-if="errors.description" v-text="errors.description[0]"></small>
                         </div>
                     </div>
@@ -209,7 +212,7 @@
                 // this.setDefaultConfiguration()
             },
             create() {
-                this.titleDialog =  'Editar'
+                this.titleDialog = 'Editar Resolución'
                 this.form = this.record
                 /*if (this.recordId) {
                     this.$http.get(`/${this.resource}/record/${this.recordId}`)

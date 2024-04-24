@@ -44,8 +44,11 @@
                                         popper-class="el-select-document_type" dusk="type_invoice_id"
                                         class="border-left rounded-left border-info">
                                         <!-- Modifica el v-if para incluir la lógica basada en ambientId por cristian ok -->
-                                        <el-option v-for="option in resolutions" :key="option.id" :value="option.id"
-                                            :label="`${option.prefix} / ${option.description} / ${option.resolution_number} / ${option.from} / ${option.to}`"
+                                        <el-option 
+                                            v-for="option in resolutions" 
+                                            :key="option.id" 
+                                            :value="option.id" 
+                                            :label="`${option.prefix} / ${option.resolution_number} / ${option.from} / ${option.to} / ${option.description === '1' ? 'Activa' : 'Inactiva'}`"
                                             v-if="shouldShowResolution(option)">
                                         </el-option>
                                     </el-select>
@@ -632,107 +635,108 @@ export default {
                     this.$message.error('Su numeración de Facturación se ha agotado');
                     return false;
                 }
-            }
-            return true;
-        },
-        async fetchCompanyInfo() {
-            try {
-                const response = await this.$http.get('/companies/record');
-                // Acceder a 'data' dentro de 'data' debido a la estructura de la respuesta
-                this.ambientId = response.data.data.ambient_id;
-                this.phone_company = response.data.data.phone;
-                //console.log(this.ambientId);
-                //console.log(this.phone_company);
-            } catch (error) {
-                console.error('Error al obtener la información de la compañía:', error);
-            }
-        },
-        shouldShowResolution(option) {
-            // Si ambientId es 2, no mostrar opciones con prefijo SETP
-            if (this.ambientId === 2 && option.prefix === 'SETP') {
-            }
-            // En otros casos, mostrar todas las opciones
-            return true;
-        },
-
-        changeContingency4(value) {
-
-        },
-
-        generatedFromExternalDocument() {
-            if (this.generatedFromPos) {
-                const form_exceed_uvt = this.$getStorage('form_exceed_uvt')
-                this.form.customer_id = form_exceed_uvt.customer_id
-                this.reloadDataCustomers(this.form.customer_id)
-                this.form.currency_id = form_exceed_uvt.currency_id
-                this.form.type_invoice_id = form_exceed_uvt.type_invoice_id
-                this.form.total_discount = form_exceed_uvt.total_discount
-                this.form.total_tax = form_exceed_uvt.total_tax
-                this.form.subtotal = form_exceed_uvt.subtotal
-                this.form.total = form_exceed_uvt.total
-                this.form.sale = form_exceed_uvt.sale
-                this.form.taxes = form_exceed_uvt.taxes
-                this.form.items = this.prepareItems(form_exceed_uvt.items)
-                this.$removeStorage('form_exceed_uvt')
-            }
-        },
-        prepareItems(items) {
-            return items.map(row => {
-                row.item = this.prepareIndividualItem(row)
-                row.price = row.unit_price
-                row.id = row.item.id
-                return row
-            })
-        },
-        prepareIndividualItem(row) {
-            const new_item = row.item
-            new_item.presentation = (row.presentation && !_.isEmpty(row.presentation)) ? row.presentation : {}
-            return new_item
-        },
-        calculate_time_days_credit() {
-            var f1 = moment(this.form.date_issue)
-            var f2 = moment(this.form.date_expiration)
-            this.form.time_days_credit = f2.diff(f1, 'days')
-            if (this.form.time_days_credit < 0) {
-                this.$message.error('No puede seleccionar una fecha de vencimiento, menor a la fecha de emision ... ');
-                this.form.date_expiration = this.form.date_issue
-                this.form.time_days_credit = 0
-            }
-            else
-                if (this.form.time_days_credit == 0)
-                    this.form.payment_form_id = 1
-                else
-                    this.form.payment_form_id = 2
-        },
-
-        async fetchCorrelative() {
-            const typeService = 1; // supongo que es el Id del tipo de documento que para este caso es 1 factura de venta
-            if (this.currentPrefix) {
-                try {
-                    const response = await this.$http.get(`/${this.resource}/invoice-correlative/${typeService}/${this.currentPrefix}`);
-                    this.correlative_api = response.data.correlative;
-                } catch (error) {
-                    console.error('Error al obtener el correlativo:', error);
                 }
-            }
-        },
+                return true;
+            },
+            async fetchCompanyInfo() {
+                    try {
+                        const response = await this.$http.get('/companies/record');
+                        // Acceder a 'data' dentro de 'data' debido a la estructura de la respuesta
+                        this.ambientId = response.data.data.ambient_id;
+                        this.phone_company = response.data.data.phone;
+                        //console.log(this.ambientId);
+                        //console.log(this.phone_company);
+                    } catch (error) {
+                        console.error('Error al obtener la información de la compañía:', error);
+                    }
+            },
+            shouldShowResolution(option) {
+                    // Retorna true solo si option.description es igual a '1', indicando que la resolución está activa.
+                    return option.description === '1';
+            },
+            generatedFromExternalDocument()
+            {
+                if(this.generatedFromPos)
+                {
+                    const form_exceed_uvt = this.$getStorage('form_exceed_uvt')
 
-        changeResolution() {
-            if (typeof this.invoice !== 'undefined') {
-                this.form.type_document_id = this.invoice.type_document_id;
-                this.form.resolution_id = this.invoice.type_document_id;
-            }
-            const resol = this.resolutions.find(x => x.id == this.form.resolution_id);
-            //                console.log(this.form.resolution_id)
-            //                console.log(resol)
-            if (resol) {
-                this.form.resolution_number = resol.resolution_number;
-                this.form.prefix = resol.prefix;
-                this.form.type_document_id = resol.code;
-                this.currentPrefix = resol.prefix; // Actualizar el prefijo en data
-//                this.fetchCorrelative(); // Llama al método para obtener el correlativo
-            }
-        },
+                    this.form.customer_id = form_exceed_uvt.customer_id
+                    this.reloadDataCustomers(this.form.customer_id)
+                    this.form.currency_id = form_exceed_uvt.currency_id
+                    this.form.type_invoice_id = form_exceed_uvt.type_invoice_id
+                    this.form.total_discount = form_exceed_uvt.total_discount
+                    this.form.total_tax = form_exceed_uvt.total_tax
+                    this.form.subtotal = form_exceed_uvt.subtotal
+                    this.form.total = form_exceed_uvt.total
+                    this.form.sale = form_exceed_uvt.sale
+                    this.form.taxes = form_exceed_uvt.taxes
+                    this.form.items = this.prepareItems(form_exceed_uvt.items)
+                    this.$removeStorage('form_exceed_uvt')
+                }
+            },
+            prepareItems(items)
+            {
+                return items.map(row => {
+
+                    row.item = this.prepareIndividualItem(row)
+                    row.price = row.unit_price
+                    row.id = row.item.id
+
+                    return row
+                })
+            },
+            prepareIndividualItem(row)
+            {
+                const new_item = row.item
+
+                new_item.presentation = (row.presentation && !_.isEmpty(row.presentation)) ? row.presentation : {}
+
+                return new_item
+            },
+            calculate_time_days_credit() {
+                var f1 = moment(this.form.date_issue)
+                var f2 = moment(this.form.date_expiration)
+                this.form.time_days_credit = f2.diff(f1, 'days')
+                if(this.form.time_days_credit < 0) {
+                    this.$message.error('No puede seleccionar una fecha de vencimiento, menor a la fecha de emision ... ');
+                    this.form.date_expiration = this.form.date_issue
+                    this.form.time_days_credit = 0
+                }
+                else
+                    if(this.form.time_days_credit == 0)
+                        this.form.payment_form_id = 1
+                    else
+                        this.form.payment_form_id = 2
+            },
+            async fetchCorrelative() {
+                const typeService = 1; // supongo que es el Id del tipo de documento que para este caso es 1 factura de venta 
+                if (this.currentPrefix) {
+                    try {
+                        const response = await this.$http.get(`/${this.resource}/invoice-correlative/${typeService}/${this.currentPrefix}`);
+                        this.correlative_api = response.data.correlative;
+                    } catch (error) {
+                        console.error('Error al obtener el correlativo:', error);
+                    }
+                }
+            },
+            changeResolution()
+            {
+                if (typeof this.invoice !== 'undefined') {
+                    this.form.type_document_id = this.invoice.type_document_id;
+                    this.form.resolution_id = this.invoice.type_document_id;
+                }
+                const resol = this.resolutions.find(x => x.id == this.form.resolution_id);
+//                console.log(this.form.resolution_id)
+//                console.log(resol)
+                if(resol)
+                {
+                    this.form.resolution_number = resol.resolution_number;
+                    this.form.prefix = resol.prefix;
+                    this.form.type_document_id = resol.id;
+                    this.currentPrefix = resol.prefix; // Actualizar el prefijo en data
+                    this.fetchCorrelative(); // Llama al método para obtener el correlativo
+                }
+            },
 
         ratePrefix(tax = null) {
             if ((tax != null) && (!tax.is_fixed_value)) return null;

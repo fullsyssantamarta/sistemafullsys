@@ -39,9 +39,10 @@
                         prop="to"
                         label="Hasta">
                     </el-table-column>
-                    <el-table-column
-                        prop="description"
-                        label="Descripcion">
+                    <el-table-column prop="description" label="Descripción">
+                        <template slot-scope="scope">
+                            {{ scope.row.description === '1' ? 'Activa' : 'Inactiva' }}
+                        </template>
                     </el-table-column>
                     <el-table-column
                         fixed="right"
@@ -202,12 +203,11 @@
                         <div class="row mt-4">
                             <div class="col-lg-4">
                                 <div class="form-group" :class="{'has-danger': errors.description}">
-                                    <label class="control-label">Descripcion</label>
-                                    <el-input
-                                        v-model="resolution.description"
-                                        placeholder="Cadena descriptiva de la resolucion."
-                                        :disabled="false">
-                                    </el-input>
+                                    <label class="control-label">Activar o Desactivar Resolución</label>
+                                    <el-select v-model="resolution.description" placeholder="Selecciona un estado" :disabled="false">
+                                        <el-option :value="'1'" label="Activa"></el-option>
+                                        <el-option :value="'0'" label="Inactiva"></el-option>
+                                    </el-select>
                                     <small class="form-control-feedback" v-if="errors.description" v-text="errors.description[0]"></small>
                                 </div>
                             </div>

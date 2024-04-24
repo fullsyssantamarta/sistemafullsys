@@ -27,7 +27,7 @@
                                 <th>Fecha resolución</th>
                                 <th>Fecha resolución hasta</th>
                                 <th>Clave técnica</th>
-                                <th>Descripcion</th>
+                                <th>Estado</th>
                                 <th>Acciones</th>
                         </tr>
                     </thead>
@@ -43,7 +43,7 @@
                             <td>{{ row.resolution_date }}</td>
                             <td>{{ row.resolution_date_end }}</td>
                             <td>{{ row.technical_key }}</td>
-                            <td>{{ row.description }}</td>
+                            <td>{{ row.description ? (row.description == 1 ? 'Activa' : 'Inactiva') : 'N/A' }}</td>
                             <td class="text-right">
                                 <template>
                                     <button type="button" class="btn waves-effect waves-light btn-xs btn-info" @click.prevent="editItem(row)">Editar</button>
