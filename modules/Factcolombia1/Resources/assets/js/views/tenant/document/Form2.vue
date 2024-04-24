@@ -1144,136 +1144,174 @@ export default {
                     let row = val.taxes.find(row => row.id == tax.in_tax);
                     tax.retention = Number(
                         Number(row.total) * (tax.rate / tax.conversion)
-                    ).toFixed(2);
-                    if (Number(tax.retention) > Number(row.total))
-                        this.$set(tax, "retention", Number(0).toFixed(2));
-                    row.retention = Number(tax.retention).toFixed(2);
-                    total -= Number(tax.retention).toFixed(2);
-                }
-            });
-            val.total = Number(total).toFixed(2)
-        },
-        async preeliminarview() {
-            if (!this.form.resolution_number || !this.form.prefix) {
-                return this.$message.error('Debe seleccionar una Resolución')
-            }
-            if (!this.form.customer_id) {
-                return this.$message.error('Debe seleccionar un cliente')
-            }
-            //validacion de format_print
-            if (!this.form.format_print) {
-                return this.$message.error('Debe seleccionar un Formato de Impresión')
-            }
-            if (!this.validateResolution()) {
-                // La validación falló, detener la ejecución del método
-                return;
-            }
-            if (!this.validateResolution()) {
-                // La validación falló, detener la ejecución del método
-                return;
-            }
-            if (this.health_sector) {
-                if (this.form.health_users.length == 0)
-                    return this.$message.error('Para facturas del sector salud se debe incluir los datos de al menos un usuario del servicio')
-                if (!this.form.health_fields.invoice_period_start_date || !this.form.health_fields.invoice_period_end_date)
-                    return this.$message.error('Para facturas del sector salud debe incluir los datos del periodo de facturacion')
-            }
-            this.form.service_invoice = await this.createInvoiceService();
-            this.loading_preeliminar_view = true
-            this.$http.post(`/${this.resource}/preeliminar-view`, this.form).then(response => {
-                if (response.data.success) {
-                    var byteCharacters = atob(response.data.base64invoicepdf);
-                    var byteNumbers = new Array(byteCharacters.length);
-                    for (var i = 0; i < byteCharacters.length; i++) {
-                        byteNumbers[i] = byteCharacters.charCodeAt(i);
+                        ).toFixed(4);
+
+                        if (Number(tax.retention) > Number(row.total))
+                        this.$set(tax, "retention", Number(0).toFixed(4));
+
+                        row.retention = Number(tax.retention).toFixed(4);
+                        total -= Number(tax.retention).toFixed(4);
                     }
-                    var byteArray = new Uint8Array(byteNumbers);
-                    var file = new Blob([byteArray], { type: 'application/pdf;base64' });
-                    var fileURL = URL.createObjectURL(file);
-                    window.open(fileURL, '_blank');
+                });
+
+                val.total = Number(total).toFixed(4)
+
+            },
+
+            async preeliminarview() {
+                if(!this.form.resolution_number || !this.form.prefix)
+                {
+                    return this.$message.error('Debe seleccionar una Resolución')
                 }
-                else {
-                    this.$message.error(response.data.message);
+
+                if(!this.form.customer_id){
+                    return this.$message.error('Debe seleccionar un cliente')
                 }
-                this.loading_preeliminar_view = false;
-            }).catch(error => {
-                if (error.response.status === 422) {
-                    this.errors = error.response.data;
+                //validacion de format_print
+                if (!this.form.format_print) {
+                    return this.$message.error('Debe seleccionar un Formato de Impresión')
                 }
-                else {
-                    this.$message.error(error.response.data.message);
+                if (!this.validateResolution()) {
+                    // La validación falló, detener la ejecución del método
+                    return;
                 }
-            }).then(() => {
-                this.loading_preeliminar_view = false;
-            });
-        },
-        close() {
-            location.href = `/${this.resource}`
-//            location.href = (this.is_contingency) ? `/contingencies` : `/${this.resource}`
-        },
-        reloadDataCustomers(customer_id) {
-            // this.$http.get(`/${this.resource}/table/customers`).then((response) => {
-            //     this.customers = response.data
-            //     this.form.customer_id = customer_id
-            // })
-            this.$http.get(`/${this.resource}/search/customer/${customer_id}`).then((response) => {
-                this.customers = response.data.customers
-                this.form.customer_id = customer_id
-            })
-        },
-        changeCustomer() {
-            if(this.is_contingency_3)
-                this.form.type_invoice_id = (this.type_invoices.length > 0) ? this.type_invoices[2].id : null;
-            else
-                this.form.type_invoice_id = (this.type_invoices.length > 0) ? this.type_invoices[0].id : null;
-            // this.customer_addresses = [];
-            // let customer = _.find(this.customers, {'id': this.form.customer_id});
-            // this.customer_addresses = customer.addresses;
-            // if(customer.address)
-            // {
-            //     this.customer_addresses.unshift({
-            //         id:null,
-            //         address: customer.address
-            //     })
-            // }
-            /*if(this.customer_addresses.length > 0) {
-                let address = _.find(this.customer_addresses, {'main' : 1});
-                this.form.customer_address_id = address.id;
-            }*/
-        },
-        async submit() {
-            if (!this.form.resolution_number || !this.form.prefix) {
-                return this.$message.error('Debe seleccionar una Resolución')
-            }
-            if (!this.form.customer_id) {
-                return this.$message.error('Debe seleccionar un cliente')
-            }
-            //validacion de format_print
-            if (!this.form.format_print) {
-                return this.$message.error('Debe seleccionar un Formato de Impresión')
-            }
-            if (this.health_sector) {
-                if (this.form.health_users.length == 0)
-                    return this.$message.error('Para facturas del sector salud se debe incluir los datos de al menos un usuario del servicio')
-                if (!this.form.health_fields.invoice_period_start_date || !this.form.health_fields.invoice_period_end_date)
-                    return this.$message.error('Para facturas del sector salud debe incluir los datos del periodo de facturacion')
-            }
-            this.form.service_invoice = await this.createInvoiceService();
-            // return
-            this.loading_submit = true
-            //                console.log(JSON.stringify(this.form))
-            this.$http.post(`/${this.resource}`, this.form).then(response => {
-//                console.log(response)
-                if (response.data.success) {
-                    if (response.data.validation_errors === false) {
-                        this.resetForm();
-                        // console.log(response)
-                        this.documentNewId = response.data.data.id;
-                        this.$message.success(response.data.message);
-                        this.showDialogOptions = true;
+                if (!this.validateResolution()) {
+                    // La validación falló, detener la ejecución del método
+                    return;
+                }
+                if(this.health_sector){
+                    if(this.form.health_users.length == 0)
+                        return this.$message.error('Para facturas del sector salud se debe incluir los datos de al menos un usuario del servicio')
+                    if(!this.form.health_fields.invoice_period_start_date || !this.form.health_fields.invoice_period_end_date)
+                        return this.$message.error('Para facturas del sector salud debe incluir los datos del periodo de facturacion')
+                }
+
+                this.form.service_invoice = await this.createInvoiceService();
+
+                this.loading_preeliminar_view = true
+                this.$http.post(`/${this.resource}/preeliminar-view`, this.form).then(response => {
+                    if (response.data.success) {
+                        var byteCharacters = atob(response.data.base64invoicepdf);
+                        var byteNumbers = new Array(byteCharacters.length);
+                        for (var i = 0; i < byteCharacters.length; i++) {
+                            byteNumbers[i] = byteCharacters.charCodeAt(i);
+                        }
+                        var byteArray = new Uint8Array(byteNumbers);
+                        var file = new Blob([byteArray], { type: 'application/pdf;base64' });
+                        var fileURL = URL.createObjectURL(file);
+                        window.open(fileURL, '_blank');
+                    }
+                    else{
+                        this.$message.error(response.data.message);
+                    }
+                    this.loading_preeliminar_view = false;
+                }).catch(error => {
+                    if (error.response.status === 422) {
+                        this.errors = error.response.data;
                     }
                     else {
-                        if (response.data.errors) {
+                        this.$message.error(error.response.data.message);
+                    }
+                }).then(() => {
+                    this.loading_preeliminar_view = false;
+                });
+            },
+
+            close() {
+                location.href = (this.is_contingency) ? `/contingencies` : `/${this.resource}`
+            },
+            reloadDataCustomers(customer_id) {
+                // this.$http.get(`/${this.resource}/table/customers`).then((response) => {
+                //     this.customers = response.data
+                //     this.form.customer_id = customer_id
+                // })
+                this.$http.get(`/${this.resource}/search/customer/${customer_id}`).then((response) => {
+                    this.customers = response.data.customers
+                    this.form.customer_id = customer_id
+                })
+            },
+             changeCustomer() {
+                // this.customer_addresses = [];
+                // let customer = _.find(this.customers, {'id': this.form.customer_id});
+                // this.customer_addresses = customer.addresses;
+                // if(customer.address)
+                // {
+                //     this.customer_addresses.unshift({
+                //         id:null,
+                //         address: customer.address
+                //     })
+                // }
+
+
+                /*if(this.customer_addresses.length > 0) {
+                    let address = _.find(this.customer_addresses, {'main' : 1});
+                    this.form.customer_address_id = address.id;
+                }*/
+            },
+
+            async submit() {
+                if(!this.form.resolution_number || !this.form.prefix)
+                {
+                    return this.$message.error('Debe seleccionar una Resolución')
+                }
+
+                if(!this.form.customer_id){
+                    return this.$message.error('Debe seleccionar un cliente')
+                }
+                                //validacion de format_print
+                                if (!this.form.format_print) {
+                    return this.$message.error('Debe seleccionar un Formato de Impresión')
+                }
+                if(this.health_sector){
+                    if(this.form.health_users.length == 0)
+                        return this.$message.error('Para facturas del sector salud se debe incluir los datos de al menos un usuario del servicio')
+                    if(!this.form.health_fields.invoice_period_start_date || !this.form.health_fields.invoice_period_end_date)
+                        return this.$message.error('Para facturas del sector salud debe incluir los datos del periodo de facturacion')
+                }
+
+                this.form.service_invoice = await this.createInvoiceService();
+                // return
+
+                this.loading_submit = true
+//                console.log(JSON.stringify(this.form))
+                this.$http.post(`/${this.resource}`, this.form).then(response => {
+//                    console.log(response)
+                    if (response.data.success) {
+                        if(response.data.validation_errors === false){
+                          this.resetForm();
+                          // console.log(response)
+                          this.documentNewId = response.data.data.id;
+                          this.$message.success(response.data.message);
+                          this.showDialogOptions = true;
+                        }
+                        else{
+                            if(response.data.errors){
+                                const mhtl = this.parseMesaageError(response.data.errors)
+                                this.$message({
+                                    duration: 6000,
+                                    type: 'error',
+                                    dangerouslyUseHTMLString: true,
+                                    message: mhtl
+                                });
+                            }
+                            else
+                                if(response.data.error){
+                                    const ht = `<strong>${response.data.message}</strong> <br> <strong>${response.data.error.string} </strong> `
+                                    this.$message({
+                                        duration: 6000,
+                                        type: 'error',
+                                        dangerouslyUseHTMLString: true,
+                                        message: ht
+                                    });
+                                }
+                                else{
+                                    this.$message.error(response.data.message);
+                                }
+                                setTimeout(this.close(), 5000)
+                        }
+                    }
+                    else {
+                        if(response.data.errors){
                             const mhtl = this.parseMesaageError(response.data.errors)
                             this.$message({
                                 duration: 6000,
@@ -1282,173 +1320,217 @@ export default {
                                 message: mhtl
                             });
                         }
-                        else
-                            if (response.data.error) {
-                                const ht = `<strong>${response.data.message}</strong> <br> <strong>${response.data.error.string} </strong> `
-                                this.$message({
-                                    duration: 6000,
-                                    type: 'error',
-                                    dangerouslyUseHTMLString: true,
-                                    message: ht
-                                });
-                            }
-                            else {
-                                this.$message.error(response.data.message);
-                            }
-                        setTimeout(this.close(), 5000)
+                        else if(response.data.error){
+                            const ht = `<strong>${response.data.message}</strong> <br> <strong>${response.data.error.string} </strong> `
+                            this.$message({
+                                duration: 6000,
+                                type: 'error',
+                                dangerouslyUseHTMLString: true,
+                                message: ht
+                            });
+                        }
+                        else{
+                            this.$message.error(response.data.message);
+                        }
                     }
+                }).catch(error => {
+                    if (error.response.status === 422) {
+                        this.errors = error.response.data;
+                    }
+                    else {
+                        this.$message.error(error.response.data.message);
+                    }
+                }).then(() => {
+                    this.loading_submit = false;
+                });
+            },
+
+            parseMesaageError(errors)
+            {
+                let ht = `Validación de datos <br><br> <ul>`
+                for(var key in errors) {
+                    //var value = objects[key];
+                    ht += `<li>${key}: ${errors[key][0]}</li>`
                 }
-                else {
-                    if (response.data.errors) {
-                        const mhtl = this.parseMesaageError(response.data.errors)
-                        this.$message({
-                            duration: 6000,
-                            type: 'error',
-                            dangerouslyUseHTMLString: true,
-                            message: mhtl
-                        });
-                    }
-                    else if (response.data.error) {
-                        const ht = `<strong>${response.data.message}</strong> <br> <strong>${response.data.error.string} </strong> `
-                        this.$message({
-                            duration: 6000,
-                            type: 'error',
-                            dangerouslyUseHTMLString: true,
-                            message: ht
+
+                ht += `</ul>`
+
+                return ht
+            },
+
+            async createInvoiceService() {
+                // let resol = this.resolution.resolution; //TODO
+                let invoice = {
+                    number: 0,
+                    type_document_id: 1,
+                    prefix: this.form.prefix,
+                    resolution_number: this.form.resolution_number,
+
+                };
+
+                invoice.customer =  this.getCustomer();
+                invoice.tax_totals = await this.getTaxTotal();
+                invoice.legal_monetary_totals = await this.getLegacyMonetaryTotal();
+                invoice.allowance_charges = await this.createAllowanceCharge(invoice.legal_monetary_totals.allowance_total_amount, invoice.legal_monetary_totals.line_extension_amount );
+
+                invoice.invoice_lines = await this.getInvoiceLines();
+                invoice.with_holding_tax_total = await this.getWithHolding();
+
+                return invoice;
+            },
+            getCustomer() {
+                let customer = this.customers.find(x => x.id == this.form.customer_id);
+                let obj = {
+                    identification_number: customer.number,
+                    name: customer.name,
+                    phone: customer.telephone,
+                    address: customer.address,
+                    email: customer.email,
+                    merchant_registration: "000000",
+                    type_document_identification_id: customer.identity_document_type_id,
+                    type_organization_id: customer.type_person_id,
+                    municipality_id_fact: customer.city_id,
+                    type_regime_id: customer.type_regime_id,
+                    type_liability_id: customer.type_obligation_id
+                };
+
+                this.form.customer_id = customer.id
+
+                if (customer.type_person_id == 1) {
+                    obj.dv = customer.dv;
+                }
+                return obj;
+            },
+
+            /*
+            getTaxTotal() {
+                let tax = [];
+                this.form.items.forEach(element => {
+                    let find = tax.find(x => element.tax !== undefined && x.tax_id == element.tax.type_tax_id && x.percent == element.tax.rate);
+                    if(find)
+                    {
+                        let indexobj = tax.findIndex(x => x.tax_id == element.tax.type_tax_id && x.percent == element.tax.rate);
+                        tax.splice(indexobj, 1);
+                        tax.push({
+                            tax_id: find.tax_id,
+                            tax_amount: this.cadenaDecimales(Number(find.tax_amount) + Number(element.total_tax)),
+                            percent: this.cadenaDecimales(find.percent),
+                            taxable_amount: this.cadenaDecimales(Number(find.taxable_amount) + Number(element.price) * Number(element.quantity)) - Number(element.discount)
                         });
                     }
                     else {
-//                        console.log(response.data.message)
-                        this.$message({
-                            type: 'error',
-                            message: response.data.message,
-                            dangerouslyUseHTMLString: true,
-                            duration: 6000
-                        });
+                        if(element.tax !== undefined){
+                            tax.push({
+                                tax_id: element.tax.type_tax_id,
+                                tax_amount: this.cadenaDecimales(Number(element.total_tax)),
+                                percent: this.cadenaDecimales(Number(element.tax.rate)),
+                                taxable_amount: this.cadenaDecimales((Number(element.price) * Number(element.quantity)) - Number(element.discount))
+                            });
+                        }
                     }
-                }
-            }).catch(error => {
-                if (error.response.status === 422) {
-                    this.errors = error.response.data;
-                }
-                else {
-                    this.$message.error(error.response.data.message);
-                }
-            }).then(() => {
-                this.loading_submit = false;
-            });
-        },
-        parseMesaageError(errors) {
-            let ht = `Validación de datos <br><br> <ul>`
-            for (var key in errors) {
-                //var value = objects[key];
-                ht += `<li>${key}: ${errors[key][0]}</li>`
-            }
-            ht += `</ul>`
-            return ht
-        },
-        async createInvoiceService() {
-            // let resol = this.resolution.resolution; //TODO
-            let invoice = {
-                number: 0,
-                type_document_id: this.is_contingency_3 ? 3 : 1,
-                prefix: this.form.prefix,
-                resolution_number: this.form.resolution_number,
-            };
-            invoice.customer = this.getCustomer();
-            invoice.tax_totals = await this.getTaxTotal();
-            invoice.legal_monetary_totals = await this.getLegacyMonetaryTotal();
-            invoice.allowance_charges = await this.createAllowanceCharge(invoice.legal_monetary_totals.allowance_total_amount, invoice.legal_monetary_totals.line_extension_amount);
-            invoice.invoice_lines = await this.getInvoiceLines();
-            invoice.with_holding_tax_total = await this.getWithHolding();
-            return invoice;
-        },
-        getCustomer() {
-            let customer = this.customers.find(x => x.id == this.form.customer_id);
-            let obj = {
-                identification_number: customer.number,
-                name: customer.name,
-                phone: customer.telephone,
-                address: customer.address,
-                email: customer.email,
-                merchant_registration: "000000",
-                type_document_identification_id: customer.identity_document_type_id,
-                type_organization_id: customer.type_person_id,
-                municipality_id_fact: customer.city_id,
-                type_regime_id: customer.type_regime_id,
-                type_liability_id: customer.type_obligation_id
-            };
-            this.form.customer_id = customer.id
-            if (customer.type_person_id == 1) {
-                obj.dv = customer.dv;
-            }
-            return obj;
-        },
-        getTaxTotal() {
-            let tax = [];
-            this.form.items.forEach(element => {
-                let find = tax.find(x => element.tax !== undefined && x.tax_id == element.tax.type_tax_id && x.percent == element.tax.rate);
-                if (find) {
-                    let indexobj = tax.findIndex(x => x.tax_id == element.tax.type_tax_id && x.percent == element.tax.rate);
-                    tax.splice(indexobj, 1);
+                });
+                this.tax_amount_calculate = tax;
+                return tax;
+            },
+            */
+            getTaxTotal() {
+                let tax = [];
+                let bolsaTaxAmount = 0; // Para acumular el monto total del impuesto a las bolsas
+                let bolsaTaxableAmount = 0; // Para acumular la base imponible del impuesto a las bolsas
+                let bolsaUnitMeasureId = null; // Almacenará el unit_measure_id para el impuesto a las bolsas
+                let bolsa_per_unit_amount = null; // Almacenará el precio unitario de las bolsas
+
+                this.form.items.forEach(element => {
+                    if (element.tax.type_tax_id !== 10) { // Procesar todos los impuestos excepto el de bolsas
+                        let find = tax.find(x => x.tax_id == element.tax.type_tax_id && x.percent == element.tax.rate);
+                        if(find) {
+                            find.tax_amount = this.cadenaDecimales(Number(find.tax_amount) + Number(element.total_tax));
+                            find.taxable_amount = this.cadenaDecimales(Number(find.taxable_amount) + (Number(element.price) * Number(element.quantity)) - Number(element.discount));
+                        } else {
+                            tax.push({
+                                tax_id: element.tax.type_tax_id,
+                                tax_amount: this.cadenaDecimales(Number(element.total_tax)),
+                                percent: this.cadenaDecimales(Number(element.tax.rate)),
+                                taxable_amount: this.cadenaDecimales((Number(element.price) * Number(element.quantity)) - Number(element.discount))
+                            });
+                        }
+                    } else {
+                        // Acumular el monto total del impuesto a las bolsas
+                        bolsaTaxAmount += Number(element.total_tax);
+                        // Acumular la base imponible para el impuesto a las bolsas
+                        bolsaTaxableAmount += (Number(element.price) * Number(element.quantity));
+
+                        bolsa_per_unit_amount = (Number(element.price));
+                        
+
+                        if (!bolsaUnitMeasureId) {
+                            bolsaUnitMeasureId = element.item.unit_type.code.trim();
+                        }
+                    }
+                });                    
+                // Si hay impuesto a las bolsas, agregar al array de tax
+                if (bolsaTaxAmount > 0) {
                     tax.push({
-                        tax_id: find.tax_id,
-                        tax_amount: this.cadenaDecimales(Number(find.tax_amount) + Number(element.total_tax)),
-                        percent: this.cadenaDecimales(find.percent),
-                        taxable_amount: this.cadenaDecimales(Number(find.taxable_amount) + Number(element.price) * Number(element.quantity)) - Number(element.discount)
+                        tax_id: 10,
+                        unit_measure_id: bolsaUnitMeasureId,
+                        tax_amount: this.cadenaDecimales(bolsaTaxAmount), // El monto total del impuesto a las bolsas es fijo
+                        percent: "0", // El porcentaje para impuesto de bolsas es cero
+                        taxable_amount: "0", // La base imponible para el impuesto a las bolsas
+                        per_unit_amount: this.cadenaDecimales(bolsa_per_unit_amount), // El impuesto por unidad
+                        base_unit_measure: "1.00" // Si la medida base es siempre 1
                     });
                 }
-                else {
-                    if (element.tax !== undefined) {
-                        tax.push({
-                            tax_id: element.tax.type_tax_id,
-                            tax_amount: this.cadenaDecimales(Number(element.total_tax)),
-                            percent: this.cadenaDecimales(Number(element.tax.rate)),
-                            taxable_amount: this.cadenaDecimales((Number(element.price) * Number(element.quantity)) - Number(element.discount))
-                        });
+
+                this.tax_amount_calculate = tax;
+                return tax;
+            },
+
+            getLegacyMonetaryTotal() {
+                let line_ext_am = 0;
+                let tax_incl_am = 0;
+                let allowance_total_amount = 0;
+                this.form.items.forEach(element => {
+                    line_ext_am += (Number(element.price) * Number(element.quantity)) - Number(element.discount) ;
+//                    allowance_total_amount += Number(element.discount);
+                });
+
+                let total_tax_amount = 0;
+                this.tax_amount_calculate.forEach(element => {
+                    total_tax_amount += Number(element.tax_amount);
+                });
+
+                let tax_excl_am = 0;
+                this.tax_amount_calculate.forEach(element => {
+                    tax_excl_am += Number(element.taxable_amount);
+                });
+                tax_incl_am = line_ext_am + total_tax_amount;
+
+                return {
+                    line_extension_amount: this.cadenaDecimales(line_ext_am),
+                    tax_exclusive_amount: this.cadenaDecimales(tax_excl_am),
+                    tax_inclusive_amount: this.cadenaDecimales(tax_incl_am),
+                    allowance_total_amount: this.cadenaDecimales(allowance_total_amount),
+                    charge_total_amount: "0.00",
+                    payable_amount: this.cadenaDecimales(tax_incl_am)
+//                    payable_amount: this.cadenaDecimales(tax_incl_am - allowance_total_amount)
+                };
+            },
+
+            getInvoiceLines() {
+                let data = this.form.items.map(x => {
+                    // se definen variables 
+                    let percent;
+                    let base_amount_incbp;
+                    if (x.tax.type_tax_id === 10 && Number(x.price) === 0) {
+                        base_amount_incbp = this.cadenaDecimales(Number(x.tax.rate) * Number(x.quantity));
+                        percent = "0";
+                    } else {
+                        base_amount_incbp = this.cadenaDecimales(Number(x.price) * Number(x.quantity));
+                        percent = this.cadenaDecimales(x.tax.rate);
                     }
-                }
-            });
-            this.tax_amount_calculate = tax;
-            return tax;
-        },
-        getLegacyMonetaryTotal() {
-            let line_ext_am = 0;
-            let tax_incl_am = 0;
-            let allowance_total_amount = this.total_global_discount; // descuento global
-            this.form.items.forEach(element => {
-                line_ext_am += (Number(element.price) * Number(element.quantity)) - Number(element.discount);
-                //                    allowance_total_amount += Number(element.discount);
-            });
-            let total_tax_amount = 0;
-            this.tax_amount_calculate.forEach(element => {
-                total_tax_amount += Number(element.tax_amount);
-            });
-            let tax_excl_am = 0;
-            this.tax_amount_calculate.forEach(element => {
-                tax_excl_am += Number(element.taxable_amount);
-            });
-            tax_incl_am = line_ext_am + total_tax_amount;
-            if (!this.global_discount_is_amount && allowance_total_amount > 0) {
-                allowance_total_amount = (tax_excl_am * allowance_total_amount) / 100;
-            }
-            let pay_am = tax_incl_am - allowance_total_amount;
-            return {
-                line_extension_amount: this.cadenaDecimales(line_ext_am),
-                tax_exclusive_amount: this.cadenaDecimales(tax_excl_am),
-                tax_inclusive_amount: this.cadenaDecimales(tax_incl_am),
-                allowance_total_amount: this.cadenaDecimales(allowance_total_amount),
-                charge_total_amount: "0.00",
-                // payable_amount: this.cadenaDecimales(tax_incl_am)
-                // payable_amount: this.cadenaDecimales(tax_incl_am - allowance_total_amount)
-                payable_amount: this.cadenaDecimales(pay_am)
-            };
-        },
-        getInvoiceLines() {
-            let data = this.form.items.map(x => {
-                if (x.tax !== undefined) {
-                    return {
-                        unit_measure_id: x.item.unit_type.code, //codigo api dian de unidad
+
+                    let item = {                       
+                        unit_measure_id: x.item.unit_type.code,
                         invoiced_quantity: x.quantity,
                         line_extension_amount: this.cadenaDecimales((Number(x.price) * Number(x.quantity)) - x.discount),
                         notes: x.notes,
@@ -1458,7 +1540,7 @@ export default {
                                 charge_indicator: false,
                                 allowance_charge_reason: "DESCUENTO GENERAL",
                                 amount: this.cadenaDecimales(x.discount),
-                                base_amount: this.cadenaDecimales(Number(x.price) * Number(x.quantity))
+                                base_amount: base_amount_incbp
                             }
                         ],
                         tax_totals: [
@@ -1466,85 +1548,79 @@ export default {
                                 tax_id: x.tax.type_tax_id,
                                 tax_amount: this.cadenaDecimales(x.total_tax),
                                 taxable_amount: this.cadenaDecimales((Number(x.price) * Number(x.quantity)) - x.discount),
-                                percent: this.cadenaDecimales(x.tax.rate)
+                                percent: percent
                             }
                         ],
                         description: x.item.name,
                         code: x.item.internal_id,
                         type_item_identification_id: 4,
                         price_amount: this.cadenaDecimales(Number(x.price) + (Number(x.total_tax) / Number(x.quantity))),
-                        base_quantity: x.quantity
-                    }
-                }
-                else {
-                    return {
-                        unit_measure_id: x.item.unit_type.code, //codigo api dian de unidad
-                        invoiced_quantity: x.quantity,
-                        line_extension_amount: this.cadenaDecimales((Number(x.price) * Number(x.quantity)) - x.discount),
-                        notes: x.notes,
-                        free_of_charge_indicator: false,
-                        allowance_charges: [
-                            {
-                                charge_indicator: false,
-                                allowance_charge_reason: "DESCUENTO GENERAL",
-                                amount: this.cadenaDecimales(x.discount),
-                                base_amount: this.cadenaDecimales(Number(x.price) * Number(x.quantity))
-                            }
-                        ],
-                        description: x.item.name,
-                        code: x.item.internal_id,
-                        type_item_identification_id: 4,
-                        price_amount: this.cadenaDecimales(Number(x.price) + (Number(x.total_tax) / Number(x.quantity))),
-                        base_quantity: x.quantity
+                        base_quantity: x.quantity,
                     };
-                }
-            });
-            return data;
-        },
-        getWithHolding() {
-            let total_iva = this.form.total_tax
-            let total = this.form.sale
-            let list = this.form.taxes.filter(function (x) {
-                return x.is_retention && x.apply;
-            });
-            return list.map(x => {
-                return {
-                    tax_id: x.type_tax_id,
-                    tax_amount: this.cadenaDecimales(x.retention),
-                    percent: this.cadenaDecimales(this.roundNumber(x.rate / (x.conversion / 100), 6)),
-                    taxable_amount: x.in_base ? this.cadenaDecimales(total) : this.cadenaDecimales(total_iva),
-                };
-            });
-        },
-        roundNumber(num, decimales = 2) {
-            var signo = (num >= 0 ? 1 : -1);
-            num = num * signo;
-            if (decimales === 0) //con 0 decimales
-                return signo * Math.round(num);
-            // round(x * 10 ^ decimales)
-            num = num.toString().split('e');
-            num = Math.round(+(num[0] + 'e' + (num[1] ? (+num[1] + decimales) : decimales)));
-            // x * 10 ^ (-decimales)
-            num = num.toString().split('e');
-            return signo * (num[0] + 'e' + (num[1] ? (+num[1] - decimales) : -decimales));
-        },
-        createAllowanceCharge(amount, base) {
-            return [
-                {
-                    discount_id: 1,
-                    charge_indicator: false,
-                    allowance_charge_reason: "DESCUENTO GENERAL",
-                    amount: this.cadenaDecimales(amount),
-                    base_amount: this.cadenaDecimales(base)
-                }
-            ]
-        },
-        cadenaDecimales(amount) {
-            if (amount.toString().indexOf(".") != -1)
-                return amount.toString();
-            else
-                return amount.toString() + ".00";
-        },
+
+                    // Verificar si el ítem es el impuesto a la bolsa
+                    if (x.tax.type_tax_id === 10) {
+                        item.tax_totals[0] = {
+                            ...item.tax_totals[0], // Conservar la estructura base del impuesto
+                            unit_measure_id: x.item.unit_type.code,
+                            per_unit_amount: x.tax.rate, // Agregar el monto del impuesto por unidad
+                            base_unit_measure: "1" // Agregar la unidad de medida base para el cálculo del impuesto
+                        };
+                    }
+
+                    return item;
+                });
+
+                return data;
+            },
+
+            getWithHolding() {
+                let total_iva = this.form.total_tax
+                let total = this.form.sale
+                let list = this.form.taxes.filter(function(x) {
+                    return x.is_retention && x.apply;
+                });
+                return list.map(x => {
+                    return {
+                        tax_id: x.type_tax_id,
+                        tax_amount: this.cadenaDecimales(x.retention),
+                        percent: this.cadenaDecimales(this.roundNumber(x.rate / (x.conversion / 100), 6)),
+                        taxable_amount: x.in_base ? this.cadenaDecimales(total) : this.cadenaDecimales(total_iva),
+                    };
+                });
+
+            },
+            roundNumber(num, decimales = 2) {
+                var signo = (num >= 0 ? 1 : -1);
+                num = num * signo;
+                if (decimales === 0) //con 0 decimales
+                    return signo * Math.round(num);
+                // round(x * 10 ^ decimales)
+                num = num.toString().split('e');
+                num = Math.round(+(num[0] + 'e' + (num[1] ? (+num[1] + decimales) : decimales)));
+                // x * 10 ^ (-decimales)
+                num = num.toString().split('e');
+                return signo * (num[0] + 'e' + (num[1] ? (+num[1] - decimales) : -decimales));
+            },
+
+            createAllowanceCharge(amount, base) {
+                return [
+                    {
+                        discount_id: 1,
+                        charge_indicator: false,
+                        allowance_charge_reason: "DESCUENTO GENERAL",
+                        amount: this.cadenaDecimales(amount),
+                        base_amount: this.cadenaDecimales(base)
+                    }
+                ]
+            },
+
+            cadenaDecimales(amount){
+                if(amount.toString().indexOf(".") != -1)
+                    return amount.toString();
+                else
+                    return amount.toString()+".00";
+                },
+            }
     }
-}
 </script>

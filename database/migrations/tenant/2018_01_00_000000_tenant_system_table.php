@@ -66,12 +66,16 @@ class TenantSystemTable extends Migration
         });
 
         DB::table('banks')->insert([
-            ['id' => 1, 'description' => 'BANCO SCOTIABANK'],
-            ['id' => 2, 'description' => 'BANCO DE CREDITO DEL PERU'],
-            ['id' => 3, 'description' => 'BANCO DE COMERCIO'],
-            ['id' => 4, 'description' => 'BANCO PICHINCHA'],
-            ['id' => 5, 'description' => 'BBVA CONTINENTAL'],
-            ['id' => 6, 'description' => 'INTERBANK'],
+            ['id' => 1, 'description' => 'BANCOLOMBIA'],
+            ['id' => 2, 'description' => 'BANCO DE BOGOTÁ'],
+            ['id' => 3, 'description' => 'BANCO DAVIVIENDA'],
+            ['id' => 4, 'description' => 'BANCO BBVA COLOMBIA'],
+            ['id' => 5, 'description' => 'BANCO DE OCCIDENTE'],
+            ['id' => 6, 'description' => 'BANCO POPULAR'],
+            ['id' => 7, 'description' => 'BANCO ITAÚ'],
+            ['id' => 8, 'description' => 'BANCO SANTANDER COLOMBIA'],
+            ['id' => 9, 'description' => 'BANCO AGRARIO DE COLOMBIA'],
+            ['id' => 10, 'description' => 'BANCO CREDIFINANCIERA'],
         ]);
 
         Schema::create('bank_accounts', function (Blueprint $table) {
