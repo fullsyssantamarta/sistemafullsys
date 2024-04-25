@@ -423,7 +423,7 @@ export default {
         switchToTenant(companyId) {
             window.open(`/switch-tenant/${companyId}`, '_blank');
         },
-        changeLockedTenant(row) {getServiceCompany
+        changeLockedTenant(row) {
             this.$http
                 .post(`${this.resource}/locked_tenant`, row)
                 .then(response => {
