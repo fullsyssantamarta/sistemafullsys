@@ -1035,9 +1035,9 @@
                             </li>
                             @endif --}}
 
-                            {{-- <li class="{{($path[0] === 'inventories' && $path[1] === 'configuration') ? 'nav-active': ''}}">
+                            <li class="{{($path[0] === 'inventories' && $path[1] === 'configuration') ? 'nav-active': ''}}">
                                 <a class="nav-link" href="{{route('tenant.inventories.configuration.index')}}">Inventarios</a>
-                            </li> --}}
+                            </li>
                         </ul>
                     </li>
                     @endif
