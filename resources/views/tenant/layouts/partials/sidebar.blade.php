@@ -1069,17 +1069,11 @@
                                     </a>
                                 </li>
 
-                                <li class="{{($path[0] === 'co-radian-events' && $path[1] == 'manage') ? 'nav-active' : ''}}">
+                                <li class="{{($path[0] === 'co-radian-events' && $path[1] == 'radian-cufe') ? 'nav-active' : ''}}">
                                     <a class="nav-link" href="{{route('tenant.co-radian-cufe.index')}}">
                                         Gestionar eventos con CUFE
                                     </a>
                                 </li>
-
-                                <li class="{{($path[0] === 'co-advanced-configuration') ? 'nav-active' : ''}}">
-                                    <a class="nav-link" href="{{route('tenant.co-advanced-configuration.index')}}">
-                                        Avanzado
-                                    </a>
-                                </li> 
                             </ul>
                         </li>
                     @endif
