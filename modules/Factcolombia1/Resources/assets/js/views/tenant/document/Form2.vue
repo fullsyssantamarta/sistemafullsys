@@ -253,13 +253,12 @@
                                         </thead>
                                         <tbody v-if="form.items.length > 0">
                                             <tr v-for="(row, index) in form.items" :key="index">
-                                                <td>{{ index + 1 }}</td>
-                                                <td>{{ row.item.name }}
-                                                    {{ row.item.presentation.hasOwnProperty('description') ?
-                                                    row.item.presentation.description :
-                                                    ''}}
-                                                    <br />
-                                                    <small>{{ row.tax ? row.tax.name : 'EXCLUIDO' }}</small>
+                                                <td>{{index + 1}}</td>
+                                                <td>{{row.item.name}}
+                                                    {{row.item.presentation.hasOwnProperty('description') ? row.item.presentation.description : ''}} <br/>
+                                                    Notas: {{row.notes}}
+                                                    <br/>
+                                                    <small>{{row.tax ? row.tax.name : 'EXCLUIDO'}}</small>
                                                 </td>
                                                 <td class="text-center">{{ row.item.unit_type.name }}</td>
                                                 <td class="text-right">{{ row.quantity }}</td>
