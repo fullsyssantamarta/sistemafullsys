@@ -283,6 +283,10 @@
                 all_taxes:[],
                 taxes:[],
                 items_aiu: [],
+                barcodeInput: '', // Agrega esto para almacenar la entrada del código de barras
+                currentSearchItems: [], //carga productos actuales en la busqueda
+                inventoryConfig: null, //Control de inventarios activo o no activo
+
             }
         },
         computed: {
@@ -306,6 +310,7 @@
             }
         },
         created() {
+            this.fetchInventoryConfiguration();
             this.initForm()
             this.$http.get(`/${this.resource}/item/tables`).then(response => {
                // console.log('tablas new edit')
@@ -323,6 +328,32 @@
             })
         },
         methods: {
+            async fetchInventoryConfiguration() {
+                    // Realizar la solicitud API para obtener la configuración de inventario
+                    const response = await this.$http.get('/items/inventory-configuration');
+                    return response.data.inventoryConfiguration;
+                },
+            // Método que se llama cuando se escanea un código de barras
+            async handleBarcodeScan() {
+                    if (this.barcodeInput) {
+                        await this.searchRemoteItems(this.barcodeInput);
+                        const foundItem = this.items.find(item => item.internal_id === this.barcodeInput);
+
+                        if (foundItem) {
+                            // Si encuentra un ítem, actualiza form.item_id y lo añade a currentSearchItems si es necesario
+                            this.form.item_id = foundItem.id;
+                            if (!this.currentSearchItems.some(item => item.id === foundItem.id)) {
+                                this.currentSearchItems.push(foundItem);
+                            }
+                            this.changeItem();
+                        } else {
+                            // Si no encuentra el producto, abre el modal para crear un nuevo producto
+                            this.showDialogNewItem = true;
+                        }
+
+                        this.barcodeInput = ''; // Limpia el campo después del escaneo
+                    }
+            },
             async searchRemoteItems(input) {
                 if (input.length > 2 || this.search_item_by_barcode) {
                     console.log(input);
@@ -546,6 +577,16 @@
                     if(!this.form.IdLoteSelected)
                         return this.$message.error('Debe seleccionar un lote.');
                 }
+
+                // Cargar la configuración de inventario
+                const inventoryConfig = await this.fetchInventoryConfiguration();
+
+                // Verificar si la configuración de inventario está activada y si el stock del producto es insuficiente
+                if (inventoryConfig.stock_control === 1 && this.form.item.stock <= 0) {
+                    this.$message.error('Este producto no tiene suficiente stock');
+                    return; // Detener la ejecución del método para evitar agregar el producto
+                }
+
                 if (this.validateTotalItem().total_item) return;
                 if(null === this.form.tax_id)
                     this.form.tax = {'code': "ZZ", 'conversion': "100.00", 'id': 0, 'in_base': false, 'in_tax': null, 'is_fixed_value': false, 'is_percentage': true, 'is_retention': false, 'name': "EXCLUIDO", 'rate': "0.00", 'retention': 0, 'total': 0, 'type_tax': {'code': "ZZ", 'description': "Articulos Excluidos de Impuesto", 'id': 99, 'name': "EXCLUIDO"}}

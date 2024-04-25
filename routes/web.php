@@ -145,6 +145,7 @@ if ($hostname) {
             Route::get('main-items/search', 'Tenant\ItemController@searchItems');
             Route::get('main-items/search-by-id/{id}', 'Tenant\ItemController@searchItemById');
             Route::get('items/search-data', 'Tenant\ItemController@searchData');
+            Route::get('items/inventory-configuration', 'Tenant\ItemController@getInventoryConfiguration');
 
             //Persons
             Route::get('persons/columns', 'Tenant\PersonController@columns');
