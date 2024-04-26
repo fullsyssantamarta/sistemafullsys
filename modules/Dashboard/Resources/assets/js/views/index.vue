@@ -144,14 +144,14 @@
     <div class="row">
       <div class="col-xl-12">
         <div class="row">
-          <div class="col-xl-3">
+          <div class="col-xl-4">
             <section class="card card-featured-left card-featured-secondary">
-              <div class="card-body" v-if="sale_note">
+              <div class="card-body">
                 <div class="widget-summary">
                   <div class="widget-summary-col">
                     <div class="row no-gutters">
                       <div class="col-md-12 m-b-10">
-                        <h2 class="card-title">Notas de venta</h2>
+                        <h2 class="card-title">Facturas Electrónicas</h2>
                       </div>
                       <div class="col-lg-4">
                         <div class="summary">
@@ -199,14 +199,14 @@
               </div>
             </section>
           </div>
-          <div class="col-xl-3" v-if="soapCompany != '03'">
+          <div class="col-xl-4">
             <section class="card card-featured-left card-featured-secondary">
-              <div class="card-body" v-if="document">
+              <div class="card-body">
                 <div class="widget-summary">
                   <div class="widget-summary-col">
                     <div class="row no-gutters">
                       <div class="col-md-12 m-b-10">
-                        <h2 class="card-title">Comprobantes</h2>
+                        <h2 class="card-title">Remisiones</h2>
                       </div>
                       <div class="col-lg-4">
                         <div class="summary">
@@ -252,7 +252,60 @@
               </div>
             </section>
           </div>
-          <div class="col-xl-6 col-md-6">
+          <div class="col-xl-4">
+            <section class="card card-featured-left card-featured-secondary">
+              <div class="card-body">
+                <div class="widget-summary">
+                  <div class="widget-summary-col">
+                    <div class="row no-gutters">
+                      <div class="col-md-12 m-b-10">
+                        <h2 class="card-title">Ventas POS</h2>
+                      </div>
+                      <div class="col-lg-4">
+                        <div class="summary">
+                          <h4 class="title text-info">
+                            Total
+                            <br />Pagado
+                          </h4>
+                          <div class="info">
+                            <strong class="amount text-info">{{ document_pos.totals.total_payment }}</strong>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-lg-4">
+                        <div class="summary">
+                          <h4 class="title text-danger">
+                            Total
+                            <br />por Pagar
+                          </h4>
+                          <div class="info">
+                            <strong class="amount text-danger">{{ document_pos.totals.total_to_pay }}</strong>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-lg-4">
+                        <div class="summary">
+                          <h4 class="title">
+                            Total
+                            <br />&nbsp;
+                          </h4>
+                          <div class="info">
+                            <strong class="amount">{{ document_pos.totals.total }}</strong>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row m-t-20">
+                      <div class="col-md-12">
+                        <x-graph type="doughnut" :all-data="document_pos.graph"></x-graph>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+          <!-- <div class="col-xl-6 col-md-6">
             <section class="card card-featured-left card-featured-secondary">
               <div class="card-body" v-if="general">
                 <div class="widget-summary">
@@ -360,17 +413,6 @@
                           </div>
                         </div>
                       </div>
-                      <!-- <div class="col-lg-4">
-                        <div class="summary">
-                          <h4 class="title">
-                            Total
-                            <br />&nbsp;
-                          </h4>
-                          <div class="info">
-                            <strong class="amount">{{ balance.totals.total }}</strong>
-                          </div>
-                        </div>
-                      </div> -->
                     </div>
                     <div class="row m-t-20">
                       <div class="col-md-12">
@@ -464,10 +506,10 @@
                 </div>
               </div>
             </section>
-          </div>
+          </div> -->
 
 
-          <div class="col-xl-6 col-md-6">
+          <!-- <div class="col-xl-6 col-md-6">
             <section class="card card-featured-left card-featured-secondary">
               <div class="card-body" v-if="general">
                 <div class="widget-summary">
@@ -535,7 +577,7 @@
                 </div>
               </div>
             </section>
-          </div>
+          </div> -->
 
           <div class="col-xl-3 col-md-6">
             <section class="card">
@@ -675,6 +717,10 @@ export default {
         graph: {}
       },
       sale_note: {
+        totals: {},
+        graph: {}
+      },
+      document_pos: {
         totals: {},
         graph: {}
       },
@@ -840,12 +886,13 @@ export default {
       this.loadData();
      // this.loadUnpaid();
       this.loadDataAditional();
-      this.loadDataUtilities();
+      // this.loadDataUtilities();
       //this.loadCustomer();
     },
     loadData() {
       this.$http.post(`/${this.resource}/data`, this.form).then(response => {
-        this.document = response.data.data.document;
+        this.document = response.data.data.document; // remisiones - remission
+        this.document_pos = response.data.data.document_pos;
         this.balance = response.data.data.balance;
         this.sale_note = response.data.data.sale_note;
         this.general = response.data.data.general;

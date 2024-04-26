@@ -42,7 +42,12 @@
 
                 <div class="row">
                     <div class="col-md-12 mb-2">
-                        <label class="control-label">API Token</label>
+                        <label class="control-label">
+                            API Token
+                            <el-tooltip class="item" effect="dark" content="Código de acceso que permite a las aplicaciones o usuarios ejecutar funciones de API" placement="top-start">
+                                <i class="fa fa-info-circle"></i>
+                            </el-tooltip>
+                        </label>
                         <el-input v-model="form.api_token" :disabled="true"></el-input>
                         <button type="button" class="btn waves-effect waves-light btn-xs btn-info" @click.prevent="copyToClipboard">Copiar</button>
                     </div>

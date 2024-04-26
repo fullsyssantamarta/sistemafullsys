@@ -27,8 +27,9 @@
                 options: {
                     maintainAspectRatio: false,
                     lineTension: 0,
-                    circumference: Math.PI,
-                    rotation: -Math.PI
+                    legend: {
+                        display: false,
+                    }
                 },
             }
         },
