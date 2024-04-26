@@ -129,6 +129,9 @@ if($current_hostname) {
             Route::get('/', function () {
                 return redirect()->route('system.co-companies');
             });
+            Route::get('/dashboard', function () {
+                return redirect()->route('system.co-companies');
+            });
 
             Route::prefix('co-companies')->group(function () {
 

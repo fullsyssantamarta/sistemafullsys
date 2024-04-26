@@ -21,7 +21,7 @@
                 class="topbar-links"
                 data-placement="bottom"
                 data-toggle="tooltip">
-                <i aria-hidden="true" class="fas fa-fw fa-cash-register"></i>
+                <i aria-hidden="true" class="fas fa-fw fa-plus"></i>
                 <span>POS</span>
             </a>
             <a href="{{ route('tenant.purchases.create') }}"
@@ -33,12 +33,20 @@
                 <span>GC</span>
             </a>
             <a href="{{ route('tenant.items.index') }}"
-                title="Listado de Productos"
+                title="Nuevo Producto"
                 class="topbar-links"
                 data-placement="bottom"
                 data-toggle="tooltip">
-                <i aria-hidden="true" class="fas fa-fw fa-bars"></i>
-                <span>LP</span>
+                <i aria-hidden="true" class="fas fa-fw fa-plus"></i>
+                <span>NP</span>
+            </a>
+            <a href="{{ route('tenant.reports.customers.index') }}"
+                title="Nuevo Cliente"
+                class="topbar-links"
+                data-placement="bottom"
+                data-toggle="tooltip">
+                <i aria-hidden="true" class="fas fa-fw fa-plus"></i>
+                <span>CL</span>
             </a>
         </div>
     </div>
