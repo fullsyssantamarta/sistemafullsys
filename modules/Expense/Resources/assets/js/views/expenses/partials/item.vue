@@ -1,5 +1,5 @@
-<template>
-    <el-dialog :title="titleDialog" :visible="showDialog"   @close="close">
+<template style="z-index: 3500;">
+    <el-dialog :title="titleDialog" :visible="showDialog"   @close="close" append-to-body>
         <form autocomplete="off" @submit.prevent="clickAddItem">
             <div class="form-body">
                 <div class="row">

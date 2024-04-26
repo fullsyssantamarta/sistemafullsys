@@ -12,11 +12,27 @@
                 <h2>
                     <el-switch v-model="search_item_by_barcode" active-text="Buscar por código de barras" @change="changeSearchItemBarcode"></el-switch>
                 </h2>
+            
                 <template v-if="!electronic">
                     <h2>
                         <el-switch v-model="type_refund" active-text="Devolución"></el-switch>
                     </h2>
                 </template>
+
+                <h2>
+                    <el-button @click="showExpenseFormModal = true" class="btn btn-custom btn-sm  mt-2 mr-2">Registrar Gasto</el-button>
+                </h2>
+                <!-- Modal para el formulario de gastos -->
+                <!-- Modal para el formulario de gastos -->
+                <el-dialog :visible.sync="showExpenseFormModal" :modal="false" title="Nuevo Gasto" @close="handleCloseExpenseForm">
+                    <ExpenseForm 
+                    @close="handleCloseExpenseForm"
+                    @expenseAdded="handleExpenseAdded"
+                    :isModal="true"                    
+                    />
+                </el-dialog>
+            
+
             </div>
             <div class="col-md-4">
                 <h2> <button type="button" @click="place = 'cat'" class="btn btn-custom btn-sm  mt-2 mr-2"><i class="fa fa-border-all"></i></button> </h2>
@@ -455,6 +471,7 @@ import HistoryPurchasesForm from "../../../../../modules/Pos/Resources/assets/js
 import PersonForm from "../persons/form.vue";
 import WarehousesDetail from '../items/partials/warehouses.vue'
 import queryString from "query-string";
+import ExpenseForm from '../../../../../modules/Expense/Resources/assets/js/views/expenses/form.vue';
 import {functions} from '@mixins/functions'
 
 export default {
@@ -465,7 +482,8 @@ export default {
         HistorySalesForm,
         HistoryPurchasesForm,
         PersonForm,
-        WarehousesDetail
+        WarehousesDetail,
+        ExpenseForm,
     },
     mixins: [functions],
     data() {
@@ -508,6 +526,7 @@ export default {
             category_selected: "",
             plate_number_valid: true,
             electronic: false,
+            showExpenseFormModal: false,
         };
     },
 
@@ -570,6 +589,14 @@ export default {
         }
     },
     methods: {
+        handleCloseExpenseForm() {
+            this.showExpenseFormModal = false;
+            // Cualquier otra acción que necesites realizar al cerrar el modal
+        },
+        handleExpenseAdded(expenseData) {
+          //  console.log('Gasto añadido:', expenseData);
+            // Realizar acciones después de añadir un gasto, como actualizar una lista de gastos.
+        },
         getQueryParameters() {
             return queryString.stringify({
                 page: this.pagination.current_page
