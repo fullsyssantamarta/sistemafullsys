@@ -13,6 +13,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Tenant\CashRequest;
 use App\Http\Resources\Tenant\CashCollection;
 use App\Http\Resources\Tenant\CashResource;
+use Modules\Item\Models\Category; //se agrega un nuevo Modelo
 use App\Models\Tenant\Cash;
 use App\Models\Tenant\CashDocument;
 use Exception;
@@ -22,7 +23,6 @@ use Barryvdh\DomPDF\Facade as PDF;
 use App\Models\Tenant\DocumentItem;
 use App\Models\Tenant\PaymentMethodType;
 use App\Models\Tenant\ConfigurationPos;
-
 
 
 class CashController extends Controller
@@ -198,14 +198,23 @@ class CashController extends Controller
             'message' => 'Caja eliminada con éxito'
         ];
     }
-
-
-    public function report($cash, $only_head = null) {
-
-        $cash = Cash::findOrFail($cash);
+    //Se modifica la funcion report()
+    public function report($cashId, $only_head = null) {
+        $cash = Cash::findOrFail($cashId);
         $company = Company::first();
 
-        $methods_payment = collect(PaymentMethodType::all())->transform(function($row){
+        // Se Calcula $cashEgress, similar al de la funcion que estaba.
+        $cashEgress = $cash->cash_documents->sum(function ($cashDocument) {
+            return $cashDocument->expense_payment ? $cashDocument->expense_payment->payment : 0;
+        });
+
+        // Se Recupera $expensePayments, similar como estaba.
+        $expensePayments = $cash->cash_documents->filter(function ($doc) {
+            return !is_null($doc->expense_payment_id);
+        })->map->expense_payment;
+
+        // Inicialización de $methods_payment.
+        $methods_payment = PaymentMethodType::all()->map(function($row) {
             return (object)[
                 'id' => $row->id,
                 'name' => $row->description,
@@ -213,13 +222,20 @@ class CashController extends Controller
             ];
         });
 
-        set_time_limit(0);
+        // Se recuperan las categorías
+        $categories = Category::all()->pluck('name', 'id');
 
-        $pdf = PDF::loadView('tenant.cash.report_pdf', compact("cash", "company", "methods_payment", "only_head"));
+        // Se Recupera la Resolución
+        $resolutions_maquinas = ConfigurationPos::select('cash_type', 'plate_number', 'electronic')->get();
+
+        set_time_limit(0); // Aumentar el tiempo de ejecución si los reportes son grandes.
+
+        // Se Pasan todas las variables necesarias a la vista.
+        $pdf = PDF::loadView('tenant.cash.report_pdf', compact("cash", "company", "methods_payment", "cashEgress", "categories", "resolutions_maquinas", "expensePayments", "only_head"));
 
         $filename = "Reporte_POS - {$cash->user->name} - {$cash->date_opening} {$cash->time_opening}";
 
-        return $pdf->stream($filename.'.pdf');
+        return $pdf->stream($filename . '.pdf');
     }
 
     public function report_general()
