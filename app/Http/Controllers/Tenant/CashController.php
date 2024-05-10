@@ -204,8 +204,10 @@ class CashController extends Controller
         // Se recuperan las categorías
         $categories = Category::all()->pluck('name', 'id');
 
-        // Se Recupera la Resolución
-        $resolutions_maquinas = ConfigurationPos::select('cash_type', 'plate_number', 'electronic')->get();
+        // Solo recuperar la configuración de la máquina para la caja abierta actual
+        $resolutions_maquinas = ConfigurationPos::select('cash_type', 'plate_number', 'electronic')
+                                ->where('id', $cash->resolution_id)
+                                ->get();
 
         set_time_limit(0); // Aumentar el tiempo de ejecución si los reportes son grandes.
 
