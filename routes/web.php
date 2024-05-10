@@ -105,7 +105,7 @@ if ($hostname) {
             Route::get('users', 'Tenant\UserController@index')->name('tenant.users.index');
             Route::get('users/create', 'Tenant\UserController@create')->name('tenant.users.create');
             Route::get('users/tables', 'Tenant\UserController@tables');
-            Route::get('users/record/{user}', 'Tenant\UserController@record');
+            Route::get('users/record/{user?}', 'Tenant\UserController@record');
             Route::post('users', 'Tenant\UserController@store');
             Route::get('users/records', 'Tenant\UserController@records');
             Route::delete('users/{user}', 'Tenant\UserController@destroy');

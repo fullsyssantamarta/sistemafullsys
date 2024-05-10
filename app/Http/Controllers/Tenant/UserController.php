@@ -17,11 +17,13 @@ class UserController extends Controller
         return view('tenant.users.index');
     }
 
-    public function record()
+    public function record(User $user = null) 
     {
-        $user = auth()->user(); // Obtener el usuario autenticado
+        if (!$user) {
+            $user = auth()->user(); // Devuelve el usuario autenticado si no se proporciona un usuario específico
+        }
         return new UserResource($user);
-    }
+    }    
     
     
 
