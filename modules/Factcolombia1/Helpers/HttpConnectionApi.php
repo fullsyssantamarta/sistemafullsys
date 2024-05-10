@@ -19,11 +19,8 @@ class HttpConnectionApi
 
     public function sendRequestToApi($url, $params, $method = 'PUT')
     {
-
         try {
-
             $ch = curl_init("{$this->base_url}{$url}");
-
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));

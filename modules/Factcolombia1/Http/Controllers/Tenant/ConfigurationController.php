@@ -1129,12 +1129,14 @@ class ConfigurationController extends Controller
 
     private function updateServiceCompany($company, $request)
     {
-        $company->test_set_id_payroll = $request->test_set_id_payroll;
-        $company->pin_software_payroll = $request->pinpayroll;
-        $company->id_software_payroll = $request->idpayroll;
-        $company->test_set_id_eqdocs = $request->test_set_id_eqdocs;
-        $company->pin_software_eqdocs = $request->pineqdocs;
-        $company->id_software_eqdocs = $request->ideqdocs;
+        $company->test_set_id_payroll = isset($request->test_set_id_payroll) ? $request->test_set_id_payroll : $company->test_set_id_payroll;
+        $company->pin_software_payroll = isset($request->pinpayroll) ? $request->pinpayroll : $company->pin_software_payroll;
+        $company->id_software_payroll = isset($request->idpayroll) ? $request->idpayroll : $company->id_software_payroll;
+        $company->test_set_id_eqdocs = isset($request->test_set_id_eqdocs) ? $request->test_set_id_eqdocs : $company->test_set_id_eqdocs;
+        $company->pin_software_eqdocs = isset($request->pineqdocs) ? $request->pineqdocs : $company->pin_software_eqdocs;
+        $company->id_software_eqdocs = isset($request->ideqdocs) ? $request->ideqdocs : $company->id_software_eqdocs;
+        \Log::debug($request);
+        \Log::debug($company);
         $company->save();
     }
 }
