@@ -35,8 +35,10 @@ class CashController extends Controller
     public function columns()
     {
         return [
+            'date_opening' => 'Fecha de apertura',
+            'date_closed' => 'Fecha de cierre',
             'income' => 'Ingresos',
-            // 'expense' => 'Egresos',
+            'expense' => 'Egresos',
         ];
     }
 
@@ -44,7 +46,9 @@ class CashController extends Controller
     {
         $records = Cash::where($request->column, 'like', "%{$request->value}%")
                         ->whereTypeUser()
-                        ->orderBy('date_opening', 'DESC');
+                        ->orderBy('id', 'desc');
+
+
         return new CashCollection($records->paginate(config('tenant.items_per_page')));
     }
 
