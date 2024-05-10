@@ -1135,8 +1135,6 @@ class ConfigurationController extends Controller
         $company->test_set_id_eqdocs = isset($request->test_set_id_eqdocs) ? $request->test_set_id_eqdocs : $company->test_set_id_eqdocs;
         $company->pin_software_eqdocs = isset($request->pineqdocs) ? $request->pineqdocs : $company->pin_software_eqdocs;
         $company->id_software_eqdocs = isset($request->ideqdocs) ? $request->ideqdocs : $company->id_software_eqdocs;
-        \Log::debug($request);
-        \Log::debug($company);
         $company->save();
     }
 }
