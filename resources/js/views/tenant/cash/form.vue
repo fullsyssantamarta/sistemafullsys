@@ -16,7 +16,7 @@
                     <div class="col-md-6">
                         <div class="form-group" :class="{'has-danger': errors.beginning_balance}">
                             <label class="control-label">Saldo inicial</label>
-                            <el-input v-model="form.beginning_balance"></el-input>
+                            <el-input v-model="formattedBeginningBalance"></el-input>
                             <small class="form-control-feedback" v-if="errors.beginning_balance" v-text="errors.beginning_balance[0]"></small>
                         </div>
                     </div>
@@ -27,11 +27,12 @@
                             <small class="form-control-feedback" v-if="errors.reference_number" v-text="errors.reference_number[0]"></small>
                         </div>
                     </div>-->
-                    <div class="col-md-6">
+                    <div class="col-md-6" v-if="!recordId"> <!-- Solo muestra esto si no hay recordId, indicando creación -->
                         <div class="form-group" :class="{'has-danger': errors.resolution_id}" >
                             <label class="control-label">Resolución</label>
                             <el-select v-model="form.resolution_id">
-                                <el-option v-for="option in resolutions" :key="option.id + 'R'" :value="option.id" :label="`${option.prefix} / ${option.resolution_number}`"></el-option>
+                                <el-option v-for="option in resolutions" :key="option.id + 'R'" :value="option.id"
+                                        :label="`${option.prefix} / ${option.resolution_number}`"></el-option>
                             </el-select>
                             <small class="form-control-feedback" v-if="errors.resolution_id" v-text="errors.resolution_id[0]"></small>
                         </div>
@@ -86,6 +87,20 @@
                     return false
                 }
                 return true
+            },
+            // Propiedad computada para manejar el saldo inicial
+            formattedBeginningBalance: {
+                get() {
+                    // Esto se activará cuando necesites mostrar el valor en el input
+                    // Convierte el valor a un número flotante y lo formatea a dos decimales
+                    return parseFloat(this.form.beginning_balance).toFixed(0);
+                },
+                set(newValue) {
+                    // Esto se activará cuando el input cambie
+                    // Elimina cualquier cosa que no sea un número o punto decimal para evitar entradas inválidas
+                    const value = parseFloat(newValue.replace(/[^\d.]/g, ''));
+                    this.form.beginning_balance = isNaN(value) ? 0 : value;
+                }
             }
         },
 
@@ -109,16 +124,32 @@
             },
 
             create() {
-                this.titleDialog = (this.recordId)? 'Editar Caja chica':'Aperturar Caja chica'
+                this.titleDialog = this.recordId ? 'Editar Caja chica' : 'Aperturar Caja chica';
                 if (this.recordId) {
                     this.$http.get(`/${this.resource}/record/${this.recordId}`)
                         .then(response => {
-                            this.form = response.data.data
-                        })
-                }else{
-                    this.form.user_id = this.user.id //sesion
-                    //this.form.user = this.user.name
+                            this.form = response.data.data;
+                        });
+                } else {
+                    this.form.user_id = this.user.id; // Sesión
                 }
+
+                // Aquí agregamos la actualización de las resoluciones cada vez que el diálogo se abre
+                this.updateResolutions();
+            },
+
+            // Método para actualizar las resoluciones
+            updateResolutions() {
+                this.$http.get(`/${this.resource}/tables`)
+                    .then(response => {
+                        this.resolutions = response.data.resolutions;
+                        // Asegúrate de que el usuario actual y las opciones estén también actualizadas si es necesario
+                        this.users = response.data.users;
+                        this.user = response.data.user;
+                    })
+                    .catch(error => {
+                        console.error('Error al cargar las resoluciones:', error);
+                    });
             },
 
             async openingCashCkeck()
