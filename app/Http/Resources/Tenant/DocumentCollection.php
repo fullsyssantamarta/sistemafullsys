@@ -78,7 +78,6 @@ class DocumentCollection extends ResourceCollection
             $balance = number_format($row->total - $total_payment,2, ".", "");
 
             return [
-                
                 'id' => $row->id,
                 'group_id' => $row->group_id,
                 'soap_type_id' => $row->soap_type_id,

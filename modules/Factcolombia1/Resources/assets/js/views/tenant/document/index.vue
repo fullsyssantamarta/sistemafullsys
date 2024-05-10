@@ -8,6 +8,7 @@
             </ol>
             <div class="right-wrapper pull-right" >
                 <a :href="`/${resource}/create`" class="btn btn-custom btn-sm  mt-2 mr-2"><i class="fa fa-plus-circle"></i> Nuevo</a>
+                <el-button class="btn btn-custom btn-sm  mt-2 mr-2" :loading="Sincronizing" @click.prevent="clickSincronize()"><i class="fas fa-sync-alt" ></i> Sincronizar Envios API</el-button>
                 <el-button class="btn btn-custom btn-sm  mt-2 mr-2" @click.prevent="clickImport()"><i class="fa fa-arrows-alt" ></i> Carga Masiva</el-button>
             </div>
         </div>
@@ -118,7 +119,6 @@
 </template>
 
 <script>
-
     import DataTable from '@components/DataTable.vue'
     import DocumentOptions from './partials/options.vue'
     import DocumentPayments from './partials/payments.vue'
@@ -138,6 +138,7 @@
                 showDialogOptions: false,
                 showDialogPayments: false,
                 loading: false,
+                Sincronizing: false,
             }
         },
         created() {
@@ -180,8 +181,28 @@
                 this.showImportDialog = true;
             },
 
-            clickSincronize() {
+            async clickSincronize() {
+                this.Sincronizing = true
 
+                await this.$http.post(`/${this.resource}/sincronize`).then(response => {
+                    // console.log(response)
+                    if (response.data.success) {
+                        this.$message.success(response.data.message)
+                    }
+                    else {
+                        this.$message.error(response.data.message)
+                    }
+                    this.$eventHub.$emit('reloadData')
+                }).catch(error => {
+                    if (error.response.status === 422) {
+                        this.errors = error.response.data
+                    }
+                    else {
+                        this.$message.error(error.response.data.message)
+                    }
+                }).then(() => {
+                    this.Sincronizing = false
+                })
             },
 
             clickPayment(recordId) {
@@ -193,6 +214,8 @@
                 this.showDialogVoided = true
             },
             clickDownload(download) {
+                console.log(download)
+                console.log(this.downloadFilename(download))
                 this.$http.get(`/${this.resource}/downloadFile/${this.downloadFilename(download)}`).then((response) => {
 
                     let res_data = response.data

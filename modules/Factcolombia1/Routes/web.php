@@ -39,6 +39,7 @@ if($current_hostname) {
                 Route::post('store_aiu', 'Tenant\DocumentController@store_aiu');
                 Route::get('downloadFile/{filename}', 'Tenant\DocumentController@downloadFile');
                 Route::post('query-zipkey', 'Tenant\DocumentController@queryZipkey');
+                Route::post('sincronize', 'Tenant\DocumentController@sincronize');
                 Route::post('import', 'Tenant\DocumentController@co_import');
             });
 

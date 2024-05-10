@@ -1,7 +1,6 @@
 <template>
     <div>
         <div class="row ">
-
             <div class="col-md-12 col-lg-12 col-xl-12 ">
                 <div class="row" v-if="applyFilter">
                     <div class="col-lg-4 col-md-4 col-sm-12 pb-2">
@@ -35,9 +34,7 @@
                         </template>
                     </div>
                 </div>
-
             </div>
-
 
             <div class="col-md-12">
                 <div class="table-responsive">
@@ -61,13 +58,10 @@
                 </div>
             </div>
         </div>
-
     </div>
 </template>
 
-
 <script>
-
     import moment from 'moment'
     import queryString from 'query-string'
 

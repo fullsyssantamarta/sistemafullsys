@@ -213,12 +213,12 @@ class DocumentPosController extends Controller
                     'invoiced_quantity' => $row['quantity'],
                     'line_extension_amount' => (string)($row['total'] - $row['total_tax']),
                     'free_of_charge_indicator' => false,
-                    'description' => $row['item']['description'],
+                    'description' => !empty($row['item']['description']) ? $row['item']['description'] : 'Sin descripción',
                     'notes' => null,
                     'code' => $row['item']['internal_id'],
                     'type_item_identification_id' => 4,
                     'price_amount' => $row['item']['edit_sale_unit_price'],
-                    'base_quantity' => "1"
+                    'base_quantity' => $row['quantity']
                 ];
                 if($row['item']['tax'] !== null){
                     $invoice_lines[count($invoice_lines) - 1]['tax_totals'] = [
@@ -234,7 +234,7 @@ class DocumentPosController extends Controller
                     $tax_id = $row['item']['tax']['type_tax']['id'];
                     $percent = $row['item']['tax']['rate'];
                     $tax_amount = $row['total_tax'];
-                    $taxable_amount = $row['item']['sale_unit_price'];
+                    $taxable_amount = $row['item']['sale_unit_price'] * $row['quantity'];
                     if (strpos($taxable_amount, '.') !== false){
                         // Si ya tiene dos decimales, no es necesario agregar más
                         $taxable_amount = number_format($taxable_amount, 2, '.', '');

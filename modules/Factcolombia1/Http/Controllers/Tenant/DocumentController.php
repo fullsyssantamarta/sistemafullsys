@@ -6,6 +6,7 @@ use Facades\Modules\Factcolombia1\Models\Tenant\Document as FacadeDocument;
 use Modules\Factcolombia1\Http\Requests\Tenant\DocumentRequest;
 use Modules\Factcolombia1\Traits\Tenant\DocumentTrait;
 use Modules\Factcolombia1\Http\Controllers\Controller;
+use Modules\Factcolombia1\Models\TenantService\AdvancedConfiguration;
 use Illuminate\Http\Request;
 use Modules\Factcolombia1\Models\Tenant\{
     TypeIdentityDocument,
@@ -106,9 +107,7 @@ class DocumentController extends Controller
 
     public function records(Request $request)
     {
-
         $records =  Document::where($request->column, 'like', '%' . $request->value . '%')->whereTypeUser()->latest();
-
         return new DocumentCollection($records->paginate(config('tenant.items_per_page')));
     }
 
@@ -187,6 +186,200 @@ class DocumentController extends Controller
         ];
     }
 
+    public function sincronize_resolutions($identification_number){
+        $resolutions = $this->api_conection("table/resolutions/{$identification_number}", "GET")->resolutions;
+        foreach($resolutions as $resolution){
+            $r = TypeDocument::where('resolution_number', $resolution->resolution)->where('prefix', $resolution->prefix)->orderBy('resolution_date', 'desc')->get();
+            if(count($r) == 0){
+                $rs = new TypeDocument();
+                $rs->template = "face_sincronize";
+                $rs->name = $resolution->type_document->name;
+                $rs->code = $resolution->type_document_id;
+                $rs->resolution_number = $resolution->resolution;
+                $rs->prefix = $resolution->prefix;
+                $rs->generated = null;
+                $rs->description = "SINCRONIZADA API";
+            }
+            else
+                $rs = $r[0];
+            $rs->resolution_date = $resolution->resolution_date;
+            $rs->resolution_date_end = $resolution->date_to;
+            $rs->technical_key = $resolution->technical_key;
+            $rs->from = $resolution->from;
+            $rs->to = $resolution->to;
+            $rs->save();
+        }
+    }
+
+    public function sincronize()
+    {
+        try {
+            $advanced_configuration = AdvancedConfiguration::where('lastsync', '!=', 0)->get();
+            if(count($advanced_configuration) > 0){
+//                $lastsync_date = new DateTime($advanced_configuration[0]->lastsync);
+//                $lastsync = $lastsync_date->modify('-1 day')->format('Y-m-d');
+                $lastsync = $advanced_configuration[0]->lastsync;
+            }
+            else{
+                $advanced_configuration = AdvancedConfiguration::where('lastsync', 0)->get();
+                if(count($advanced_configuration) == 0){
+                    $r = new AdvancedConfiguration();
+                    $lastsync = 0;
+                    $r->lastsync = $lastsync;
+                    $r->minimum_salary = 0;
+                    $r->transportation_allowance = 0;
+                    $r->save();
+                    $advanced_configuration = AdvancedConfiguration::where('lastsync', 0)->get();
+                }
+                else
+                    $lastsync = 0;
+            }
+
+            $company = ServiceTenantCompany::firstOrFail();
+            $this->sincronize_resolutions($company->identification_number);
+            $base_url = config('tenant.service_fact');
+            $i = 0;
+            do{
+                $ch2 = curl_init("{$base_url}information/{$company->identification_number}/page/{$lastsync}/page");
+                curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch2, CURLOPT_CUSTOMREQUEST, "GET");
+                curl_setopt($ch2, CURLOPT_POSTFIELDS, "");
+                curl_setopt($ch2, CURLOPT_HTTPHEADER, array(
+                    'Content-Type: application/json',
+                    'Accept: application/json',
+                    "Authorization: Bearer {$company->api_token}"
+                ));
+                $response_status = curl_exec($ch2);
+                curl_close($ch2);
+
+                $response_status_decoded = json_decode($response_status);
+                $documents = $response_status_decoded->data[0]->documents;
+                foreach($documents as $document){
+                    if($document->cufe != 'cufe-initial-number'){
+                        $d = Document::where('prefix', $document->prefix)->where('number', $document->number)->get();
+                        if(count($d) == 0){
+                            $this->store_sincronize($document);
+                            $i++;
+                        }
+                    }
+                }
+                $lastsync++;
+            }while($response_status_decoded->data[0]->count != 0);
+            $advanced_configuration[0]->lastsync = $lastsync;
+            $advanced_configuration[0]->save();
+            return [
+                "success" => true,
+                "message" => "Se sincronizaron satisfactoriamente, {$i} registros que se habian enviado directamente desde API...",
+            ];
+        } catch (Exception $e) {
+            return [
+                "success" => false,
+                "message" => $this->getErrorFromException($e->getMessage(), $e),
+            ];
+        }
+    }
+
+    public function store_sincronize($document_invoice){
+//        DB::connection('tenant')->beginTransaction();
+//        try {
+            $this->company = Company::query()->with('country', 'version_ubl', 'type_identity_document')->firstOrFail();
+            $company = ServiceTenantCompany::firstOrFail();
+            $invoice_json_decoded = json_decode($document_invoice->request_api, true);
+//            \Log::debug($invoice_json_decoded);
+//            \Log::debug($invoice_json_decoded);
+            $correlative_api = $invoice_json_decoded['number'];
+            $service_invoice = $invoice_json_decoded;
+            if (isset($invoice_json_decoded['health_fields'])){
+                if (isset($invoice_json_decoded['health_fields']['invoice_period_start_date']) && isset($invoice_json_decoded['health_fields']['invoice_period_end_date']))
+                {
+                    $service_invoice['health_fields']['invoice_period_start_date'] = $invoice_json_decoded['health_fields']['invoice_period_start_date'];
+                    $service_invoice['health_fields']['invoice_period_end_date'] = $invoice_json_decoded['health_fields']['invoice_period_end_date'];
+                    $service_invoice['health_fields']['health_type_operation_id'] = 1;
+                    $service_invoice['health_fields']['users_info'] = $invoice_json_decoded['health_fields']['users_info'];
+                }
+            }
+//\Log::debug($service_invoice);
+            $resolution = TypeDocument::where('resolution_number', $service_invoice['resolution_number'])->where('prefix', $service_invoice['prefix'])->orderBy('resolution_date', 'desc')->get();
+            $nextConsecutive = FacadeDocument::nextConsecutive($resolution[0]->id);
+            if($document_invoice !== NULL){
+                $request = new Request();
+                $request->type_document_id = $resolution[0]->id;
+                $request->resolution_id = $resolution[0]->id;
+                $request->type_invoice_id = $resolution[0]->code;
+
+                $customer = (object)$service_invoice['customer'];
+                $p = Person::where('number', $customer->identification_number)->get();
+                if(count($p) == 0){
+                    $person = new Person();
+                    $person->type = 'customers';
+                    $person->dv = $customer->dv ? $customer->dv : NULL;
+                    $person->type_regime_id = $customer->type_regime_id ? $customer->type_regime_id : 2;
+                    $person->type_person_id = $customer->type_organization_id ? $customer->type_organization_id : 2;
+                    $person->type_obligation_id = $customer->type_liability_id ? $customer->type_liability_id : 117;
+                    $person->identity_document_type_id = $customer->type_document_identification_id;
+                    $person->number = $customer->identification_number;
+                    $person->code = $customer->identification_number;
+                    $person->name = $customer->name;
+                    $person->country_id = 47;
+                    $person->department_id = 779;
+                    $person->city_id = 12688;
+                    $person->address = $customer->address;
+                    $person->email = $customer->email;
+                    $person->telephone = $customer->phone;
+                    $person->save();
+                    $request->customer_id = $person->id;
+                }
+                else
+                    $request->customer_id = $p[0]->id;
+
+                $request->currency_id = 170;
+                $request->date_expiration = $service_invoice['payment_form']['payment_due_date'];
+                $request->date_issue = $service_invoice['date'];
+                $request->observation = (key_exists('notes', $service_invoice)) ? $service_invoice['notes'] : "";
+                $request->sale = $service_invoice['legal_monetary_totals']['payable_amount'];
+                $request->total = $service_invoice['legal_monetary_totals']['payable_amount'];
+                $request->total_discount = $service_invoice['legal_monetary_totals']['allowance_total_amount'];
+                $request->taxes = Tax::all();
+                $request->total_tax = $service_invoice['legal_monetary_totals']['tax_inclusive_amount'] - $service_invoice['legal_monetary_totals']['line_extension_amount'];
+                $request->subtotal = $service_invoice['legal_monetary_totals']['line_extension_amount'];
+                $request->payment_form_id = $service_invoice['payment_form']['payment_form_id'];
+                $request->payment_method_id = $service_invoice['payment_form']['payment_method_id'];
+                $request->time_days_credit = $service_invoice['payment_form']['duration_measure'];
+                $request->xml = $document_invoice->xml;
+                $request->cufe = $document_invoice->cufe;
+                $request->order_reference = [];
+                if(isset($service_invoice['health_fields'])){
+                    $request->health_fields = $service_invoice['health_fields'];
+                    $request->health_users = $service_invoice['health_fields']['users_info'];
+                }
+                else{
+                    $request->health_fields = [];
+                    $request->health_users = [];
+                }
+                $request->items = $service_invoice['invoice_lines'];
+            }
+            $response = json_encode(['cufe' => $request->cufe]);
+            $response_status = NULL;
+            $this->document = DocumentHelper::createDocument($request, $nextConsecutive, $correlative_api, $this->company, $response, $response_status, $company->type_environment_id);
+//        } catch (\Exception $e) {
+//            DB::connection('tenant')->rollBack();
+//            return [
+//                'success' => false,
+//                'message' => $e->getMessage(),
+//                'line' => $e->getLine(),
+//                'trace' => $e->getTrace(),
+//            ];
+//        }
+//        DB::connection('tenant')->commit();
+        $document_helper = new DocumentHelper();
+        $document_helper->updateStateDocument(self::ACCEPTED, $this->document);
+        return [
+            'success' => true,
+            'data' => [
+                'id' => $this->document->id
+            ]
+        ];
+    }
 
     /**
      * Consultar zipkey - usado en habilitación
