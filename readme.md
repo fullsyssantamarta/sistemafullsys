@@ -52,6 +52,10 @@ Restauración de Mysql|Docker: [Guía](https://docs.google.com/document/d/1Aze-O
 #### Laragon
 Acceso red local - laragon: [Guía](https://docs.google.com/document/d/13kOE5N5LJtCJIr3hswrfNgBYxi9wx07YwUCrAfgyCoQ/edit "Clic")<br>
 
+### APP Android
+
+* descargar en [link](https://facturalatam.com/pro2/app_pro2.apk "url")
+
 ### Soporte
 
 * Recuerde solicitar acceso al sistema de tickets para añadir sus sugerencias, problemas o inquietudes
