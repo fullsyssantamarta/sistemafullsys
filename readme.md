@@ -4,10 +4,25 @@
 
 * Linux - Ubuntu 20 - Docker - SSL opcional<br>
 [ver pasos y script](https://gitlab.buho.la/facturalatam/co-facturadorpro2/-/snippets/2 "ver")
+[Video Aquí](https://www.youtube.com/watch?v=X8b5DwlWnao "ver")
+
 * Windows - Laragon - entorno local<br>
 [ver pasos](https://gitlab.buho.la/facturalatam/co-facturadorpro2/-/snippets/5#instalacion-de-entorno "ver")
+[Video Aquí](https://www.youtube.com/watch?v=kNaDz0BC4Qo "ver")
 
-### Actualización
+
+### Configuración, Habilitación y producción
+
+[Video Aquí](https://www.youtube.com/watch?v=LOfMM3V2FNY&t=192s "ver")
+
+
+### Nómina electrónica
+
+[Video Aquí](https://www.youtube.com/watch?v=rnYVQfChvGs "ver")
+
+
+
+### Actualización del PRO 2
 
 * Linux - Ubuntu 20 -Docker<br>
 [ver pasos](https://gitlab.buho.la/facturalatam/co-facturadorpro2/-/blob/master/proceso_de_actualizacion_docker.md "ver")
@@ -24,9 +39,10 @@
 * Configurar e instalar dependencias para proceso automatico de correos<br>
 [Guía](https://docs.google.com/document/d/1qhaT5vuxkW1GuNqGk_LDp3MTVPc_Qna8pjYadam2LtU/edit?usp=sharing "Clic")<br>
 
-### Manuales de Usuario
+* Recepción de facturas desde Correo Electrónico + Eventos DIAN + Documento soporte<br>
+[ver](https://www.youtube.com/watch?v=ihmxJFKfAtI "Clic")<br>
 
-* [ver manual](https://docs.google.com/document/d/1i7yKGy3rIvv9TrnwRWZifTuZMMnZ8dbWpqcjPZ3ClmE/edit "Clic")<br>
+
 
 ### Manuales adicionales
 
