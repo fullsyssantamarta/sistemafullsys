@@ -21,6 +21,15 @@
 [Video Aquí](https://www.youtube.com/watch?v=rnYVQfChvGs "ver")
 
 
+### Recepción de documentos (RADIAN)
+
+* Configurar e instalar dependencias para proceso automatico de correos<br>
+[Guía](https://docs.google.com/document/d/1qhaT5vuxkW1GuNqGk_LDp3MTVPc_Qna8pjYadam2LtU/edit?usp=sharing "Clic")<br>
+
+* Recepción de facturas desde Correo Electrónico + Eventos DIAN + Documento soporte<br>
+[ver](https://www.youtube.com/watch?v=ihmxJFKfAtI "Clic")<br>
+
+
 
 ### Actualización del PRO 2
 
@@ -33,14 +42,6 @@
 
 * Docker<br>
 [ver pasos y script](https://gitlab.buho.la/facturalatam/co-facturadorpro2/-/snippets/1 "ver")
-
-### Recepción de documentos (RADIAN)
-
-* Configurar e instalar dependencias para proceso automatico de correos<br>
-[Guía](https://docs.google.com/document/d/1qhaT5vuxkW1GuNqGk_LDp3MTVPc_Qna8pjYadam2LtU/edit?usp=sharing "Clic")<br>
-
-* Recepción de facturas desde Correo Electrónico + Eventos DIAN + Documento soporte<br>
-[ver](https://www.youtube.com/watch?v=ihmxJFKfAtI "Clic")<br>
 
 
 
