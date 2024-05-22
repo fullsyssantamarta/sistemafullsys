@@ -471,7 +471,8 @@
 
             },
             close() {
-                location.href = (this.is_contingency) ? `/contingencies` : `/${this.resource}`
+//                location.href = (this.is_contingency) ? `/contingencies` : `/${this.resource}`
+                location.href = `/${this.resource}`
             },
             reloadDataSuppliers(supplier_id)
             {

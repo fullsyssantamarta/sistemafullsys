@@ -184,6 +184,7 @@ class SupportDocumentHelper
         $form_api = $inputs['data_api'];
         $form_api['number'] = $support_document->number;
         $form_api['seller']['dv'] = $this->validarDigVerifDIAN($form_api['seller']['identification_number']);
+        $form_api['seller']['postal_zone_code'] = '111611';
 
         if($support_document->isAdjustNote())
         {
