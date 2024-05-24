@@ -15,6 +15,7 @@ class ConfigurationPos extends ModelTenant
         'from',
         'to',
         'electronic',
+        'generated',
         'plate_number',
         'cash_type',
     ];

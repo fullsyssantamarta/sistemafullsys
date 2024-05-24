@@ -174,7 +174,19 @@
                                 </div>
                             </div>
 
-                            <div class="col-lg-4">
+                            <div class="col-lg-2">
+                                <div class="form-group" :class="{'has-danger': errors.generated}">
+                                    <label class="control-label">Generadas *</label>
+                                    <el-input
+                                        v-model="resolution.generated"
+                                        placeholder="Documentos generados."
+                                        :disabled="false">
+                                    </el-input>
+                                    <small class="form-control-feedback" v-if="errors.generated" v-text="errors.generated[0]"></small>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-1">
                                 <div class="form-group" :class="{'has-danger': errors.electronic}">
                                     <label class="control-label">POS Electronico</label><br>
                                     <el-checkbox  v-model="resolution.electronic"></el-checkbox>
@@ -278,7 +290,7 @@
                 this.$http.get(`/pos/records`, this.resolution)
                     .then(response => {
                         this.records = response.data.data
-                        console.log(this.records)
+//                        console.log(this.records)
                     })
                     .catch(error => {
 
@@ -297,6 +309,7 @@
                     from: '',
                     to: '',
                     electronic: true,
+                    generated: '',
                     plate_number: '',
                     cash_type: '',
                 }
@@ -306,6 +319,7 @@
                 this.loadingResolution = true
                 this.$http.post(`/pos/configuration`, this.resolution)
                     .then(response => {
+//                        console.log(this.resolution)
                         if (response.data.success) {
                             this.$message.success(response.data.message)
                             if(this.resolution.electronic)
@@ -338,6 +352,7 @@
                     from: row.from,
                     to: row.to,
                     electronic: row.electronic,
+                    generated: row.generated,
                     plate_number: row.plate_number,
                     cash_type: row.cash_type
                 }

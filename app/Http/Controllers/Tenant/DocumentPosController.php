@@ -601,7 +601,12 @@ class DocumentPosController extends Controller
                                 ->where('prefix', $config->prefix)
                                 ->orderBy('id', 'desc')
                                 ->first();
-        $number = ($document) ? (int)$document->number + 1 : 1;
+        $number_by_documents = ($document) ? (int)$document->number + 1 : 1;
+        if($number_by_documents < $config['generated'])
+            $number = $config['generated'];
+        else
+            $number = ($document) ? (int)$document->number + 1 : 1;
+//\Log::debug($config);
         $values = [
             //'automatic_date_of_issue' => $automatic_date_of_issue,
             'user_id' => auth()->id(),

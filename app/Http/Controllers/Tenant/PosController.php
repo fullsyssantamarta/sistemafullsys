@@ -83,6 +83,7 @@ class PosController extends Controller
     {
         try{
             $configuration = ConfigurationPos::updateOrCreate(['resolution_number' => $request->resolution_number, 'prefix' => $request->prefix], $request->all());
+//            \Log::debug($request->all());
             if($request->electronic === true){
                 $company = ServiceCompany::firstOrFail();
                 $base_url = config("tenant.service_fact", "");
