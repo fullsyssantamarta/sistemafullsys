@@ -12,12 +12,12 @@
                 <template>
                     <form autocomplete="off">
                         <el-tabs v-model="activeName">
-                            
+
                             <el-tab-pane class="mb-3"
                                          name="general">
                                 <span slot="label">General</span>
                                 <div class="row">
-                                    
+
                                     <div class="col-md-4 mt-4" :class="{'has-danger': errors.uvt}">
                                         <div class="form-group">
                                             <label class="control-label">Valor UVT
@@ -32,14 +32,14 @@
                                         </div>
                                     </div>
 
-                                </div> 
-                            </el-tab-pane> 
+                                </div>
+                            </el-tab-pane>
 
                             <el-tab-pane class="mb-3"
                                          name="payroll">
                                 <span slot="label">Nómina</span>
                                 <div class="row">
-                                    
+
                                     <div class="col-md-4 mt-4">
                                         <label class="control-label">Salario mínimo</label>
                                         <div class="form-group">
@@ -57,10 +57,10 @@
                                         </div>
                                     </div>
 
-                                </div> 
-                            </el-tab-pane> 
+                                </div>
+                            </el-tab-pane>
 
-                            
+
                             <el-tab-pane class="mb-3" name="radian">
                                 <span slot="label">Recepción documentos (RADIAN)</span>
                                 <div class="row">
@@ -81,7 +81,7 @@
                                             <el-input v-model="form.radian_imap_port"></el-input>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="col-md-4 mt-2">
                                         <label class="control-label">Encriptación</label>
                                         <div class="form-group">
@@ -95,7 +95,7 @@
                                             <el-input v-model="form.radian_imap_user"></el-input>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="col-md-4 mt-2">
                                         <label class="control-label">Contraseña</label>
                                         <div class="form-group">
@@ -109,14 +109,67 @@
                                         </div>
                                     </div>
 
-                                </div> 
-                            </el-tab-pane> 
+                                </div>
+                            </el-tab-pane>
 
-                        </el-tabs> 
+                            <el-tab-pane class="mb-3" name="dataDelete">
+                                <span slot="label">Eliminar datos de prueba</span>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <el-alert
+                                            title="Importante"
+                                            type="warning"
+                                            description="Esta acción borrará todos los registros en base de datos, asegurece de respaldar."
+                                            show-icon>
+                                        </el-alert>
+                                    </div>
+
+                                    <div class="col-md-12 mt-2">
+                                        <div class="form-actions text-right">
+                                            <el-button class="submit" type="primary" @click="showDialogDataDelete">Eliminar</el-button>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </el-tab-pane>
+
+                        </el-tabs>
                     </form>
                 </template>
             </div>
         </div>
+        <el-dialog
+            title="Confirmar eliminación de datos"
+            :visible.sync="openDialogDataDelete"
+            width="30%"
+            :close-on-click-modal="false">
+            <span>
+                <el-alert
+                    title="Importante"
+                    type="warning"
+                    description="Los registros se eliminarán en base de datos"
+                    show-icon>
+                </el-alert>
+            </span>
+            <br>
+            <span v-if="resolutions.length">
+                <div>Seleccione resolución</div>
+                <el-select v-model="resolution_id" placeholder="Seleccione">
+                    <el-option
+                    v-for="(row, index) in resolutions"
+                    :key="index"
+                    :label="row.name"
+                    :value="row.id">
+                    <span style="float: left">{{ row.name }}</span>
+                    <span style="float: right; color: #8492a6; font-size: 13px">{{ row.prefix }}</span>
+                    </el-option>
+                </el-select>
+            </span>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="openDialogDataDelete = false">Cancel</el-button>
+                <el-button type="primary" :loading="loading_delete" @click="clickDataDelete" :disabled="!resolution_id">Confirm</el-button>
+            </span>
+        </el-dialog>
     </div>
 </template>
 
@@ -131,7 +184,11 @@ export default {
             errors: {},
             form: {},
             loading_submit: false,
-            activeName: 'general'
+            activeName: 'general',
+            openDialogDataDelete: false,
+            resolutions: [],
+            resolution_id: null,
+            loading_delete: false,
         }
     },
     created() {
@@ -189,6 +246,46 @@ export default {
                 this.loading_submit = false
             })
         },
+        showDialogDataDelete() {
+            this.getResolutions();
+            this.openDialogDataDelete = true;
+        },
+        getResolutions() {
+            this.$http.get(`/client/configuration/co_type_documents`).then(response => {
+                if (response.data.data.length) {
+                    this.resolutions = response.data.data
+                } else {
+                    this.$message.error(data.message)
+                }
+
+            }).catch(error => {
+                console.log(error)
+            })
+        },
+        clickDataDelete() {
+            this.loading_delete = true;
+            let formDelete = {
+                id: this.resolution_id
+            }
+            this.$http.post(`/${this.resource}/delete-documents`, formDelete).then(response => {
+                let data = response.data
+                if (data.success) {
+                    this.$message.success(data.message)
+                } else {
+                    this.$message.error(data.message)
+                }
+
+            }).catch(error => {
+                if (error.response.status === 422) {
+                    this.errors = error.response.data
+                } else {
+                    console.log(error)
+                }
+            }).finally(() => {
+                this.loading_delete = false;
+                this.openDialogDataDelete = false;
+            });
+        }
     }
 }
 </script>

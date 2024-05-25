@@ -115,6 +115,7 @@ if($current_hostname) {
                 Route::get('', 'Tenant\AdvancedConfigurationController@index')->name('tenant.co-advanced-configuration.index');
                 Route::get('record', 'Tenant\AdvancedConfigurationController@record');
                 Route::post('', 'Tenant\AdvancedConfigurationController@store');
+                Route::post('/delete-documents', 'Tenant\AdvancedConfigurationController@deleteDocumentByResolution');
             });
 
         });
