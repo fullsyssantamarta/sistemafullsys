@@ -26,6 +26,9 @@ if ($currentHostname) {
                 Route::get('documents-search', 'Api\Tenant\DocumentController@searchDocuments');
                 Route::get('customer-search', 'Api\Tenant\DocumentController@searchCustomers');
             });
+            Route::prefix('co-documents-pos')->group(function() {
+                Route::get('voided/{id}', 'Api\Tenant\DocumentPosController@voided');
+            });
         });
     });
 }
