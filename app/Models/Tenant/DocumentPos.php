@@ -54,6 +54,8 @@ class DocumentPos extends ModelTenant
         'ambient_id',
         'note_concept_id',
         'qr',
+        'created_at',
+        'updated_at',
     ];
 
     protected $casts = [
@@ -62,6 +64,8 @@ class DocumentPos extends ModelTenant
         'taxes' => 'object',
         'request_api' => 'object',
         'response_api' => 'object',
+        'created_at' => 'datetime:Y-m-d H:i:s',
+        'updated_at' => 'datetime:Y-m-d H:i:s',
     ];
 
 

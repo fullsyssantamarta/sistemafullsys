@@ -4,6 +4,7 @@
 /public/storage
 /public/padron_extract/*
 /public/padron_rar/*
+/storage/framework/laravel-excel/*
 /storage/*.key
 /vendor
 /.idea
@@ -23,5 +24,4 @@ debug.log
 phpunit.dusk.xml
 docker-compose.yml
 composer.lock
-/ssh
 /.project
