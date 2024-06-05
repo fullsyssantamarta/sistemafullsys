@@ -6,6 +6,7 @@
                 <li class="active"><span>Empleados</span></li>
             </ol>
             <div class="right-wrapper pull-right">
+                <button type="button" class="btn btn-custom btn-sm  mt-2 mr-2" @click.prevent="clickImport()"><i class="fa fa-plus-circle"></i> Importar Empleados</button>
                 <button type="button" class="btn btn-custom btn-sm  mt-2 mr-2" @click.prevent="clickCreate()"><i class="fa fa-plus-circle"></i> Nuevo</button>
             </div>
         </div>
@@ -22,13 +23,13 @@
                         <!-- <th>Nombre</th> -->
                         <th>Número</th>
                         <th class="text-right">Acciones</th>
-                    <tr>
+                    </tr>
                     <tr slot-scope="{ index, row }">
                         <td>{{ index }}</td>
                         <td>{{ row.code }}</td>
-                        <td>{{ row.fullname }}</td>  
+                        <td>{{ row.fullname }}</td>
                         <!-- <td>{{ row.first_name }}</td>   -->
-                        <td>{{ row.identification_number }}</td>  
+                        <td>{{ row.identification_number }}</td>
                         <td class="text-right">
                             <button type="button" class="btn waves-effect waves-light btn-xs btn-info" @click.prevent="clickCreate(row.id)">Editar</button>
                             <button type="button" class="btn waves-effect waves-light btn-xs btn-danger" @click.prevent="clickDelete(row.id)">Eliminar</button>
@@ -36,11 +37,10 @@
                     </tr>
                 </data-table>
             </div>
-
-            <workers-form :showDialog.sync="showDialog"
-                        :recordId="recordId"></workers-form>
-
         </div>
+        <workers-form :showDialog.sync="showDialog"
+            :recordId="recordId"></workers-form>
+        <workers-import :showDialog.sync="showImportDialog"></workers-import>
     </div>
 </template>
 <script>
@@ -48,29 +48,34 @@
     import WorkersForm from './form.vue'
     import DataTable from '@components/DataTableResource.vue'
     import {deletable} from '@mixins/deletable'
+    import WorkersImport from './import.vue'
 
     export default {
         mixins: [deletable],
-        components: {WorkersForm, DataTable},
+        components: {WorkersForm, DataTable, WorkersImport},
         data() {
             return {
                 showDialog: false,
                 resource: 'payroll/workers',
                 recordId: null,
+                showImportDialog: false,
             }
         },
-        created() { 
+        created() {
         },
-        methods: { 
+        methods: {
             clickCreate(recordId = null) {
                 this.recordId = recordId
                 this.showDialog = true
-            }, 
+            },
             clickDelete(id) {
                 this.destroy(`/${this.resource}/${id}`).then(() =>
                     this.$eventHub.$emit('reloadData')
                 )
-            }, 
+            },
+            clickImport() {
+                this.showImportDialog = true
+            }
         }
     }
 </script>
