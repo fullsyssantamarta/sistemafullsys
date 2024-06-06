@@ -27,15 +27,20 @@
                                         </template>
 
                                     </label>
-                                    <el-select v-model="form.worker_id" filterable remote class="border-left rounded-left border-info" popper-class="el-select-workers"
+                                    <el-select
+                                        v-model="form.worker_id"
+                                        filterable
+                                        remote
+                                        class="border-left rounded-left border-info"
+                                        popper-class="el-select-workers"
                                         placeholder="Escriba el nombre o número de documento del empleado"
                                         :remote-method="searchRemoteWorkers"
                                         :loading="loading_search"
                                         :disabled="isAdjustNote"
-                                        @change="changeWorker">
-
+                                        @change="changeWorker"
+                                        multiple
+                                        collapse-tags>
                                         <el-option v-for="option in workers" :key="option.id" :value="option.id" :label="option.search_fullname"></el-option>
-
                                     </el-select>
                                     <small class="form-control-feedback" v-if="errors.worker_id" v-text="errors.worker_id[0]"></small>
                                 </div>
@@ -121,7 +126,7 @@
                             </el-tab-pane>
                             <el-tab-pane label="Pagos" name="payments">
 
-                                <div class="row">
+                                <div class="row" v-show="form.worker_id && form.worker_id.length == 1">
                                     <div class="col-md-3">
                                         <div class="form-group" :class="{'has-danger': errors['payment.payment_method_id']}">
                                             <label class="control-label">Métodos de pago<span class="text-danger"> *</span></label>
@@ -1519,6 +1524,13 @@
                             :showClose="false">
                             </document-payroll-options>
 
+            <document-payroll-options-multiple :showDialog.sync="showDialogDocumentPayrollOptionsMultiple"
+                            :recordIds="recordIds"
+                            :showDownload="true"
+                            :showClose="false">
+                            </document-payroll-options-multiple>
+
+
             <document-payroll-extra-hours :showDialog.sync="showDialogDocumentPayrollExtraHours"
                             :form="form"
                             :errors="errors"
@@ -1541,6 +1553,7 @@
 
     import WorkerForm from '../workers/form.vue'
     import DocumentPayrollOptions from './partials/options.vue'
+    import DocumentPayrollOptionsMultiple from './partials/options_multiple.vue'
     import DocumentPayrollExtraHours from './partials/extra_hours.vue'
     import DocumentPayrollLicenses from './partials/licenses.vue'
     import DocumentPayrollDeductionOthers from './partials/deduction_others.vue'
@@ -1555,7 +1568,8 @@
             DocumentPayrollOptions,
             DocumentPayrollExtraHours,
             DocumentPayrollLicenses,
-            DocumentPayrollDeductionOthers
+            DocumentPayrollDeductionOthers,
+            DocumentPayrollOptionsMultiple
         },
         data() {
             return {
@@ -1579,7 +1593,9 @@
                 activeNameAccrued: 'accrued-vacations',
                 activeNameDeduction: 'deduction-others',
                 recordId:null,
+                recordIds: [],
                 showDialogDocumentPayrollOptions:false,
+                showDialogDocumentPayrollOptionsMultiple:false,
                 form_disabled: {},
                 show_inputs_payment_method: true,
                 advanced_configuration: {},
@@ -2375,7 +2391,7 @@
             async changeWorker() {
 
                 // let worker = await _.find(this.workers, {id : this.form.worker_id})
-                this.form.select_worker = await _.find(this.workers, {id : this.form.worker_id})
+                this.form.select_worker = await _.find(this.workers, {id : this.form.worker_id[0]})
 
                 if(!this.isAdjustNote)
                 {
@@ -2570,9 +2586,15 @@
                     // console.log(response)
                     if (response.data.success) {
                         this.resetForm()
-                        this.recordId = response.data.data.id
-                        this.showDialogDocumentPayrollOptions = true
-                        this.checkDocumentPayrollAdjustNote()
+                        if(response.data.data.total == 1) {
+                            this.recordId = response.data.data.documents[0]
+                            this.showDialogDocumentPayrollOptions = true
+                            this.checkDocumentPayrollAdjustNote()
+                        } else {
+                            this.recordIds = response.data.data.documents
+                            this.showDialogDocumentPayrollOptionsMultiple = true
+                        }
+
                     }
                     else {
                         this.$message.error(response.data.message)
@@ -2587,7 +2609,7 @@
                     }
 
 
-                }).then(() => {
+                }).finally(() => {
                     this.loading_submit = false;
                 });
             },
