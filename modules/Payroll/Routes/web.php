@@ -5,9 +5,9 @@ $hostname = app(Hyn\Tenancy\Contracts\CurrentHostname::class);
 if($hostname) {
     Route::domain($hostname->fqdn)->group(function () {
         Route::middleware(['auth', 'redirect.module', 'locked.tenant'])->group(function() {
- 
+
             Route::prefix('payroll')->group(function () {
- 
+
                 // registro nómina
                 Route::prefix('document-payrolls')->group(function () {
                     Route::get('', 'DocumentPayrollController@index')->name('tenant.payroll.document-payrolls.index');
@@ -46,6 +46,7 @@ if($hostname) {
                     Route::delete('{record}', 'WorkerController@destroy');
                     Route::get('search', 'WorkerController@searchWorkers');
                     Route::get('search-by-id/{worker}', 'WorkerController@searchWorkerById');
+                    Route::post('import', 'WorkerController@import');
                 });
 
 
@@ -59,7 +60,7 @@ if($hostname) {
                 //     Route::delete('{record}', 'TypeWorkerController@destroy');
                 // });
 
-            }); 
+            });
 
         });
     });

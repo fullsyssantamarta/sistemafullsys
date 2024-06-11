@@ -29,12 +29,12 @@ use Illuminate\Support\Facades\DB;
 use Exception;
 use Modules\Payroll\Helpers\DocumentPayrollHelper;
 use Modules\Factcolombia1\Http\Controllers\Tenant\DocumentController;
-use Modules\Payroll\Traits\UtilityTrait; 
+use Modules\Payroll\Traits\UtilityTrait;
 
 
 class DocumentPayrollController extends Controller
 {
-    
+
     use UtilityTrait;
 
     public function index()
@@ -54,7 +54,7 @@ class DocumentPayrollController extends Controller
             'date_of_issue' => 'Fecha de emisión',
         ];
     }
- 
+
     public function tables()
     {
         return [
@@ -72,22 +72,22 @@ class DocumentPayrollController extends Controller
     public function table($table)
     {
 
-        if($table == 'workers') 
+        if($table == 'workers')
         {
             return Worker::take(20)->get()->transform(function($row){
                 return $row->getSearchRowResource();
             });
         }
 
-        if($table == 'type_overtime_surcharges') 
+        if($table == 'type_overtime_surcharges')
         {
             return TypeOvertimeSurcharge::get();
         }
 
         return [];
     }
-    
-    
+
+
     public function record($id)
     {
         return new DocumentPayrollResource(DocumentPayroll::findOrFail($id));
@@ -100,8 +100,8 @@ class DocumentPayrollController extends Controller
 
         return new DocumentPayrollCollection($records->paginate(config('tenant.items_per_page')));
     }
- 
-    
+
+
     /**
      * Consultar zipkey - usado en habilitación
      *
@@ -120,46 +120,62 @@ class DocumentPayrollController extends Controller
 
             return $helper->validateZipKey($zip_key, $document->number_full, $document);
 
-            
+
         } catch (Exception $e)
         {
             return $this->getErrorFromException($e->getMessage(), $e);
         }
 
     }
- 
+
     public function store(DocumentPayrollRequest $request)
     {
-
         try {
 
             $data = DB::connection('tenant')->transaction(function () use($request) {
-    
-                // inputs
-                $helper = new DocumentPayrollHelper();
-                $inputs = $helper->getInputs($request);
-                
-                // registrar nomina en bd
-                $document = DocumentPayroll::create($inputs);
-                $document->accrued()->create($inputs['accrued']);
-                $document->deduction()->create($inputs['deduction']);
-    
-                // enviar nomina a la api
-                $send_to_api = $helper->sendToApi($document, $inputs);
-    
-                $document->update([
-                    'response_api' => $send_to_api
-                ]);
-    
-                return $document;
+                $documents = [];
+                $workers = $request->worker_id;
+                foreach ($workers as $worker_id) {
+                    $newRequest = clone $request;
+                    $worker_model = Worker::find($worker_id);
+                    $newRequest->merge([
+                        'worker_id' => $worker_id,
+                        'payment' => [
+                            'bank_name' => $worker_model->payment->bank_name,
+                            'account_type' => $worker_model->payment->account_type,
+                            'account_number' => $worker_model->payment->account_number,
+                            'payment_method_id' => $worker_model->payment->payment_method_id,
+                        ]
+                    ]);
+
+                    // inputs
+                    $helper = new DocumentPayrollHelper();
+                    $inputs = $helper->getInputs($request);
+
+                    // registrar nomina en bd
+                    $document = DocumentPayroll::create($inputs);
+                    $document->accrued()->create($inputs['accrued']);
+                    $document->deduction()->create($inputs['deduction']);
+
+                    // enviar nomina a la api
+                    $send_to_api = $helper->sendToApi($document, $inputs);
+
+                    $document->update([
+                        'response_api' => $send_to_api
+                    ]);
+                    $documents[] = $document->id;
+                }
+
+                return [
+                    'documents' => $documents,
+                    'total' => count($documents)
+                ];
             });
-    
+
             return [
                 'success' => true,
                 'message' => 'Nómina registrada con éxito',
-                'data' => [
-                    'id' => $data->id
-                ]
+                'data' => $data
             ];
 
         } catch (Exception $e)
@@ -168,8 +184,8 @@ class DocumentPayrollController extends Controller
         }
 
     }
- 
-        
+
+
     /**
      * Descarga de xml/pdf
      *
@@ -180,7 +196,7 @@ class DocumentPayrollController extends Controller
         return app(DocumentController::class)->downloadFile($filename);
     }
 
-        
+
     /**
      * Envio de correo de la nómina
      *

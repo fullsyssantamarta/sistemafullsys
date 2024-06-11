@@ -24,11 +24,13 @@ use Modules\Factcolombia1\Models\TenantService\{
 use Modules\Factcolombia1\Models\Tenant\{
     PaymentMethod,
 };
+use Modules\Payroll\Imports\WorkersImport;
+use Maatwebsite\Excel\Facades\Excel;
 
 
 class WorkerController extends Controller
 {
-    
+
     public function index()
     {
         return view('payroll::workers.index');
@@ -56,14 +58,14 @@ class WorkerController extends Controller
         ];
     }
 
-    
+
     public function records(Request $request)
     {
         $records = Worker::where($request->column, 'like', "%{$request->value}%")->latest();
 
         return new WorkerCollection($records->paginate(config('tenant.items_per_page')));
     }
- 
+
     public function record($id)
     {
         $record = new WorkerResource(Worker::findOrFail($id));
@@ -88,7 +90,7 @@ class WorkerController extends Controller
     public function destroy($id)
     {
         $record = Worker::findOrFail($id);
-        $record->delete(); 
+        $record->delete();
 
         return [
             'success' => true,
@@ -96,7 +98,7 @@ class WorkerController extends Controller
         ];
     }
 
-    
+
     public function searchWorkers(Request $request)
     {
         return [
@@ -105,7 +107,7 @@ class WorkerController extends Controller
             })
         ];
     }
-    
+
     public function searchWorkerById($id)
     {
         return [
@@ -115,5 +117,28 @@ class WorkerController extends Controller
         ];
     }
 
-
+    public function import(Request $request)
+    {
+        if ($request->hasFile('file')) {
+            try {
+                $import = new WorkersImport();
+                Excel::import($import, $request->file('file'));
+                $data = $import->getData();
+                return [
+                    'success' => true,
+                    'message' =>  __('app.actions.upload.success').'. Registros: '.$data['total'],
+                    'data' => $data
+                ];
+            } catch (Exception $e) {
+                return [
+                    'success' => false,
+                    'message' =>  $e->getMessage()
+                ];
+            }
+        }
+        return [
+            'success' => false,
+            'message' =>  __('app.actions.upload.error'),
+        ];
+    }
 }
