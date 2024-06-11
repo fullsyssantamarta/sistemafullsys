@@ -433,8 +433,8 @@
                                     ];
                                 }
 
-                                $itemIvaRate = $item->tax->name; // "IVA19", "IVA5", etc.
-                                $itemIvaValue = $item->total_tax; // Total de IVA para ese ítem
+                                $itemIvaRate = $item->tax->name ?? "";  // "IVA19", "IVA5", etc.
+                                $itemIvaValue = $item->total_tax ?? 0; // Total de IVA para ese ítem
 
                                 if (!isset($totalsByCategory[$categoryId]['iva'][$itemIvaRate])) {
                                     $totalsByCategory[$categoryId]['iva'][$itemIvaRate] = 0;
@@ -569,8 +569,8 @@
                                     ];
                                 }
 
-                                $itemIvaRate = $item->tax->name; // "IVA19", "IVA5", etc.
-                                $itemIvaValue = $item->total_tax; // Total de IVA para ese ítem
+                                $itemIvaRate = $item->tax->name ?? ""; // "IVA19", "IVA5", etc.
+                                $itemIvaValue = $item->total_tax ?? 0; // Total de IVA para ese ítem
 
                                 if (!isset($totalsByCategory[$categoryId]['iva'][$itemIvaRate])) {
                                     $totalsByCategory[$categoryId]['iva'][$itemIvaRate] = 0;
@@ -663,9 +663,9 @@
                     foreach ($cash_documents as $cash_document) {
                         if ($cash_document->document_pos) {
                             foreach ($cash_document->document_pos->items as $item) {
-                                $ivaName = $item->tax->name;
-                                $ivaRate = $item->tax->rate;
-                                $ivaTotal = $item->total_tax;
+                                $ivaName = $item->tax->name ?? "";
+                                $ivaRate = $item->tax->rate ?? 0;
+                                $ivaTotal = $item->total_tax ?? 0;
                                 $subtotal = $item->subtotal ?? 0;
 
                                 if (!isset($totalsByIvaRate[$ivaName])) {
