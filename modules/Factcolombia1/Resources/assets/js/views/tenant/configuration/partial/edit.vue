@@ -15,7 +15,7 @@
                     <div class="col-md-6">
                         <div class="form-group" :class="{'has-danger': errors.resolution_date}">
                             <label class="control-label">Fecha resolución<span class="text-danger">*</span></label>
-                           <el-date-picker
+                            <el-date-picker
                             value-format="yyyy-MM-dd"
                             format="yyyy-MM-dd"
                             v-model="form.resolution_date"

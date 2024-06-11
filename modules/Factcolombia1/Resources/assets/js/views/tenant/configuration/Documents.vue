@@ -11,8 +11,9 @@
         </div>
         <div class="card mb-0">
             <div class="card-header bg-info">
+                <h3 class="my-0">Listado</h3>
             </div>
-            <div class="card-body">
+            <div class="card-body table-responsive">
                 <table class="table">
                     <thead>
                         <tr>

@@ -381,7 +381,8 @@
                 { id: 3, name: "Factura de Contingencia" },
                 { id: 4, name: "Nota Crédito" },
                 { id: 5, name: "Nota Débito" },
-                { id: 6, name: "ZIP" }
+                { id: 6, name: "ZIP" },
+                { id: 26, name: "Nota de crédito al Documento Equivalente" }
             ],
             errors: {
             },

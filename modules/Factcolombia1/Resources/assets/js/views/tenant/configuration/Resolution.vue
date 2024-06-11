@@ -245,6 +245,7 @@
                 { id: 10, name: "Nomina Individual de Ajuste", code: '10'},
                 { id: 11, name: "Documento Soporte Electrónico", code: '11'},
                 { id: 13, name: "Nota de Ajuste al Documento Soporte Electrónico", code: '13'},
+                { id: 26, name: "Nota de crédito al Documento Equivalente", code: '26'}
             ],
             errors: {
             },

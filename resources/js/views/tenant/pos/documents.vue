@@ -232,9 +232,20 @@
                 });
             },
             clickVoided(id) {
-                this.anular(`/${this.resource}/anulate/${id}`).then(() =>
-                    this.$eventHub.$emit('reloadData')
-                )
+
+                this.$http.get(`/${this.resource}/voided/resolutions`)
+                    .then(response => {
+                        if (response.data.quantity > 0) {
+                            this.anular(`/${this.resource}/anulate/${id}`)
+                        }
+                        else {
+                            this.$message.error('No posee resoluciones para anular el documento');
+                        }
+                    }).catch(error => {
+                        console.log(error);
+                    }).finally(() => {
+                        this.$eventHub.$emit('reloadData')
+                    });
             },
             clickRefund(id)
             {

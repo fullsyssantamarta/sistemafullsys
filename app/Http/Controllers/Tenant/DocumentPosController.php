@@ -1088,58 +1088,177 @@ class DocumentPosController extends Controller
 
     }
 
-    public function anulate($id)
+    public function getNextNumber($type_document_id, $prefix)
     {
+        $company = ServiceTenantCompany::firstOrFail();
+        $base_url = config('tenant.service_fact');
+        $ch = curl_init("{$base_url}ubl2.1/next-consecutive");
+        $data = json_encode([
+            'type_document_id' => $type_document_id,
+            'prefix' => $prefix
+        ]);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($ch, CURLOPT_POSTFIELDS,($data));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Content-Type: application/json',
+            'Accept: application/json',
+            "Authorization: Bearer {$company->api_token}"
+        ));
+        $response = curl_exec($ch);
+        curl_close($ch);
 
-        DB::connection('tenant')->transaction(function () use ($id) {
-
-            $obj =  DocumentPos::find($id);
-            $obj->state_type_id = 11;
-            $obj->save();
-
-            $establishment = Establishment::where('id', auth()->user()->establishment_id)->first();
-            $warehouse = Warehouse::where('establishment_id',$establishment->id)->first();
-
-            foreach ($obj->items as $item) {
-
-                $quantity = $item->quantity;
-                if($item->refund == 1)
-                {
-                    $quantity = -($item->quantity);
-                }
-
-                $item->document_pos->inventory_kardex()->create([
-                    'date_of_issue' => date('Y-m-d'),
-                    'item_id' => $item->item_id,
-                    'warehouse_id' => $warehouse->id,
-                    'quantity' => $quantity //* ($item->refund ? -1 : 1),
-                ]);
-
-                $wr = ItemWarehouse::where([['item_id', $item->item_id],['warehouse_id', $warehouse->id]])->first();
-
-                if($wr)
-                {
-                    $wr->stock =  $wr->stock + $quantity; // * ($item->refund ? -1 : 1));
-                    $wr->save();
-                }
-
-                //habilito las series
-                // ItemLot::where('item_id', $item->item_id )->where('warehouse_id', $warehouse->id)->update(['has_sale' => false]);
-                $this->voidedLots($item);
-
-            }
-
-        });
-
-        return [
-            'success' => true,
-            'message' => 'N. Venta anulada con éxito'
-        ];
-
-
+        return json_decode($response);
     }
 
+    public function setJsonAnulate($document) {
+        $company = Company::active();
+        $document_type = TypeDocument::where('code', 26)->first();
+        $data_consecutive = $this->getNextNumber($document_type->code, $document_type->prefix);
+        $json = [
+            'prefix' => $document_type->prefix,
+            'number' => $data_consecutive->number,
+            'date' => Carbon::now()->format('Y-m-d'),
+            'time' => Carbon::now()->format('H:i:s'),
+            'establishment_name' => $company->name,
+            'establishment_address' => $document->establishment->address,
+            'establishment_phone' => $document->establishment->telephone,
+            'establishment_municipality' => $document->establishment->department_id,
+            'billing_reference' => [
+                'number' => $document->request_api->prefix.$document->request_api->number,
+                'issue_date' => $document->request_api->date,
+                'type_document_id' => 15,
+                "uuid" => $document->cude
+            ],
+            'is_eqdoc' => true,
+            'discrepancyresponsecode' => 2,
+            'notes' => 'NOTA CREDITO A DOCUMENTO EQUIVALENTE POS',
+            'type_document_id' => 26,
+            'sendmail' => true,
+            'sendmailtome' => true,
+            'head_note' => '',
+            'foot_note' => '',
+            'customer' => $document->request_api->customer,
+            'tax_totals' => $document->request_api->tax_totals,
+            'legal_monetary_totals' => $document->request_api->legal_monetary_totals,
+            'credit_note_lines' => $document->request_api->invoice_lines
+        ];
+        return $json;
+    }
 
+    public function sendJsonAnulate($json)
+    {
+        $company = ServiceTenantCompany::firstOrFail();
+        $base_url = config('tenant.service_fact');
+        $ch = curl_init("{$base_url}ubl2.1/credit-note/asd");
+        $data = json_encode($json);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($ch, CURLOPT_POSTFIELDS,($data));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Content-Type: application/json',
+            'Accept: application/json',
+            "Authorization: Bearer {$company->api_token}"
+        ));
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        return json_decode($response);
+    }
+
+    public function anulate($id)
+    {
+        DB::connection('tenant')->beginTransaction();
+        try {
+            $obj =  DocumentPos::find($id);
+
+            //enviar json
+            $json = $this->setJsonAnulate($obj);
+            $response_api = $this->sendJsonAnulate($json);
+            $response = json_decode(json_encode($response_api), FALSE);
+            if(isset($response->errors)) {
+                return response([
+                    'success' => false,
+                    'message' => $response->message,
+                    'errors' => $response->errors
+                ], 500);
+            }
+            if(isset($response->exception)) {
+                return response([
+                    'success' => false,
+                    'message' => $response->message,
+                ], 500);
+            }
+            if(isset($response->success)) {
+                if(!$response->success) {
+                    return response([
+                        'success' => $response->success,
+                        'message' => $response->message,
+                    ], 500);
+                }
+                if($response->success) {
+                    $obj->state_type_id = 11;
+                    // guardar datos de nota de credito aqui
+                    $obj->save();
+
+                    $establishment = Establishment::where('id', auth()->user()->establishment_id)->first();
+                    $warehouse = Warehouse::where('establishment_id',$establishment->id)->first();
+
+                    foreach ($obj->items as $item) {
+                        $quantity = $item->quantity;
+                        if($item->refund == 1)
+                        {
+                            $quantity = -($item->quantity);
+                        }
+
+                        $item->document_pos->inventory_kardex()->create([
+                            'date_of_issue' => date('Y-m-d'),
+                            'item_id' => $item->item_id,
+                            'warehouse_id' => $warehouse->id,
+                            'quantity' => $quantity //* ($item->refund ? -1 : 1),
+                        ]);
+                        $wr = ItemWarehouse::where([['item_id', $item->item_id],['warehouse_id', $warehouse->id]])->first();
+
+                        if($wr)
+                        {
+                            $wr->stock =  $wr->stock + $quantity; // * ($item->refund ? -1 : 1));
+                            $wr->save();
+                        }
+                        $this->voidedLots($item);
+                    }
+                    return [
+                        'success' => true,
+                        'message' => 'N. Venta anulada con éxito'
+                    ];
+                }
+            } else {
+                return response([
+                    'success' => false,
+                    'message' => 'No se obtuvo respuesta',
+                ], 500);
+            }
+
+        } catch (\Exception $e){
+            DB::connection('tenant')->rollBack();
+            return response([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTrace(),
+            ], 500);
+        }
+
+        DB::connection('tenant')->commit();
+    }
+
+    public function anulateResolutions()
+    {
+        $records = TypeDocument::where('code', 26)->get();
+        return [
+            'data' => $records,
+            'quantity' => $records->count()
+        ];
+    }
 
     public function totals()
     {
