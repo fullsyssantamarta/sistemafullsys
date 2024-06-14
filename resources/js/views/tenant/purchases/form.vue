@@ -167,6 +167,7 @@
                         <div class="col-lg-12 col-md-6 d-flex align-items-end mt-4">
                             <div class="form-group">
                                 <button type="button" class="btn waves-effect waves-light btn-primary" @click.prevent="showDialogAddItem = true">+ Agregar Producto</button>
+                                <button type="button" class="btn waves-effect waves-light btn-primary" @click.prevent="dialogRetention = !dialogRetention">+ Agregar retención</button>
                             </div>
                         </div>
                     </div>
@@ -235,20 +236,13 @@
                                     <td>:</td>
                                     <td class="text-right">{{ratePrefix()}} {{ form.subtotal }}</td>
                                 </tr>
-
                                 <template v-for="(tax, index) in form.taxes">
-                                    <tr v-if="((tax.is_retention) && (tax.apply))" :key="index">
-
-                                        <td>{{tax.name}}(-)</td>
+                                    <tr v-if="tax.is_retention && tax.retention > 0" :key="index">
+                                        <td>{{tax.name}}(-) </td>
                                         <td>:</td>
-                                        <!-- <td class="text-right">
-                                            {{ratePrefix()}} {{Number(tax.retention).toFixed(2)}}
-                                        </td> -->
-                                        <td class="text-right" width=35%>
-                                            <el-input v-model="tax.retention" readonly >
-                                                <span slot="prefix" class="c-m-top">{{ ratePrefix() }}</span>
-                                                <i slot="suffix" class="el-input__icon el-icon-delete pointer"  @click="clickRemoveRetention(index)"></i>
-                                                <!-- <el-button slot="suffix" icon="el-icon-delete" @click="clickRemoveRetention(index)"></el-button> -->
+                                        <td class="text-right">
+                                            <el-input :value="tax.retention" readonly>
+                                                <i slot="suffix" class="el-input__icon el-icon-delete pointer"  @click="deleteRetention(tax.id)"></i>
                                             </el-input>
                                         </td>
                                     </tr>
@@ -315,6 +309,24 @@
             </form>
         </div>
 
+        <el-dialog
+            title="Retención"
+            :visible.sync="dialogRetention"
+            width="600px">
+            <el-select v-model="retention_selected" placeholder="Select">
+                <el-option
+                    v-for="(item, index) in retention_taxes"
+                    :key="index"
+                    :label="item.name+' '+item.rate+'%'"
+                    :value="item.id">
+                </el-option>
+            </el-select>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="dialogRetention = false">Cancel</el-button>
+                <el-button type="primary" @click="validateRetention">Confirm</el-button>
+            </span>
+        </el-dialog>
+
         <purchase-form-item :showDialog.sync="showDialogAddItem"
                            :currency-type-id-active="form.currency_type_id"
                            :exchange-rate-sale="form.exchange_rate_sale"
@@ -376,7 +388,10 @@
                 currency_type: {},
                 loading_search: false,
                 taxes:  [],
-                purchaseNewId: null
+                purchaseNewId: null,
+                retention_selected: null,
+                dialogRetention: false,
+                retention_taxes: [],
             }
         },
         async created() {
@@ -418,6 +433,7 @@
             await this.isGeneratePurchaseOrder()
             await this.changeHasPayment()
             await this.changeHasClient()
+            this.retentiontaxes()
         },
         methods: {
             setDataTotals() {
@@ -972,6 +988,29 @@
                     this.filterSuppliers()
 
                 })
+            },
+            retentiontaxes() {
+                this.retention_taxes = this.taxes.filter(tax => tax.is_retention);
+            },
+            validateRetention() {
+                var current_tax = this.form.taxes.find(tax => tax.id === this.retention_selected);
+                current_tax.retention = (Number(current_tax.in_tax ? this.form.total : this.form.sale) * (current_tax.rate / current_tax.conversion)).toFixed(2);
+
+                var totalRetentionBase = 0;
+                totalRetentionBase += Number(current_tax.retention);
+
+                if (Number(totalRetentionBase) >= Number(this.form.total)) {
+                    current_tax.retention = Number(0).toFixed(2);
+                }
+
+                this.form.total -= Number(current_tax.retention).toFixed(2);
+                this.dialogRetention = false;
+                this.retention_selected = null; // se puede añadir otro ¿?
+            },
+            deleteRetention(id) {
+                var current_tax = this.form.taxes.find(tax => tax.id === id);
+                current_tax.retention = 0;
+                this.calculateTotal()
             },
         }
     }
