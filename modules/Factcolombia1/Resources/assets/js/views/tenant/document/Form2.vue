@@ -217,7 +217,7 @@
 
 
                                                 <td class="text-right">{{ratePrefix()}} {{getFormatDecimal(row.subtotal)}}</td>
-                                                <td class="text-right">{{ratePrefix()}} {{getFormatDecimal(row.discount)}}</td>
+                                                <td class="text-right">{{ratePrefix()}} {{getFormatDecimal(row.total_discount)}}</td>
                                                 <td class="text-right">{{ratePrefix()}} {{getFormatDecimal(row.total)}}</td>
                                                 <td class="text-right">
                                                     <button type="button" class="btn waves-effect waves-light btn-xs btn-danger" @click.prevent="clickRemoveItem(index)">x</button>
@@ -901,41 +901,40 @@
 
             },
             setDataTotals() {
-                // console.log(val)
                 let val = this.form
+                console.log(val.items)
                 val.taxes = JSON.parse(JSON.stringify(this.taxes));
 
                 val.items.forEach(item => {
                     item.tax = this.taxes.find(tax => tax.id == item.tax_id);
 
-                    if (
-                        item.discount == null ||
-                        item.discount == "" ||
-                        item.discount > item.price * item.quantity
-                    )
+                    // seteo de descuento en caso no posea o sea superior al precio por cantidad
+                    if (item.discount == null || item.discount == "" || item.discount > (item.price * item.quantity)) {
                         this.$set(item, "discount", 0);
+                    }
+                    // defino el total de descuento
+                    let total_discount = 0;
+                    if(item.discount > 0 && item.discount < (item.price * item.quantity)) {
+                        total_discount = item.discount;
+                        if(item.discount_type === 'percentage') {
+                            total_discount = (item.price * item.discount) / 100;
+                        }
+                        this.$set( item, "discount", Number(total_discount).toFixed(2));
+                        this.$set( item, "total_discount", Number(total_discount).toFixed(2));
+                    }
 
                     item.total_tax = 0;
 
                     if (item.tax != null) {
                         let tax = val.taxes.find(tax => tax.id == item.tax.id);
 
-                        if (item.tax.is_fixed_value)
+                        if (item.tax.is_fixed_value) {
+                            item.total_tax = ((item.tax.rate * item.quantity) - total_discount).toFixed(2);
+                        }
 
-                            item.total_tax = (
-                                item.tax.rate * item.quantity -
-                                (item.discount < item.price * item.quantity ? item.discount : 0)
-                            ).toFixed(2);
-
-                        if (item.tax.is_percentage)
-
-                            item.total_tax = (
-                                (item.price * item.quantity -
-                                (item.discount < item.price * item.quantity
-                                    ? item.discount
-                                    : 0)) *
-                                (item.tax.rate / item.tax.conversion)
-                            ).toFixed(2);
+                        if (item.tax.is_percentage) {
+                            item.total_tax = (((item.price * item.quantity) - total_discount) * (item.tax.rate / item.tax.conversion) ).toFixed(2);
+                        }
 
                         if (!tax.hasOwnProperty("total"))
                             tax.total = Number(0).toFixed(2);
@@ -947,38 +946,15 @@
                         Number(item.price * item.quantity) + Number(item.total_tax)
                     ).toFixed(2);
 
-                    this.$set(
-                        item,
-                        "total",
-                        (Number(item.subtotal) - Number(item.discount)).toFixed(2)
-                    );
+                    this.$set( item, "total", (Number(item.subtotal) - Number(total_discount)).toFixed(2));
 
                 });
 
-                val.subtotal = val.items
-                    .reduce(
-                        (p, c) => Number(p) + (Number(c.subtotal) - Number(c.discount)),
-                        0
-                    )
-                    .toFixed(2);
-                    val.sale = val.items
-                    .reduce(
-                        (p, c) =>
-                        Number(p) + Number(c.price * c.quantity) - Number(c.discount),
-                        0
-                    )
-                    .toFixed(2);
-                    val.total_discount = val.items
-                    .reduce((p, c) => Number(p) + Number(c.discount), 0)
-                    .toFixed(2);
-                    val.total_tax = val.items
-                    .reduce((p, c) => Number(p) + Number(c.total_tax), 0)
-                    .toFixed(2);
-
-                let total = val.items
-                    .reduce((p, c) => Number(p) + Number(c.total), 0)
-                    .toFixed(2);
-
+                val.subtotal = val.items.reduce((p, c) => Number(p) + (Number(c.subtotal) - Number(c.total_discount)), 0).toFixed(2);
+                val.sale = val.items.reduce((p, c) => Number(p) + Number(c.price * c.quantity) - Number(c.total_discount), 0).toFixed(2);
+                val.total_discount = val.items.reduce((p, c) => Number(p) + Number(c.total_discount), 0).toFixed(2);
+                val.total_tax = val.items.reduce((p, c) => Number(p) + Number(c.total_tax), 0).toFixed(2);
+                let total = val.items.reduce((p, c) => Number(p) + Number(c.total), 0).toFixed(2);
                 let totalRetentionBase = Number(0);
 
                 // this.taxes.forEach(tax => {
@@ -1157,7 +1133,7 @@
                                 else{
                                     this.$message.error(response.data.message);
                                 }
-                                setTimeout(this.close(), 5000)
+                                setTimeout(this.close(), 8000)
                         }
                     }
                     else {

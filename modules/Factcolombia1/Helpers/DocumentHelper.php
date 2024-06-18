@@ -161,7 +161,8 @@ class DocumentHelper
                 'amount_plastic_bag_taxes' => $record_item->amount_plastic_bag_taxes ? $record_item->amount_plastic_bag_taxes : 0,
                 'is_set' => $record_item->is_set,
                 'lots' => (isset($item['item']['lots'])) ? $item['item']['lots'] : [],
-                'IdLoteSelected' => (isset($item['IdLoteSelected']) ? $item['IdLoteSelected'] : null)
+                'IdLoteSelected' => (isset($item['IdLoteSelected']) ? $item['IdLoteSelected'] : null),
+                'discount_type' => $item['discount_type'],
             ];
 //            \Log::debug($record_item);
 //            \Log::debug($item);
@@ -180,7 +181,7 @@ class DocumentHelper
                 'tax' => Tax::find(isset($item['tax_id']) ? $item['tax_id'] : $record_item->tax_id),
                 'total_tax' => isset($item['total_tax']) ? $item['total_tax'] : $item['price_amount'] - $item['line_extension_amount'],
                 'subtotal' => floatval(isset($item['subtotal']) ? $item['subtotal'] : $item['line_extension_amount']),
-                'discount' => isset($item['discount']) ? $item['discount'] : 0,
+                'discount' => isset($item['total_discount']) ? $item['total_discount'] : 0,
                 'total' => isset($item['total']) ? $item['total'] : (isset($item['subtotal']) ? $item['subtotal'] : $item['line_extension_amount']) + (isset($item['total_tax']) ? $item['total_tax'] : $item['price_amount'] - $item['line_extension_amount']),
                 'total_plastic_bag_taxes' => 0,
                 'warehouse_id' => null,

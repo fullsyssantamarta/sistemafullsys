@@ -146,8 +146,13 @@
                     <div class="col-md-3 col-sm-6">
                         <div class="form-group"  :class="{'has-danger': errors.discount}">
                             <label class="control-label">Descuento</label>
-                            <el-input v-model="form.discount" :min="0" >
-                                <template slot="prepend" v-if="currencyTypeSymbolActive">{{ currencyTypeSymbolActive }}</template>
+                            <el-input v-model="form.discount"
+                                :min="0"
+                                class="input-with-select">
+                                <el-select v-model="form.discount_type" slot="prepend">
+                                    <el-option :label="currencyTypeSymbolActive" value="amount"></el-option>
+                                    <el-option label="%" value="percentage"></el-option>
+                                </el-select>
                             </el-input>
                             <small class="form-control-feedback" v-if="errors.discount" v-text="errors.discount[0]"></small>
                         </div>
@@ -233,10 +238,16 @@
     </el-dialog>
 </template>
 <style>
-.el-select-dropdown {
-    max-width: 80% !important;
-    margin-right: 5% !important;
-}
+    .el-select-dropdown {
+        max-width: 80% !important;
+        margin-right: 5% !important;
+    }
+    .input-with-select .el-select .el-input {
+        width: 50px;
+    }
+    .input-with-select .el-select .el-input .el-input__inner {
+        padding-right: 10px;
+    }
 </style>
 
 <script>
@@ -287,7 +298,7 @@
                 lots:[],
                 all_taxes:[],
                 taxes:[],
-                items_aiu: []
+                items_aiu: [],
 
             }
         },
@@ -424,6 +435,7 @@
                     unit_type_id: null,
                     item_unit_types: [],
                     IdLoteSelected: null,
+                    discount_type: 'amount',
                 };
 
                 this.activePanel = 0;

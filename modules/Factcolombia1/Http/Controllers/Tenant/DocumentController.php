@@ -502,6 +502,7 @@ class DocumentController extends Controller
      */
     public function store(DocumentRequest $request, $invoice_json = NULL){
 //        \Log::debug($invoice_json);
+        // dd($request->all());
         DB::connection('tenant')->beginTransaction();
         try {
             if($invoice_json !== NULL)
