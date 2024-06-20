@@ -28,21 +28,21 @@
                         <th>Vendedor</th>
                         <th class="text-center">Apertura</th>
                         <th class="text-center">Cierre</th>
-                        <th>Saldo inicial</th>
-                        <th>Saldo final</th>
+                        <th class="text-right">Saldo inicial</th>
+                        <th class="text-right">Saldo final</th>
                         <!-- <th>Ingreso</th> -->
                         <!-- <th>Egreso</th> -->
                         <th>Estado</th>
                         <th class="text-center">Acciones</th>
-                    <tr>
+                    </tr>
                     <tr slot-scope="{ index, row }">
                         <td>{{ index }}</td>
                         <td>{{ row.reference_number }}</td>
                         <td>{{ row.user }}</td>
                         <td class="text-center">{{ row.opening }}</td>
                         <td class="text-center">{{ row.closed }}</td>
-                        <td>{{ row.beginning_balance }}</td>
-                        <td>{{ row.final_balance }}</td>
+                        <td class="text-right">{{ getFormatDecimal(row.beginning_balance) }}</td>
+                        <td class="text-right">{{ getFormatDecimal(row.final_balance) }}</td>
                         <!-- <td>{{ row.income }}</td>
                         <td>{{ row.expense }}</td> -->
                         <td>{{ row.state_description }}</td>
@@ -74,9 +74,10 @@
     import DataTable from '../../../components/DataTable.vue'
     import {deletable} from '../../../mixins/deletable'
     import CashForm from './form.vue'
+    import {functions} from '@mixins/functions'
 
     export default {
-        mixins: [deletable],
+        mixins: [deletable, functions],
         components: { DataTable, CashForm},
         props: ['typeUser'],
         data() {

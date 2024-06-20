@@ -90,7 +90,7 @@
                                                 @click="clickOpenInputEditUP(index)">
                                                 <span style="font-size:16px;">&#9998;</span>
                                             </button>
-                                            {{currency.symbol}} {{ item.sale_unit_price_with_tax }}
+                                            {{currency.symbol}} {{ getFormatDecimal(item.sale_unit_price_with_tax) }}
                                         </h5>
                                     </template>
                                     <template v-else>
@@ -254,13 +254,13 @@
                                         </td>
                                         <td width="20%">
                                             <p class="font-weight-semibold m-0 text-center">
-                                                <el-input v-model="item.sale_unit_price_with_tax" class @input="clickAddItem(item,index,true)" :readonly="item.item.calculate_quantity">
+                                                <el-input v-model="item.sale_unit_price_with_tax" class="input-text-right" @input="clickAddItem(item,index,true)" :readonly="item.item.calculate_quantity">
                                                 </el-input>
                                             </p>
                                         </td>
                                         <td width="30%">
                                             <p class="font-weight-semibold m-0 text-center">
-                                                <el-input v-model="item.total" @input="calculateQuantity(index)" :readonly="!item.item.calculate_quantity">
+                                                <el-input v-model="item.total" @input="calculateQuantity(index)" class="input-text-right" :readonly="!item.item.calculate_quantity">
                                                 </el-input>
                                             </p>
                                         </td>
@@ -310,19 +310,19 @@
                     </div>
                 </div>
                 <div class="h-25 bg-light" style="overflow-y: auto">
-                    <div class="row border-top bg-light m-0 p-0 h-50 d-flex align-items-right pr-5 pt-2">
+                    <div class="row border-top bg-light m-0 p-0 h-50 d-flex align-items-right pr-3 pt-2">
 
                         <div class="col-md-12" style="display: flex; flex-direction: column; align-items: flex-end;">
                             <table>
                                 <tr class="font-weight-semibold  m-0" v-if="form.sale > 0">
                                     <td class="font-weight-semibold">SUBTOTAL</td>
                                     <td class="font-weight-semibold">:</td>
-                                    <td class="text-right text-blue">{{currency.symbol}} {{ form.sale }}</td>
+                                    <td class="text-right text-blue">{{currency.symbol}} {{ getFormatDecimal(form.sale) }}</td>
                                 </tr>
                                 <tr class="font-weight-semibold  m-0" v-if="form.total_discount > 0">
                                     <td class="font-weight-semibold">TOTAL DESCUENTO (-)</td>
                                     <td class="font-weight-semibold">:</td>
-                                    <td class="text-right text-blue">{{currency.symbol}} {{ form.total_discount }}</td>
+                                    <td class="text-right text-blue">{{currency.symbol}} {{ getFormatDecimal(form.total_discount) }}</td>
                                 </tr>
                                 <template v-for="(tax, index) in form.taxes">
                                     <tr v-if="((tax.total > 0) && (!tax.is_retention))" :key="index" class="font-weight-semibold  m-0">
@@ -330,13 +330,13 @@
                                             {{tax.name}}[+]
                                         </td>
                                         <td class="font-weight-semibold">:</td>
-                                        <td class="text-right text-blue">{{currency.symbol}} {{Number(tax.total).toFixed(2)}}</td>
+                                        <td class="text-right text-blue">{{currency.symbol}} {{ getFormatDecimal(tax.total) }}</td>
                                     </tr>
                                 </template>
                                 <tr class="font-weight-semibold  m-0" v-if="form.subtotal > 0">
                                     <td class="font-weight-semibold">TOTAL VENTA</td>
                                     <td class="font-weight-semibold">:</td>
-                                    <td class="text-right text-blue">{{currency.symbol}} {{ form.subtotal }}</td>
+                                    <td class="text-right text-blue">{{currency.symbol}} {{ getFormatDecimal(form.subtotal) }}</td>
                                 </tr>
                             </table>
                         </div>
@@ -347,7 +347,7 @@
                             <span class="font-weight-semibold">PAGO</span>
                         </div>
                         <div class="col-6 text-center">
-                            <h5 class="font-weight-semibold h5">{{currency.symbol}} {{ form.total }}</h5>
+                            <h5 class="font-weight-semibold h5">{{currency.symbol}} {{ getFormatDecimal(form.total) }}</h5>
                         </div>
                     </div>
                 </div>
@@ -441,18 +441,22 @@
 .el-input-group__append {
     padding: 0 10px !important;
 }
+
+.input-text-right {
+    text-align: right;
+}
 </style>
 
 <script>
 // import { calculateRowItem } from "../../../helpers/functions";
 import PaymentForm from "./partials/payment.vue";
 import ItemForm from "./partials/form.vue";
-// import { functions, exchangeRate } from "../../../mixins/functions";
 import HistorySalesForm from "../../../../../modules/Pos/Resources/assets/js/views/history/sales.vue";
 import HistoryPurchasesForm from "../../../../../modules/Pos/Resources/assets/js/views/history/purchases.vue";
 import PersonForm from "../persons/form.vue";
 import WarehousesDetail from '../items/partials/warehouses.vue'
 import queryString from "query-string";
+import {functions} from '@mixins/functions'
 
 export default {
     props: ['configuration', 'soapCompany'],
@@ -464,8 +468,7 @@ export default {
         PersonForm,
         WarehousesDetail
     },
-    // mixins: [functions, exchangeRate],
-
+    mixins: [functions],
     data() {
         return {
             place: 'cat',

@@ -22,7 +22,7 @@
                         </div>
                         <div class="col-4 p-l-0">
                             <!-- <p class="font-weight-semibold m-b-0">{{currencyTypeActive.symbol}} 240.00</p> -->
-                            <h4 class="font-weight-semibold m-0 text-center">{{currencyTypeActive.symbol}} {{item.total}}</h4>
+                            <h4 class="font-weight-semibold m-0 text-right">{{currencyTypeActive.symbol}} {{ getFormatDecimal(item.total) }}</h4>
                         </div>
                     </div>
                 </template>
@@ -35,7 +35,7 @@
                         <p class="font-weight-semibold mb-0">TOTAL VENTA</p>
                     </div>
                     <div class="col-sm-6 py-1 text-right">
-                        <p class="font-weight-semibold mb-0">{{currencyTypeActive.symbol}} {{ form.sale }}</p>
+                        <p class="font-weight-semibold mb-0">{{currencyTypeActive.symbol}} {{ getFormatDecimal(form.sale) }}</p>
                     </div>
                 </div>
                 <div class="row m-0 p-0 bg-white h-10 d-flex align-items-center" v-if="form.total_discount > 0">
@@ -43,7 +43,7 @@
                         <p class="font-weight-semibold mb-0">TOTAL DESCUENTO (-)</p>
                     </div>
                     <div class="col-sm-6 py-1 text-right">
-                        <p class="font-weight-semibold mb-0">{{currencyTypeActive.symbol}} {{form.total_discount}}</p>
+                        <p class="font-weight-semibold mb-0">{{currencyTypeActive.symbol}} {{getFormatDecimal(form.total_discount)}}</p>
                     </div>
                 </div>
 
@@ -53,7 +53,7 @@
                             <p class="font-weight-semibold mb-0">{{tax.name}}(+)</p>
                         </div>
                         <div class="col-sm-4 py-1 text-right">
-                            <p class="font-weight-semibold mb-0">{{currencyTypeActive.symbol}} {{Number(tax.total).toFixed(2)}}</p>
+                            <p class="font-weight-semibold mb-0">{{currencyTypeActive.symbol}} {{getFormatDecimal(tax.total)}}</p>
                         </div>
                     </div>
                 </template>
@@ -63,7 +63,7 @@
                         <p class="font-weight-semibold mb-0">SUBTOTAL</p>
                     </div>
                     <div class="col-sm-6 py-1 text-right">
-                        <p class="font-weight-semibold mb-0">{{currencyTypeActive.symbol}} {{form.subtotal}}</p>
+                        <p class="font-weight-semibold mb-0">{{currencyTypeActive.symbol}} {{getFormatDecimal(form.subtotal)}}</p>
                     </div>
                 </div>
 
@@ -72,7 +72,7 @@
                         <p class="font-weight-semibold mb-0 text-white">TOTAL</p>
                     </div>
                     <div class="col-sm-6 py-2 text-right">
-                        <p class="font-weight-semibold mb-0 text-white">{{currencyTypeActive.symbol}} {{ form.total }}</p>
+                        <p class="font-weight-semibold mb-0 text-white">{{currencyTypeActive.symbol}} {{ getFormatDecimal(form.total) }}</p>
                     </div>
                 </div>
             </div>
@@ -178,7 +178,7 @@
                     <div class="card card-default">
                         <div class="card-body text-center">
                             <p class="my-0"><small>Monto a cobrar</small></p>
-                            <h1 class="mb-2 mt-0">{{currencyTypeActive.symbol}} {{ Number(form.total).toFixed(2) }}</h1>
+                            <h1 class="mb-2 mt-0">{{currencyTypeActive.symbol}} {{ getFormatDecimal(form.total) }}</h1>
                         </div>
                     </div>
                 </div>
@@ -189,7 +189,7 @@
                                 <div class="col-lg-6">
                                     <div class="form-group">
                                         <label class="control-label">Ingrese monto</label>
-                                        <el-input v-model="enter_amount" @input="enterAmount()" >
+                                        <el-input v-model="enter_amount" @input="enterAmount()" class="input-text-right">
                                             <template slot="prepend">{{currencyTypeActive.symbol}}</template>
                                         </el-input>
                                     </div>
@@ -200,7 +200,7 @@
                                         <!-- <el-input v-model="difference" :disabled="true">
                                             <template slot="prepend">{{currencyTypeActive.symbol}}</template>
                                         </el-input> -->
-                                        <h4 class="control-label font-weight-semibold m-0 text-center m-b-0">{{currencyTypeActive.symbol}} {{ Number(difference).toFixed(2)}}</h4>
+                                        <h4 class="control-label font-weight-semibold m-0 text-center m-b-0">{{currencyTypeActive.symbol}} {{ getFormatDecimal(difference)}}</h4>
                                     </div>
                                 </div>
                             </div>
@@ -238,7 +238,7 @@
                                                 <label>{{getDescriptionPaymentMethodType(pay.payment_method_type_id)}}</label>
                                             </div>
                                             <div class="col-lg-5" :key="pay.id">
-                                                <label><strong>{{currencyTypeActive.symbol}} {{pay.payment}}</strong> </label>
+                                                <label><strong>{{currencyTypeActive.symbol}} {{ getFormatDecimal(pay.payment) }}</strong> </label>
                                             </div>
                                         </template>
                                     </div>
@@ -246,16 +246,16 @@
                                 <div class="col-lg-12" v-if="form_payment.payment_method_type_id=='01'">
                                     <div class="row">
                                         <div class="col-lg-3">
-                                            <button class="btn btn-block btn-secondary" @click="setAmountCash(10000)">{{currencyTypeActive.symbol}}10.000</button>
+                                            <button class="btn btn-block btn-secondary" @click="setAmountCash(10000)">{{currencyTypeActive.symbol}} {{getFormatDecimal(10.000)}}</button>
                                         </div>
                                         <div class="col-lg-3">
-                                            <button class="btn btn-block btn-secondary" @click="setAmountCash(20000)" >{{currencyTypeActive.symbol}}20.000</button>
+                                            <button class="btn btn-block btn-secondary" @click="setAmountCash(20000)" >{{currencyTypeActive.symbol}} {{getFormatDecimal(20.000)}}</button>
                                         </div>
                                         <div class="col-lg-3">
-                                            <button class="btn btn-block btn-secondary" @click="setAmountCash(50000)"  >{{currencyTypeActive.symbol}}50.000</button>
+                                            <button class="btn btn-block btn-secondary" @click="setAmountCash(50000)"  >{{currencyTypeActive.symbol}} {{getFormatDecimal(50.000)}}</button>
                                         </div>
                                         <div class="col-lg-3">
-                                            <button class="btn btn-block btn-secondary"  @click="setAmountCash(100000)" >{{currencyTypeActive.symbol}}100.000</button>
+                                            <button class="btn btn-block btn-secondary"  @click="setAmountCash(100000)" >{{currencyTypeActive.symbol}} {{getFormatDecimal(100.000)}}</button>
                                         </div>
                                     </div>
                                 </div>
@@ -335,10 +335,11 @@
     import DocumentPosOptions from './document_pos_options.vue'
     import QuotationOptions from '../../quotations/partials/options.vue'
     import RemissionOptions from '@viewsModuleSale/co-remissions/partials/options.vue'
+    import {functions} from '@mixins/functions'
 
     export default {
         components: {OptionsForm, CardBrandsForm, SaleNotesOptions, MultiplePaymentForm, DocumentPosOptions, QuotationOptions, RemissionOptions},
-
+        mixins: [functions],
         props:['form','customer', 'currencyTypeActive', 'exchangeRateSale', 'is_payment', 'soapCompany', 'items_refund'],
         data() {
             return {
