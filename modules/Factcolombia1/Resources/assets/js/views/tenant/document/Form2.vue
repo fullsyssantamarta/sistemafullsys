@@ -286,6 +286,34 @@
                                             </td>
                                         </tr>
                                     </template>
+                                    <tr>
+                                        <td>
+                                            DESCUENTO
+                                            <el-switch
+                                                v-model="global_discount_is_amount"
+                                                :active-text="ratePrefix()"
+                                                inactive-text="%"
+                                                @change="calculateTotal">
+                                            </el-switch>
+                                        </td>
+                                        <td>:</td>
+                                        <!-- <td class="text-right">
+                                            {{ratePrefix()}} {{Number(tax.retention).toFixed(2)}}
+                                        </td> -->
+                                        <td class="text-right" id="input-with-select">
+
+                                            <el-input v-model="total_global_discount"
+                                                :min="0"
+                                                class="input-discount"
+                                                @input="calculateTotal">
+                                                <template slot="prefix">
+                                                    <span v-if="global_discount_is_amount">{{ ratePrefix() }}</span>
+                                                    <span v-else>%</span>
+                                                </template>
+                                            </el-input>
+
+                                        </td>
+                                    </tr>
                                 </table>
 
                                 <template>
@@ -364,6 +392,15 @@
     min-height: 65px !important;
 }
 
+.input-discount .el-input__inner {
+    text-align: right;
+    max-width: 100px;
+}
+.input-discount .el-input__prefix {
+    left: 10px;
+    top: 5px;
+    color: #66789C;
+}
 </style>
 <script>
     import DocumentFormItem from './partials/item.vue'
@@ -419,7 +456,8 @@
                 series: [],
                 currency_type: {},
                 documentNewId: null,
-                total_global_discount:0,
+                total_global_discount: 0,
+                global_discount_is_amount: true,
                 loading_search:false,
                 taxes:  [],
                 resolutions:[],
@@ -902,7 +940,7 @@
             },
             setDataTotals() {
                 let val = this.form
-                console.log(val.items)
+                //console.log(val.items)
                 val.taxes = JSON.parse(JSON.stringify(this.taxes));
 
                 val.items.forEach(item => {
@@ -919,9 +957,9 @@
                         if(item.discount_type === 'percentage') {
                             total_discount = (item.price * item.discount) / 100;
                         }
-                        this.$set( item, "discount", Number(total_discount).toFixed(2));
-                        this.$set( item, "total_discount", Number(total_discount).toFixed(2));
                     }
+                    this.$set( item, "discount", Number(total_discount).toFixed(2));
+                    this.$set( item, "total_discount", Number(total_discount).toFixed(2));
 
                     item.total_tax = 0;
 
@@ -950,11 +988,17 @@
 
                 });
 
-                val.subtotal = val.items.reduce((p, c) => Number(p) + (Number(c.subtotal) - Number(c.total_discount)), 0).toFixed(2);
-                val.sale = val.items.reduce((p, c) => Number(p) + Number(c.price * c.quantity) - Number(c.total_discount), 0).toFixed(2);
-                val.total_discount = val.items.reduce((p, c) => Number(p) + Number(c.total_discount), 0).toFixed(2);
                 val.total_tax = val.items.reduce((p, c) => Number(p) + Number(c.total_tax), 0).toFixed(2);
                 let total = val.items.reduce((p, c) => Number(p) + Number(c.total), 0).toFixed(2);
+                let amount_total_dicount_global = this.total_global_discount;
+                if(!this.global_discount_is_amount && amount_total_dicount_global > 0) {
+                    amount_total_dicount_global = ((total - val.total_tax) * amount_total_dicount_global) / 100;
+                }
+
+                val.subtotal = val.items.reduce((p, c) => Number(p) + (Number(c.subtotal) - Number(c.total_discount) - Number(amount_total_dicount_global, 0)), 0).toFixed(2);
+                val.sale = val.items.reduce((p, c) => Number(p) + Number(c.price * c.quantity) - Number(c.total_discount) - Number(amount_total_dicount_global, 0), 0).toFixed(2);
+                val.total_discount = (val.items.reduce((p, c) => Number(p) + Number(c.total_discount), 0) + Number(amount_total_dicount_global, 0)).toFixed(2);
+                total = (Number(total, 0) - Number(amount_total_dicount_global, 0)).toFixed(2);
                 let totalRetentionBase = Number(0);
 
                 // this.taxes.forEach(tax => {
@@ -1261,7 +1305,7 @@
             getLegacyMonetaryTotal() {
                 let line_ext_am = 0;
                 let tax_incl_am = 0;
-                let allowance_total_amount = 0;
+                let allowance_total_amount = this.total_global_discount; // descuento global
                 this.form.items.forEach(element => {
                     line_ext_am += (Number(element.price) * Number(element.quantity)) - Number(element.discount) ;
 //                    allowance_total_amount += Number(element.discount);
@@ -1277,6 +1321,10 @@
                     tax_excl_am += Number(element.taxable_amount);
                 });
                 tax_incl_am = line_ext_am + total_tax_amount;
+                if(!this.global_discount_is_amount && allowance_total_amount > 0) {
+                    allowance_total_amount = (tax_excl_am * allowance_total_amount) / 100;
+                }
+                let pay_am = tax_incl_am - allowance_total_amount;
 
                 return {
                     line_extension_amount: this.cadenaDecimales(line_ext_am),
@@ -1284,8 +1332,7 @@
                     tax_inclusive_amount: this.cadenaDecimales(tax_incl_am),
                     allowance_total_amount: this.cadenaDecimales(allowance_total_amount),
                     charge_total_amount: "0.00",
-                    payable_amount: this.cadenaDecimales(tax_incl_am)
-//                    payable_amount: this.cadenaDecimales(tax_incl_am - allowance_total_amount)
+                    payable_amount: this.cadenaDecimales(pay_am)
                 };
             },
 
