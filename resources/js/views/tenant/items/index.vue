@@ -33,7 +33,7 @@
                         <th v-if="typeUser != 'seller'" class="text-right">P.Unitario (Compra)</th>
                         <!-- <th class="text-center">Tiene Igv</th> -->
                         <th class="text-right">Acciones</th>
-                    <tr>
+                    </tr>
                     <tr slot-scope="{ index, row }" :class="{ disable_color : !row.active}">
                         <td>{{ index }}</td>
                         <td>{{ row.internal_id }}</td>
@@ -58,8 +58,8 @@
                             <!-- <br/>Mín:{{ row.stock_min }} -->
 
                         </td>
-                        <td class="text-right">{{ row.sale_unit_price }}</td>
-                        <td v-if="typeUser != 'seller'" class="text-right">{{ row.purchase_unit_price }}</td>
+                        <td class="text-right">{{ getFormatDecimal(row.sale_unit_price) }}</td>
+                        <td v-if="typeUser != 'seller'" class="text-right">{{ getFormatDecimal(row.purchase_unit_price) }}</td>
                         <!-- <td class="text-center">{{ row.has_igv_description }}</td> -->
                         <td class="text-right">
                             <template v-if="typeUser === 'admin'">
@@ -101,10 +101,11 @@
     import ItemsImportListPrice from './partials/import_list_price.vue'
     import DataTable from '../../../components/DataTable.vue'
     import {deletable} from '../../../mixins/deletable'
+    import {functions} from '@mixins/functions'
 
     export default {
         props:['typeUser'],
-        mixins: [deletable],
+        mixins: [deletable, functions],
         components: {ItemsForm, ItemsImport, DataTable, WarehousesDetail, ItemsImportListPrice},
         data() {
             return {

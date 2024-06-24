@@ -60,11 +60,11 @@
                         <!-- <td class="text-center">{{ row.acknowledgment_received }}</td> -->
                         <td class="text-center">{{ row.currency_name }}</td>
 
-                        <td class="text-right">{{ row.sale }}</td>
-                        <td class="text-right">{{ row.total_discount }}</td>
-                        <td class="text-right">{{ row.total_tax }}</td>
-                        <td class="text-right">{{ row.subtotal }}</td>
-                        <td class="text-right">{{ row.total }}</td>
+                        <td class="text-right">{{ getFormatDecimal(row.sale) }}</td>
+                        <td class="text-right">{{ getFormatDecimal(row.total_discount) }}</td>
+                        <td class="text-right">{{ getFormatDecimal(row.total_tax) }}</td>
+                        <td class="text-right">{{ getFormatDecimal(row.subtotal) }}</td>
+                        <td class="text-right">{{ getFormatDecimal(row.total) }}</td>
 
                         <td class="text-center">
                             <button type="button" style="min-width: 41px" class="btn waves-effect waves-light btn-xs btn-info m-1__2"
@@ -123,9 +123,11 @@
     import DocumentOptions from './partials/options.vue'
     import DocumentPayments from './partials/payments.vue'
     import DocumentImport from './partials/import.vue'
+    import {functions} from '@mixins/functions';
 
     export default {
         components: {DataTable, DocumentOptions, DocumentPayments, DocumentImport},
+        mixins: [functions],
         data() {
             return {
                 showDialogReportPayment:false,

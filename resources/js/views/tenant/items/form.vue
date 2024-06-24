@@ -26,7 +26,7 @@
                     <div class="col-md-3">
                         <div class="form-group" :class="{'has-danger': errors.sale_unit_price}">
                             <label class="control-label">Precio Unitario (Venta) <span class="text-danger">*</span></label>
-                            <el-input v-model="form.sale_unit_price" dusk="sale_unit_price" @input="calculatePercentageOfProfitBySale"></el-input>
+                            <el-input class="input-amount" v-model="form.sale_unit_price" dusk="sale_unit_price" @input="calculatePercentageOfProfitBySale"></el-input>
                             <small class="form-control-feedback" v-if="errors.sale_unit_price" v-text="errors.sale_unit_price[0]"></small>
                         </div>
                     </div>
@@ -428,6 +428,9 @@
 .field-margin {
     padding-left: 15px;
     padding-right: 15px;
+}
+.input-amount .el-input__inner {
+    text-align: right;
 }
 
 </style>
