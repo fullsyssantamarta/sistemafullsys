@@ -1322,14 +1322,21 @@ class DocumentController extends Controller
     public function sendEmailCoDocument(Request $request)
     {
         $company = ServiceTenantCompany::firstOrFail();
-
+        $sucursal = \App\Models\Tenant\Establishment::where('id', auth()->user()->establishment_id)->first();
 //        $send= (object)['number'=> $request->number, 'email'=> $request->email, 'number_full'=> $request->number_full];
         $prefix = substr($request->number_full, 0, strpos($request->number_full, '-'));
         $number = substr($request->number_full, strpos($request->number_full, '-') + 1);
 //        \Log::debug($prefix);
 //        \Log::debug($number);
-        $send= (object)['prefix' => $prefix, 'number' => $number, 'alternate_email'=> $request->email];
-//        \Log::debug(json_encode($send));
+        $send= (object)[
+            'prefix' => $prefix,
+            'number' => $number,
+            'alternate_email' => $request->email,
+            'email_cc_list' => [
+                ['email' => $sucursal->email]
+            ]
+        ];
+    //    \Log::debug(json_encode($send));
         $data_send = json_encode($send);
 
         $base_url = config('tenant.service_fact');
@@ -1344,7 +1351,7 @@ class DocumentController extends Controller
         ));
 
         $response = curl_exec($ch2);
-//        \Log::debug($response);
+        \Log::debug($response);
         $respuesta = json_decode($response);
         curl_close($ch2);
 
