@@ -56,7 +56,7 @@
                         <th class="text-center">Descargas</th>
                         <!--<th class="text-center">Anulación</th>-->
                         <th class="text-right" v-if="typeUser != 'integrator'">Acciones</th>
-                    <tr>
+                    </tr>
                     <tr slot-scope="{ index, row }" :class="{'text-danger': (row.state_type_id === '11'),
                             'text-warning': (row.state_type_id === '13'),
                             'border-light': (row.state_type_id === '01'),

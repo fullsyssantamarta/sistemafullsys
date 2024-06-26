@@ -15,7 +15,7 @@
                             <small class="form-control-feedback" v-if="errors.item_id" v-text="errors.item_id[0]"></small>
                         </div>
                     </div>
-                    
+
                     <div class="col-md-6">
                         <div class="form-group" :class="{'has-danger': errors.tax_id}">
                             <label class="control-label">Impuesto</label>
@@ -26,7 +26,7 @@
                             <small class="form-control-feedback" v-if="errors.tax_id" v-text="errors.tax_id[0]"></small>
                         </div>
                     </div>
- 
+
                     <div class="col-md-3">
                         <div class="form-group" :class="{'has-danger': errors.quantity}">
                             <label class="control-label">Cantidad</label>
@@ -82,12 +82,20 @@
                             <small class="form-control-feedback" v-if="errors.lot_code" v-text="errors.lot_code[0]"></small>
                         </div>
                     </div>
-                    
+
                     <div class="col-md-3 col-sm-6">
                         <div class="form-group"  :class="{'has-danger': errors.discount}">
                             <label class="control-label">Descuento</label>
-                            <el-input v-model="form.discount" :min="0" >
-                                <template slot="prepend" v-if="form.item.currency_type_symbol">{{ form.item.currency_type_symbol }}</template>
+                            <el-input v-model="form.discount"
+                                min="0"
+                                class="input-with-select"
+                                :disabled="!form.item_id">
+                                <el-select v-model="form.discount_type"
+                                    slot="prepend"
+                                    :disabled="!form.item_id">
+                                    <el-option label="%" value="percentage"></el-option>
+                                    <el-option :label="form.item.currency_type_symbol" value="amount"></el-option>
+                                </el-select>
                             </el-input>
                             <small class="form-control-feedback" v-if="errors.discount" v-text="errors.discount[0]"></small>
                         </div>
@@ -131,12 +139,12 @@
 
                         </div>
 
-                    </div> 
+                    </div>
                 </div>
             </div>
             <div class="form-actions text-right pt-2">
                 <el-button @click.prevent="close()">Cerrar</el-button>
-                <el-button type="primary" native-type="submit">Agregar</el-button>
+                <el-button type="primary" native-type="submit" :disabled="!form.item_id">Agregar</el-button>
             </div>
         </form>
         <item-form :showDialog.sync="showDialogNewItem"
@@ -155,6 +163,12 @@
 .el-select-dropdown {
     max-width: 80% !important;
     margin-right: 5% !important;
+}
+.input-with-select .el-select .el-input {
+    width: 50px;
+}
+.input-with-select .el-select .el-input .el-input__inner {
+    padding-right: 10px;
 }
 </style>
 <script>
@@ -198,7 +212,7 @@
             this.initForm()
             this.$http.get(`/${this.resource}/item/tables`).then(response => {
 
-                this.items = response.data.items 
+                this.items = response.data.items
                 this.warehouses = response.data.warehouses
                 this.taxes = response.data.taxes;
                 // this.filterItems()
@@ -227,9 +241,9 @@
                     item_id: null,
                     warehouse_id: 1,
                     warehouse_description: null,
-                    item: {}, 
+                    item: {},
                     quantity: 1,
-                    unit_price: 0, 
+                    unit_price: 0,
                     item_unit_types: [],
                     lot_code:null,
                     date_of_due: null,
@@ -242,7 +256,7 @@
                     discount: 0,
                     unit_type_id: null,
                     lots: [],
-
+                    discount_type: 'percentage',
                 }
 
                 this.item_unit_type = {};
@@ -254,7 +268,7 @@
             // },
             create() {
             //     this.initializeFields()
-            },  
+            },
             close() {
                 this.initForm()
                 this.$emit('update:showDialog', false)
@@ -276,7 +290,7 @@
                         break
 
                 }
-                
+
                 this.form.item_unit_type_id = row.id
                 this.item_unit_type = row
 

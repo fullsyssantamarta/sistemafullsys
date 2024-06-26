@@ -445,12 +445,16 @@
                 val.items.forEach(item => {
                     item.tax = this.taxes.find(tax => tax.id == item.tax_id);
 
-                    if (
-                        item.discount == null ||
-                        item.discount == "" ||
-                        item.discount > item.unit_price * item.quantity
-                    )
+                    // seteo de descuento en caso no posea o sea superior al precio por cantidad
+                    if (item.discount == null || item.discount == "" || item.discount > (item.unit_price * item.quantity)) {
                         this.$set(item, "discount", 0);
+                    }
+                    // defino el total de descuento
+                    let total_discount = 0;
+                    if(item.discount_type === 'percentage') {
+                        total_discount = (item.unit_price * item.discount) / 100;
+                    }
+                    this.$set( item, "discount", Number(total_discount).toFixed(2));
 
                     item.total_tax = 0;
 
@@ -461,15 +465,15 @@
 
                             item.total_tax = (
                                 item.tax.rate * item.quantity -
-                                (item.discount < item.unit_price * item.quantity ? item.discount : 0)
+                                (total_discount < item.unit_price * item.quantity ? total_discount : 0)
                             ).toFixed(2);
 
                         if (item.tax.is_percentage)
 
                             item.total_tax = (
                                 (item.unit_price * item.quantity -
-                                (item.discount < item.unit_price * item.quantity
-                                    ? item.discount
+                                (total_discount < item.unit_price * item.quantity
+                                    ? total_discount
                                     : 0)) *
                                 (item.tax.rate / item.tax.conversion)
                             ).toFixed(2);
@@ -487,7 +491,7 @@
                     this.$set(
                         item,
                         "total",
-                        (Number(item.subtotal) - Number(item.discount)).toFixed(2)
+                        (Number(item.subtotal) - Number(total_discount)).toFixed(2)
                     );
 
                 });
