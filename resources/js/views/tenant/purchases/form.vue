@@ -201,6 +201,7 @@
                                         <td class="text-right">{{ ratePrefix() }} {{ row.discount }}</td>
                                         <td class="text-right">{{ ratePrefix() }} {{ row.total }}</td>
                                         <td class="text-right">
+                                            <button type="button" class="btn waves-effect waves-light btn-xs btn-info" @click="ediItem(row, index)" ><span style='font-size:10px;'>&#9998;</span> </button>
                                             <button type="button" class="btn waves-effect waves-light btn-xs btn-danger" @click.prevent="clickRemoveItem(index)">x</button>
                                         </td>
                                     </tr>
@@ -330,7 +331,8 @@
         <purchase-form-item :showDialog.sync="showDialogAddItem"
                            :currency-type-id-active="form.currency_type_id"
                            :exchange-rate-sale="form.exchange_rate_sale"
-                           @add="addRow"></purchase-form-item>
+                           @add="addRow"
+                           :recordItem="recordItem"></purchase-form-item>
 
         <person-form :showDialog.sync="showDialogNewPerson"
                        type="suppliers"
@@ -392,6 +394,7 @@
                 retention_selected: null,
                 dialogRetention: false,
                 retention_taxes: [],
+                recordItem: null,
             }
         },
         async created() {
@@ -862,7 +865,15 @@
                 this.filterSuppliers()
             },
             addRow(row) {
-                this.form.items.push(row)
+                if(this.recordItem)
+                {
+                    this.form.items[this.recordItem.indexi] = row
+                    this.recordItem = null
+                }
+                else{
+                    this.form.items.push(row)
+                }
+
                 this.calculateTotal()
             },
             clickRemoveItem(index) {
@@ -1015,6 +1026,13 @@
                 var current_tax = this.form.taxes.find(tax => tax.id === id);
                 current_tax.retention = 0;
                 this.calculateTotal()
+            },
+            ediItem(row, index)
+            {
+                row.indexi = index
+                this.recordItem = row
+                this.showDialogAddItem = true
+
             },
         }
     }

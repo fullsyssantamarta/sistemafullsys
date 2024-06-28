@@ -144,7 +144,7 @@
             </div>
             <div class="form-actions text-right pt-2">
                 <el-button @click.prevent="close()">Cerrar</el-button>
-                <el-button type="primary" native-type="submit" :disabled="!form.item_id">Agregar</el-button>
+                <el-button type="primary" native-type="submit" :disabled="!form.item_id">{{titleAction}}</el-button>
             </div>
         </form>
         <item-form :showDialog.sync="showDialogNewItem"
@@ -178,7 +178,7 @@
     import LotsForm from '../../items/partials/lots.vue'
 
     export default {
-        props: ['showDialog', 'currencyTypeIdActive', 'exchangeRateSale'],
+        props: ['showDialog', 'currencyTypeIdActive', 'exchangeRateSale', 'recordItem'],
         components: {itemForm, LotsForm},
         data() {
             return {
@@ -201,6 +201,7 @@
                 change_affectation_igv_type_id: false,
                 all_taxes:[],
                 taxes:[],
+                titleAction: '',
             }
         },
         computed: {
@@ -263,11 +264,17 @@
                 this.lots = []
                 this.lot_code = null
             },
-            // initializeFields() {
-            //     this.form.affectation_igv_type_id = this.affectation_igv_types[0].id
-            // },
-            create() {
-            //     this.initializeFields()
+            async create() {
+                this.titleDialog = (this.recordItem) ? ' Editar Producto o Servicio' : ' Agregar Producto o Servicio';
+                this.titleAction = (this.recordItem) ? ' Editar' : ' Agregar';
+
+                if (this.recordItem) {
+                    // console.log(this.recordItem)
+                    this.form.item_id = await this.recordItem.item_id
+                    await this.changeItem()
+                    this.form.quantity = this.recordItem.quantity
+                    this.form.unit_price = this.recordItem.unit_price
+                }
             },
             close() {
                 this.initForm()
@@ -346,6 +353,11 @@
 
                 this.form.date_of_due = date_of_due
                 // console.log(this.form)
+
+                if (this.recordItem)
+                {
+                    this.form.indexi = this.recordItem.indexi
+                }
 
                 // this.initializeFields()
                 this.$emit('add', this.form)
