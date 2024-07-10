@@ -1115,6 +1115,7 @@ class DocumentPosController extends Controller
         $company = Company::active();
         $document_type = TypeDocument::where('code', 26)->first();
         $data_consecutive = $this->getNextNumber($document_type->code, $document_type->prefix);
+        $request_api = json_decode($document->request_api);
         $json = [
             'prefix' => $document_type->prefix,
             'number' => $data_consecutive->number,
@@ -1125,8 +1126,8 @@ class DocumentPosController extends Controller
             'establishment_phone' => $document->establishment->telephone,
             'establishment_municipality' => $document->establishment->department_id,
             'billing_reference' => [
-                'number' => $document->request_api->prefix.$document->request_api->number,
-                'issue_date' => $document->request_api->date,
+                'number' => $request_api->prefix.$request_api->number,
+                'issue_date' => $request_api->date,
                 'type_document_id' => 15,
                 "uuid" => $document->cude
             ],
@@ -1138,10 +1139,10 @@ class DocumentPosController extends Controller
             'sendmailtome' => true,
             'head_note' => '',
             'foot_note' => '',
-            'customer' => $document->request_api->customer,
-            'tax_totals' => $document->request_api->tax_totals,
-            'legal_monetary_totals' => $document->request_api->legal_monetary_totals,
-            'credit_note_lines' => $document->request_api->invoice_lines
+            'customer' => $request_api->customer,
+            'tax_totals' => $request_api->tax_totals,
+            'legal_monetary_totals' => $request_api->legal_monetary_totals,
+            'credit_note_lines' => $request_api->invoice_lines
         ];
         return $json;
     }
