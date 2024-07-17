@@ -13,6 +13,7 @@ use App\Models\Tenant\Document;
 use App\Models\Tenant\DocumentPos;
 use App\Models\Tenant\DocumentPosItem;
 use Modules\Report\Exports\TaxExport;
+use App\Models\Tenant\Purchase;
 
 
 
@@ -53,11 +54,21 @@ class ReportTaxController extends Controller
             ])
             ->get();
 
+            // $purchases = Purchase::query()
+            //     ->whereBetween('date_of_issue', [
+            //         Carbon::parse($request->date_start)->startOfDay()->format('Y-m-d'),
+            //         Carbon::parse($request->date_end)->endOfDay()->format('Y-m-d')
+            //     ])
+            //     ->get();
+
        // $union = $documents->union( $documents_pos );
+        // dd( $purchases->toArray());
+       $data = array_merge($documents->toArray(), $documents_pos->toArray());
+        // dd($data);
 
         return [
             'success' => true,
-            'data' => array_merge($documents->toArray(), $documents_pos->toArray()),
+            'data' => $data,
             'taxTitles' => $taxTitles->values(),
             'taxesAll' => $taxesAll
         ];

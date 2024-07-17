@@ -91,9 +91,9 @@
                 </tbody>
                 <tfoot>
                     <td class="text-center" colspan="4"><strong>Totales:</strong></td>
-                    <td class="text-right"><strong>{{ratePrefix()}}{{getSaleTotal() }}</strong></td>
-                    <td class="text-right"><strong>{{ratePrefix()}}{{getTotalDiscount() }}</strong></td>
-                    <td class="text-right" v-for="(tax, index) in taxTitles" :key="index + 'F'"><strong>{{ratePrefix()}}{{getTaxTotal(tax) }}</strong></td>
+                    <td class="text-right"><strong>{{ratePrefix()}}{{getFormatDecimal(getSaleTotal()) }}</strong></td>
+                    <td class="text-right"><strong>{{ratePrefix()}}{{getFormatDecimal(getTotalDiscount()) }}</strong></td>
+                    <td class="text-right" v-for="(tax, index) in taxTitles" :key="index + 'F'"><strong>{{ratePrefix()}}{{getFormatDecimal(getTaxTotal(tax)) }}</strong></td>
                 </tfoot>
               </table>
             </div>
@@ -107,8 +107,10 @@
 <script>
     import moment from 'moment'
     import queryString from 'query-string'
+    import {functions} from '@mixins/functions'
 
     export default {
+        mixins: [functions],
         data () {
             return {
                 loading_submit:false,
@@ -247,7 +249,10 @@
                     this.records = response.data.data
                     this.taxTitles = response.data.taxTitles
                     this.taxesAll = response.data.taxesAll
-                    this.loading_submit = false
+                }).catch((response) => {
+                  console.log(response);
+                }).finally(() => {
+                  this.loading_submit = false
                 });
             },
             getQueryParameters() {
