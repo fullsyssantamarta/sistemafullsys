@@ -258,6 +258,7 @@
                     unit_type_id: null,
                     lots: [],
                     discount_type: 'percentage',
+                    discount_percentage: 0,
                 }
 
                 this.item_unit_type = {};
@@ -274,6 +275,13 @@
                     await this.changeItem()
                     this.form.quantity = this.recordItem.quantity
                     this.form.unit_price = this.recordItem.unit_price
+                    this.form.discount_type = this.recordItem.discount_type
+
+                    if(this.form.discount_type == 'percentage') {
+                        this.form.discount = this.recordItem.discount_percentage
+                    } else {
+                        this.form.discount = this.recordItem.discount
+                    }
                 }
             },
             close() {
@@ -357,6 +365,10 @@
                 if (this.recordItem)
                 {
                     this.form.indexi = this.recordItem.indexi
+                }
+
+                if(this.form.discount_type == 'percentage') {
+                    this.form.discount_percentage = this.form.discount
                 }
 
                 // this.initializeFields()

@@ -455,8 +455,11 @@
                     // defino el total de descuento
                     let total_discount = 0;
                     if(item.discount_type === 'percentage') {
-                        total_discount = (item.unit_price * item.discount) / 100;
+                        total_discount = (item.unit_price * item.discount_percentage) / 100;
+                    } else {
+                        total_discount = item.discount
                     }
+                    console.log(total_discount);
                     this.$set( item, "discount", Number(total_discount).toFixed(2));
 
                     item.total_tax = 0;
