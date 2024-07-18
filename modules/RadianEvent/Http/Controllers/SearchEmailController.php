@@ -330,6 +330,13 @@ class SearchEmailController extends Controller
     public function isValidEmail($mail, $email_reading)
     {
         $subject = $mail->subject;
+        // permitir correos reenviados
+        if (strpos($subject, 'Fwd: ') === 0) {
+            $subject = substr($subject, 5);
+        } elseif (strpos($subject, 'RV: ') === 0) {
+            $subject = substr($subject, 4);
+        }
+
         $parse_subject = explode(';',  $subject);
         $quantity_items = count($parse_subject);
 
@@ -348,7 +355,7 @@ class SearchEmailController extends Controller
 
                 if($quantity_items === 5 && is_numeric($parse_subject[0]) && $exist_type_document && $mail->hasAttachments())
                 {
-                    if(count($mail->getAttachments()) === 1)
+                    if(count($mail->getAttachments()) > 0)
                     {
                         return true;
                     }
