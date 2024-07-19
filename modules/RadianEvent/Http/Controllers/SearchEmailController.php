@@ -78,60 +78,73 @@ class SearchEmailController extends Controller
                     if($this->isValidEmail($mail, $email_reading))
                     {
                         // obtener archivos del correo
-                        $attachment = collect($mail->getAttachments())->first();
-                        $attachment_content = $attachment->getContents(); //zip
+                        $attachments = collect($mail->getAttachments());
+                        $zip_found = false;
+                        $zip_content = null;
+                        $filename = null;
 
-                        $filename = $attachment->name;
+                        // Recorrer todos los archivos adjuntos
+                        foreach ($attachments as $attachment) {
+                            // Verificar si el archivo es un ZIP por su tipo MIME o extensión
+                            if ($attachment->getMimeType() == 'application/zip' || pathinfo($attachment->name, PATHINFO_EXTENSION) == 'zip') {
+                                $zip_found = true;
+                                $zip_content = $attachment->getContents();
+                                $filename = $attachment->name;
+                                break; // Salir del bucle una vez que encontramos un ZIP
+                            }
+                        }
 
-                        $extract_zip = (new ZipHelper())->extractZip($attachment_content);
+                        if ($zip_found) {
+                            $extract_zip = (new ZipHelper())->extractZip($zip_content);
 
-                        if(count($extract_zip) === 2) // se valida si tiene 2 archivos, xml y pdf
-                        {
-                            $xml_filename = $extract_zip[0]['filename'];
-                            $xml_content = $extract_zip[0]['content'];
-
-                            $pdf_filename = $extract_zip[1]['filename'];
-                            $pdf_content = $extract_zip[1]['content'];
-
-                            if(str_contains($xml_filename, '.xml') && str_contains($pdf_filename, '.pdf'))
+                            if(count($extract_zip) === 2) // se valida si tiene 2 archivos, xml y pdf
                             {
-                                // verificar si existe el xml
-                                $exist_received_document = ReceivedDocument::select('id')->where('xml', $xml_filename)->first();
+                                $xml_filename = $extract_zip[0]['filename'];
+                                $xml_content = $extract_zip[0]['content'];
 
-                                if(!$exist_received_document)
+                                $pdf_filename = $extract_zip[1]['filename'];
+                                $pdf_content = $extract_zip[1]['content'];
+
+                                if(str_contains($xml_filename, '.xml') && str_contains($pdf_filename, '.pdf'))
                                 {
-                                    // enviar api para parsear xml y obtener data
-                                    $send_request_to_api = $this->sendXmlToApi($xml_content);
+                                    // verificar si existe el xml
+                                    $exist_received_document = ReceivedDocument::select('id')->where('xml', $xml_filename)->first();
 
-                                    // registrar en bd
-                                    $email_reading_detail = $this->saveEmailReadingDetail($email_reading, $mail);
-
-                                    if($send_request_to_api['success'])
+                                    if(!$exist_received_document)
                                     {
-                                        $data = $send_request_to_api['data'];
-                                        $data['xml'] = $xml_filename;
-                                        $data['pdf'] = $pdf_filename;
+                                        // enviar api para parsear xml y obtener data
+                                        $send_request_to_api = $this->sendXmlToApi($xml_content);
 
-                                        $this->updateEmailReadingDetail($email_reading_detail, [
-                                            'success' => true,
-                                            'response_api' => $data
-                                        ]);
+                                        // registrar en bd
+                                        $email_reading_detail = $this->saveEmailReadingDetail($email_reading, $mail);
 
-                                        //insertar detalle
-                                        $email_reading_detail->received_document()->create($data);
+                                        if($send_request_to_api['success'])
+                                        {
+                                            $data = $send_request_to_api['data'];
+                                            $data['xml'] = $xml_filename;
+                                            $data['pdf'] = $pdf_filename;
 
-                                        //subir archivo
-                                        $this->uploadFile($pdf_filename, $pdf_content);
-                                        $this->uploadFile($xml_filename, $xml_content);
+                                            $this->updateEmailReadingDetail($email_reading_detail, [
+                                                'success' => true,
+                                                'response_api' => $data
+                                            ]);
 
-                                    }
-                                    else
-                                    {
-                                        $this->updateEmailReadingDetail($email_reading_detail, [
-                                            'success' => false,
-                                            'response_api' => $send_request_to_api
-                                        ]);
+                                            //insertar detalle
+                                            $email_reading_detail->received_document()->create($data);
 
+                                            //subir archivo
+                                            $this->uploadFile($pdf_filename, $pdf_content);
+                                            $this->uploadFile($xml_filename, $xml_content);
+
+                                        }
+                                        else
+                                        {
+                                            $this->updateEmailReadingDetail($email_reading_detail, [
+                                                'success' => false,
+                                                'response_api' => $send_request_to_api
+                                            ]);
+
+                                        }
                                     }
                                 }
                             }
