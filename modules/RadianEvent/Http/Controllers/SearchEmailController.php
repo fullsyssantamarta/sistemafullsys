@@ -86,7 +86,7 @@ class SearchEmailController extends Controller
                         // Recorrer todos los archivos adjuntos
                         foreach ($attachments as $attachment) {
                             // Verificar si el archivo es un ZIP por su tipo MIME o extensión
-                            if ($attachment->getMimeType() == 'application/zip' || pathinfo($attachment->name, PATHINFO_EXTENSION) == 'zip') {
+                            if (pathinfo($attachment->name, PATHINFO_EXTENSION) == 'zip') {
                                 $zip_found = true;
                                 $zip_content = $attachment->getContents();
                                 $filename = $attachment->name;
