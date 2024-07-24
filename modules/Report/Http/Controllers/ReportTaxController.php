@@ -54,16 +54,28 @@ class ReportTaxController extends Controller
             ])
             ->get();
 
-            // $purchases = Purchase::query()
-            //     ->whereBetween('date_of_issue', [
-            //         Carbon::parse($request->date_start)->startOfDay()->format('Y-m-d'),
-            //         Carbon::parse($request->date_end)->endOfDay()->format('Y-m-d')
-            //     ])
-            //     ->get();
+        $purchases = Purchase::query()
+            ->whereBetween('date_of_issue', [
+                Carbon::parse($request->date_start)->startOfDay()->format('Y-m-d'),
+                Carbon::parse($request->date_end)->endOfDay()->format('Y-m-d')
+            ])
+            ->get();
 
-       // $union = $documents->union( $documents_pos );
-        // dd( $purchases->toArray());
-       $data = array_merge($documents->toArray(), $documents_pos->toArray());
+        $enhancedPurchases = $purchases->map(function($purchase) {
+            return $purchase->toArray() + [
+                'type_document' => [
+                    'name' => $purchase->document_type->description
+                ],
+                'customer' => [
+                    'name' => $purchase->supplier->name
+                ],
+                'prefix' => $purchase->series,
+            ];
+        });
+
+        // $union = $documents->union( $documents_pos );
+        // dd( $enhancedPurchases->toArray() );
+        $data = array_merge($documents->toArray(), $documents_pos->toArray(), $enhancedPurchases->toArray());
         // dd($data);
 
         return [
