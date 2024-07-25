@@ -73,16 +73,25 @@ class ReportTaxController extends Controller
             ];
         });
 
+        $taxesPurchases = collect();
+        $enhancedPurchases->pluck('taxes')->each(function($taxes) use($taxesPurchases) {
+            collect($taxes)->each(function($tax) use($taxesPurchases) {
+                $taxesPurchases->push($tax);
+            });
+        });
+
         // $union = $documents->union( $documents_pos );
         // dd( $enhancedPurchases->toArray() );
-        $data = array_merge($documents->toArray(), $documents_pos->toArray(), $enhancedPurchases->toArray());
+        $data = array_merge($documents->toArray(), $documents_pos->toArray());
         // dd($data);
 
         return [
             'success' => true,
             'data' => $data,
             'taxTitles' => $taxTitles->values(),
-            'taxesAll' => $taxesAll
+            'taxesAll' => $taxesAll,
+            'dataPurchases' => $enhancedPurchases,
+            'taxesPurchases' => $taxesPurchases,
         ];
 
     }
