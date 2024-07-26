@@ -246,16 +246,16 @@
                                 <div class="col-lg-12" v-if="form_payment.payment_method_type_id=='01'">
                                     <div class="row">
                                         <div class="col-lg-3">
-                                            <button class="btn btn-block btn-secondary" @click="setAmountCash(10000)">{{currencyTypeActive.symbol}} {{getFormatDecimal(10.000)}}</button>
+                                            <button class="btn btn-block btn-secondary" @click="setAmountCash(10000)">{{currencyTypeActive.symbol}} {{getFormatDecimal(10000)}}</button>
                                         </div>
                                         <div class="col-lg-3">
-                                            <button class="btn btn-block btn-secondary" @click="setAmountCash(20000)" >{{currencyTypeActive.symbol}} {{getFormatDecimal(20.000)}}</button>
+                                            <button class="btn btn-block btn-secondary" @click="setAmountCash(20000)" >{{currencyTypeActive.symbol}} {{getFormatDecimal(20000)}}</button>
                                         </div>
                                         <div class="col-lg-3">
-                                            <button class="btn btn-block btn-secondary" @click="setAmountCash(50000)"  >{{currencyTypeActive.symbol}} {{getFormatDecimal(50.000)}}</button>
+                                            <button class="btn btn-block btn-secondary" @click="setAmountCash(50000)"  >{{currencyTypeActive.symbol}} {{getFormatDecimal(50000)}}</button>
                                         </div>
                                         <div class="col-lg-3">
-                                            <button class="btn btn-block btn-secondary"  @click="setAmountCash(100000)" >{{currencyTypeActive.symbol}} {{getFormatDecimal(100.000)}}</button>
+                                            <button class="btn btn-block btn-secondary"  @click="setAmountCash(100000)" >{{currencyTypeActive.symbol}} {{getFormatDecimal(100000)}}</button>
                                         </div>
                                     </div>
                                 </div>

@@ -38,9 +38,22 @@
                             <div class="col-lg-3 pb-2">
                                 <div class="form-group" :class="{'has-danger': errors.type_invoice_id}">
                                     <label class="control-label">Resolución</label>
-                                    <el-select @change="changeResolution" v-model="form.resolution_id"  popper-class="el-select-document_type" dusk="type_invoice_id" class="border-left rounded-left border-info">
-                                        <el-option v-for="option in resolutions" :key="option.id" :value="option.id" :label="`${option.prefix} / ${option.description} / ${option.resolution_number} / ${option.from} / ${option.to}`"></el-option>
+                                    <el-select @change="changeResolution" v-model="form.resolution_id" popper-class="el-select-document_type" dusk="type_invoice_id" class="border-left rounded-left border-info">
+                                        <!-- Modifica el v-if para incluir la lógica basada en ambientId por cristian ok -->
+                                        <el-option 
+                                            v-for="option in resolutions" 
+                                            :key="option.id" 
+                                            :value="option.id" 
+                                            :label="`${option.prefix} / ${option.description} / ${option.resolution_number} / ${option.from} / ${option.to}`"
+                                            v-if="shouldShowResolution(option)">
+                                        </el-option>
                                     </el-select>
+                                        <!-- Texto con estilos CSS para mejorar la presentación -->
+                                        <p v-if="form.resolution_id" style="white-space: nowrap; font-size: 0.9em; line-height: 1.2; margin-top: 5px;">
+                                        Venc: <strong>{{ selectedResolutionDetails.dateEnd }}</strong> | 
+                                        Gen: <strong>{{ selectedResolutionDetails.generatedCount | numberFormat }} facs</strong> | 
+                                        Restan: <strong>{{ selectedResolutionDetails.remainingInvoices | numberFormat }}</strong>
+                                        </p>
                                     <small class="form-control-feedback" v-if="errors.type_invoice_id" v-text="errors.type_invoice_id[0]"></small>
                                 </div>
                             </div>
@@ -90,7 +103,7 @@
                             <div class="col-lg-2">
                                 <div class="form-group" :class="{'has-danger': errors.payment_form_id}">
                                     <label class="control-label">Forma de pago</label>
-                                    <el-select v-model="form.payment_form_id" filterable>
+                                    <el-select v-model="form.payment_form_id" :disabled="true" filterable>
                                         <el-option v-for="option in payment_forms" :key="option.id" :value="option.id" :label="option.name"></el-option>
                                     </el-select>
                                     <small class="form-control-feedback" v-if="errors.payment_form_id" v-text="errors.payment_form_id[0]"></small>
@@ -111,6 +124,17 @@
                                         <el-option v-for="option in payment_methods" :key="option.id" :value="option.id" :label="option.name"></el-option>
                                     </el-select>
                                     <small class="form-control-feedback" v-if="errors.payment_method_id" v-text="errors.payment_method_id[0]"></small>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="form-group" :class="{'has-danger': errors.format_print}">
+                                    <label class="control-label">Formato de Impresión</label>
+                                    <el-select v-model="form.format_print">
+                                        <el-option label="Media Carta" value="1"></el-option>
+                                        <el-option label="Carta" value="2"></el-option>
+                                        <el-option label="Tirilla" value="3"></el-option>
+                                    </el-select>
+                                    <small class="form-control-feedback" v-if="errors.format_print">{{ errors.format_print }}</small>
                                 </div>
                             </div>
                         </div>
@@ -217,7 +241,7 @@
 
 
                                                 <td class="text-right">{{ratePrefix()}} {{getFormatDecimal(row.subtotal)}}</td>
-                                                <td class="text-right">{{ratePrefix()}} {{getFormatDecimal(row.total_discount)}}</td>
+                                                <td class="text-right">{{ratePrefix()}} {{getFormatDecimal(row.discount)}}</td>
                                                 <td class="text-right">{{ratePrefix()}} {{getFormatDecimal(row.total)}}</td>
                                                 <td class="text-right">
                                                     <button type="button" class="btn waves-effect waves-light btn-xs btn-danger" @click.prevent="clickRemoveItem(index)">x</button>
@@ -230,20 +254,34 @@
                                 </div>
                             </div>
                             <div class="col-lg-12 col-md-6 d-flex align-items-end">
-                                <div class="form-group">
-                                    <button type="button" class="btn waves-effect waves-light btn-primary" @click.prevent="clickAddItemInvoice">+ Agregar Producto</button>
-                                    <button type="button" class="ml-3 btn waves-effect waves-light btn-primary" @click.prevent="clickAddRetention">+ Agregar Retención</button>
-                                    <button type="button" class="ml-3 btn waves-effect waves-light btn-primary" @click.prevent="clickAddOrderReference">+ Order Reference</button>
+                                <div style="margin-top: 10px;" class="form-group">
+                                    <button type="button" class="btn waves-effect waves-light btn-primary" @click.prevent="clickAddItemInvoice">
+                                        <i class="fas fa-shopping-cart"></i> <!-- Ícono de carrito de compras -->
+                                        <span class="text">+ Agregar Producto</span>
+                                    </button>
+                                    <button type="button" class="ml-3 btn waves-effect waves-light btn-primary" @click.prevent="clickAddRetention">
+                                        <i class="fas fa-hand-holding-usd"></i> <!-- Ícono para impuestos o dinero -->
+                                        <span class="text">+ Agregar Retención</span>
+                                    </button>
+                                    <button type="button" class="ml-3 btn waves-effect waves-light btn-primary" @click.prevent="clickAddOrderReference">
+                                        <i class="fas fa-file-alt"></i> <!-- Ícono de documento -->
+                                        <span class="text">+ Orden de Pedido</span>
+                                    </button>
                                     <template v-if="health_sector">
-                                        <button type="button" class="ml-3 btn waves-effect waves-light btn-primary" @click.prevent="clickAddHealthData">+ Datos Salud</button>
-                                        <button type="button" class="ml-3 btn waves-effect waves-light btn-primary" @click.prevent="clickAddHealthUser">+ Usuarios Salud</button>
+                                        <button type="button" class="ml-3 btn waves-effect waves-light btn-primary" @click.prevent="clickAddHealthData">
+                                            <i class="fas fa-heartbeat"></i> <!-- Ícono para datos de salud -->
+                                            <span class="text">+ Datos Salud</span>
+                                        </button>
+                                        <button type="button" class="ml-3 btn waves-effect waves-light btn-primary" @click.prevent="clickAddHealthUser">
+                                            <i class="fas fa-user-md"></i> <!-- Ícono para usuarios de salud -->
+                                            <span class="text">+ Usuarios Salud</span>
+                                        </button>
                                     </template>
                                 </div>
                             </div>
 
                             <div class="col-md-12" style="display: flex; flex-direction: column; align-items: flex-end;" v-if="form.items.length > 0">
-                                <table>
-
+                                <table style="margin-top: 10px;">
                                     <tr>
                                         <td>TOTAL VENTA</td>
                                         <td>:</td>
@@ -286,34 +324,6 @@
                                             </td>
                                         </tr>
                                     </template>
-                                    <tr>
-                                        <td>
-                                            DESCUENTO
-                                            <el-switch
-                                                v-model="global_discount_is_amount"
-                                                :active-text="ratePrefix()"
-                                                inactive-text="%"
-                                                @change="calculateTotal">
-                                            </el-switch>
-                                        </td>
-                                        <td>:</td>
-                                        <!-- <td class="text-right">
-                                            {{ratePrefix()}} {{Number(tax.retention).toFixed(2)}}
-                                        </td> -->
-                                        <td class="text-right" id="input-with-select">
-
-                                            <el-input v-model="total_global_discount"
-                                                :min="0"
-                                                class="input-discount"
-                                                @input="calculateTotal">
-                                                <template slot="prefix">
-                                                    <span v-if="global_discount_is_amount">{{ ratePrefix() }}</span>
-                                                    <span v-else>%</span>
-                                                </template>
-                                            </el-input>
-
-                                        </td>
-                                    </tr>
                                 </table>
 
                                 <template>
@@ -392,15 +402,19 @@
     min-height: 65px !important;
 }
 
-.input-discount .el-input__inner {
-    text-align: right;
-    max-width: 100px;
+@media screen and (max-width: 600px) {
+    .btn .text {
+        display: none; /* Oculta el texto en pantallas pequeñas */
+    }
+    .btn .icon {
+        display: inline-block; /* Muestra el ícono en pantallas pequeñas */
+    }
 }
-.input-discount .el-input__prefix {
-    left: 10px;
-    top: 5px;
-    color: #66789C;
+/* Estilo por defecto para pantallas más grandes */
+.btn .icon {
+    display: none; /* Oculta los íconos en pantallas grandes */
 }
+
 </style>
 <script>
     import DocumentFormItem from './partials/item.vue'
@@ -443,7 +457,7 @@
                 loading_submit: false,
                 loading_preeliminar_view: false,
                 loading_form: false,
-                errors: {},
+                errors: {format_print: null},
                 form: {},
                 type_invoices: [],
                 currencies: [],
@@ -456,18 +470,32 @@
                 series: [],
                 currency_type: {},
                 documentNewId: null,
-                total_global_discount: 0,
-                global_discount_is_amount: true,
+                total_global_discount:0,
                 loading_search:false,
                 taxes:  [],
                 resolutions:[],
+                typeDocuments: [],
                 duplicated_health_fields: {},
                 duplicated_health_users: [],
+                companies: null,
+                correlative_api: null, // Aquí almacenarás el siguiente número consecutivo
+                currentPrefix: null,
             }
+        },
+        //filtro de separadores de mil
+        filters: {
+            numberFormat(value) {
+            if (isNaN(value) || value === null || value === undefined) return '';
+            const parts = value.toString().split('.');
+            const formattedIntegerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            const decimalPart = parts.length > 1 ? `.${parts[1]}` : '';
+            return `${formattedIntegerPart}${decimalPart}`;
+            },
         },
         async created() {
 //            console.log(this.invoice)
             await this.initForm()
+            await this.fetchCompanyInfo();
             await this.$http.get(`/${this.resource}/tables`)
                 .then(response => {
                     this.all_customers = response.data.customers;
@@ -475,6 +503,9 @@
                     this.taxes = response.data.taxes
 //                    console.log(this.customers)
                     this.type_invoices = response.data.type_invoices;
+                    if (Array.isArray(response.data.type_documents)) {
+                            this.typeDocuments = response.data.type_documents;
+                        }
                     this.currencies = response.data.currencies
                     this.payment_methods = response.data.payment_methods
                     this.payment_forms = response.data.payment_forms
@@ -483,6 +514,9 @@
                     //his.form.payment_form_id = (this.payment_forms.length > 0)?this.payment_forms[0].id:null;
                     this.form.payment_method_id = 10;//(this.payment_methods.length > 0)?this.payment_methods[0].id:null;
                     this.resolutions = response.data.resolutions
+                    //ordenar resolicones por cristian
+                    // Ordenar por 'id' de forma descendente
+                    this.resolutions.sort((a, b) => b.id - a.id);         
                     this.form.payment_form_id = 1
                     // this.selectDocumentType()
                     this.filterCustomers();
@@ -530,10 +564,62 @@
                 if(form_exceed_uvt != undefined && form_exceed_uvt) return true
 
                 return false
+            },
+            //Detalles de resolucion Cristian
+            selectedResolutionDetails() {
+                const selectedDocument = this.typeDocuments.find(doc => doc.id === this.form.resolution_id);
+                if (selectedDocument) {
+                    const remainingInvoices = selectedDocument.to - this.correlative_api;
+                    return {
+                        dateEnd: selectedDocument.resolution_date_end,
+                        generatedCount: this.correlative_api,
+                        remainingInvoices: remainingInvoices >= 0 ? remainingInvoices : 0
+                    };
+                } else {
+                    return { dateEnd: '', generatedCount: 0, remainingInvoices: 0 };
+                }
             }
         },
         methods:
         {
+            //Validacion de resolucion Cristian
+            validateResolution() {
+                const selectedDocument = this.typeDocuments.find(doc => doc.id === this.form.resolution_id);
+                if (selectedDocument) {
+                const currentDate = new Date();
+                const resolutionDateEnd = new Date(selectedDocument.resolution_date_end);
+                // Comprobar si la resolución se ha vencido
+                if (resolutionDateEnd < currentDate) {
+                    this.$message.error('Su resolución se ha vencido');
+                    return false;
+                }
+                // Comprobar si la numeración se ha agotado
+                if (selectedDocument.generated >= selectedDocument.to) {
+                    this.$message.error('Su numeración de Facturación se ha agotado');
+                    return false;
+                }
+                }
+                return true;
+            },
+            async fetchCompanyInfo() {
+                    try {
+                        const response = await this.$http.get('/companies/record');
+                        // Acceder a 'data' dentro de 'data' debido a la estructura de la respuesta
+                        this.ambientId = response.data.data.ambient_id;
+                        this.phone_company = response.data.data.phone;
+                        //console.log(this.ambientId);
+                        //console.log(this.phone_company);
+                    } catch (error) {
+                        console.error('Error al obtener la información de la compañía:', error);
+                    }
+            },
+                shouldShowResolution(option) {
+                    // Si ambientId es 2, no mostrar opciones con prefijo SETP
+                    if (this.ambientId === 2 && option.prefix === 'SETP') {
+                    }
+                    // En otros casos, mostrar todas las opciones
+                    return true;
+            },
             generatedFromExternalDocument()
             {
                 if(this.generatedFromPos)
@@ -588,21 +674,33 @@
                     else
                         this.form.payment_form_id = 2
             },
-
+            async fetchCorrelative() {
+                const typeService = 1; // supongo que es el Id del tipo de documento que para este caso es 1 factura de venta 
+                if (this.currentPrefix) {
+                    try {
+                        const response = await this.$http.get(`/${this.resource}/invoice-correlative/${typeService}/${this.currentPrefix}`);
+                        this.correlative_api = response.data.correlative;
+                    } catch (error) {
+                        console.error('Error al obtener el correlativo:', error);
+                    }
+                }
+            },
             changeResolution()
             {
                 if (typeof this.invoice !== 'undefined') {
                     this.form.type_document_id = this.invoice.type_document_id;
                     this.form.resolution_id = this.invoice.type_document_id;
                 }
-                const resol = this.resolutions.find(x => x.id == this.form.resolution_id)
+                const resol = this.resolutions.find(x => x.id == this.form.resolution_id);
 //                console.log(this.form.resolution_id)
 //                console.log(resol)
                 if(resol)
                 {
-                    this.form.resolution_number = resol.resolution_number
-                    this.form.prefix = resol.prefix
-                    this.form.type_document_id = resol.id
+                    this.form.resolution_number = resol.resolution_number;
+                    this.form.prefix = resol.prefix;
+                    this.form.type_document_id = resol.id;
+                    this.currentPrefix = resol.prefix; // Actualizar el prefijo en data
+                    this.fetchCorrelative(); // Llama al método para obtener el correlativo
                 }
             },
 
@@ -660,9 +758,18 @@
 
             clickEditItem(row, index)
             {
-                row.indexi = index
-                this.recordItem = row
-                this.showDialogAddItem = true
+                // sumarle el iva al producto para editarlo modificado por Cristian
+                // Declara las variables con 'let' para un alcance local
+                let ivaRate = parseFloat(row.tax.rate) / row.tax.conversion; // Obtiene la tasa de IVA
+                let precioConIVA = row.price * (1 + ivaRate); // Calcula el precio con IVA
+                // Redondea el precio con IVA a dos decimales
+                precioConIVA = Math.round(precioConIVA * 100) / 100;
+                // Actualiza el precio en el ítem para la edición
+                row.price = precioConIVA;
+                // Configura el ítem para la edición
+                row.indexi = index;
+                this.recordItem = row;
+                this.showDialogAddItem = true;
             },
 
             clickEditUser(row, index)
@@ -719,6 +826,7 @@
                     this.form.total = this.invoice ? this.invoice.total : 0;
                     this.form.sale = this.invoice ? this.invoice.sale : 0;
                     this.form.observation = this.invoice ? this.invoice.observation : null;
+                    this.form.format_print = this.invoice ? this.invoice.format_print : null;
                     this.form.time_days_credit = this.invoice ? this.invoice.time_days_credit : 0;
                     this.form.service_invoice = {};
                     this.form.payment_form_id = this.invoice ? this.invoice.payment_form_id : null;
@@ -760,6 +868,7 @@
                     total: this.invoice ? this.invoice.total : 0,
                     sale: this.invoice ? this.invoice.sale : 0,
                     observation: this.invoice ? this.invoice.observation : null,
+                    format_print: this.invoice ? this.invoice.format_print : null,
                     time_days_credit: this.invoice ? this.invoice.time_days_credit : 0,
                     service_invoice: {},
                     payment_form_id: this.invoice ? this.invoice.payment_form_id : null,
@@ -857,6 +966,13 @@
                 // }
             },
             addRow(row) {
+                    // Restar el 19% del IVA del precio del ítem por Cristian                  
+                    const ivaRate = parseFloat(row.tax.rate) / row.tax.conversion; // Convertimos "19.00" a 0.19
+                    // Calculamos el precio sin IVA
+                    // La fórmula es: precioConIVA / (1 + tasaIVA)
+                    const precioSinIVA = row.price / (1 + ivaRate);
+                    // Actualizamos el objeto row con el nuevo precio
+                    row.price = precioSinIVA;  
                 if(this.recordItem)
                 {
                     //this.form.items.$set(this.recordItem.indexi, row)
@@ -939,40 +1055,41 @@
 
             },
             setDataTotals() {
+                // console.log(val)
                 let val = this.form
-                //console.log(val.items)
                 val.taxes = JSON.parse(JSON.stringify(this.taxes));
 
                 val.items.forEach(item => {
                     item.tax = this.taxes.find(tax => tax.id == item.tax_id);
 
-                    // seteo de descuento en caso no posea o sea superior al precio por cantidad
-                    if (item.discount == null || item.discount == "" || item.discount > (item.price * item.quantity)) {
+                    if (
+                        item.discount == null ||
+                        item.discount == "" ||
+                        item.discount > item.price * item.quantity
+                    )
                         this.$set(item, "discount", 0);
-                    }
-                    // defino el total de descuento
-                    let total_discount = 0;
-                    if(item.discount > 0 && item.discount < (item.price * item.quantity)) {
-                        total_discount = item.discount;
-                        if(item.discount_type === 'percentage') {
-                            total_discount = (item.price * item.discount) / 100;
-                        }
-                    }
-                    this.$set( item, "discount", Number(total_discount).toFixed(2));
-                    this.$set( item, "total_discount", Number(total_discount).toFixed(2));
 
                     item.total_tax = 0;
 
                     if (item.tax != null) {
                         let tax = val.taxes.find(tax => tax.id == item.tax.id);
 
-                        if (item.tax.is_fixed_value) {
-                            item.total_tax = ((item.tax.rate * item.quantity) - total_discount).toFixed(2);
-                        }
+                        if (item.tax.is_fixed_value)
 
-                        if (item.tax.is_percentage) {
-                            item.total_tax = (((item.price * item.quantity) - total_discount) * (item.tax.rate / item.tax.conversion) ).toFixed(2);
-                        }
+                            item.total_tax = (
+                                item.tax.rate * item.quantity -
+                                (item.discount < item.price * item.quantity ? item.discount : 0)
+                            ).toFixed(2);
+
+                        if (item.tax.is_percentage)
+
+                            item.total_tax = (
+                                (item.price * item.quantity -
+                                (item.discount < item.price * item.quantity
+                                    ? item.discount
+                                    : 0)) *
+                                (item.tax.rate / item.tax.conversion)
+                            ).toFixed(2);
 
                         if (!tax.hasOwnProperty("total"))
                             tax.total = Number(0).toFixed(2);
@@ -984,21 +1101,38 @@
                         Number(item.price * item.quantity) + Number(item.total_tax)
                     ).toFixed(2);
 
-                    this.$set( item, "total", (Number(item.subtotal) - Number(total_discount)).toFixed(2));
+                    this.$set(
+                        item,
+                        "total",
+                        (Number(item.subtotal) - Number(item.discount)).toFixed(2)
+                    );
 
                 });
 
-                val.total_tax = val.items.reduce((p, c) => Number(p) + Number(c.total_tax), 0).toFixed(2);
-                let total = val.items.reduce((p, c) => Number(p) + Number(c.total), 0).toFixed(2);
-                let amount_total_dicount_global = this.total_global_discount;
-                if(!this.global_discount_is_amount && amount_total_dicount_global > 0) {
-                    amount_total_dicount_global = ((total - val.total_tax) * amount_total_dicount_global) / 100;
-                }
+                val.subtotal = val.items
+                    .reduce(
+                        (p, c) => Number(p) + (Number(c.subtotal) - Number(c.discount)),
+                        0
+                    )
+                    .toFixed(2);
+                    val.sale = val.items
+                    .reduce(
+                        (p, c) =>
+                        Number(p) + Number(c.price * c.quantity) - Number(c.discount),
+                        0
+                    )
+                    .toFixed(2);
+                    val.total_discount = val.items
+                    .reduce((p, c) => Number(p) + Number(c.discount), 0)
+                    .toFixed(2);
+                    val.total_tax = val.items
+                    .reduce((p, c) => Number(p) + Number(c.total_tax), 0)
+                    .toFixed(2);
 
-                val.subtotal = val.items.reduce((p, c) => Number(p) + (Number(c.subtotal) - Number(c.total_discount) - Number(amount_total_dicount_global, 0)), 0).toFixed(2);
-                val.sale = val.items.reduce((p, c) => Number(p) + Number(c.price * c.quantity) - Number(c.total_discount) - Number(amount_total_dicount_global, 0), 0).toFixed(2);
-                val.total_discount = (val.items.reduce((p, c) => Number(p) + Number(c.total_discount), 0) + Number(amount_total_dicount_global, 0)).toFixed(2);
-                total = (Number(total, 0) - Number(amount_total_dicount_global, 0)).toFixed(2);
+                let total = val.items
+                    .reduce((p, c) => Number(p) + Number(c.total), 0)
+                    .toFixed(2);
+
                 let totalRetentionBase = Number(0);
 
                 // this.taxes.forEach(tax => {
@@ -1051,7 +1185,18 @@
                 if(!this.form.customer_id){
                     return this.$message.error('Debe seleccionar un cliente')
                 }
-
+                //validacion de format_print
+                if (!this.form.format_print) {
+                    return this.$message.error('Debe seleccionar un Formato de Impresión')
+                }
+                if (!this.validateResolution()) {
+                    // La validación falló, detener la ejecución del método
+                    return;
+                }
+                if (!this.validateResolution()) {
+                    // La validación falló, detener la ejecución del método
+                    return;
+                }
                 if(this.health_sector){
                     if(this.form.health_users.length == 0)
                         return this.$message.error('Para facturas del sector salud se debe incluir los datos de al menos un usuario del servicio')
@@ -1131,7 +1276,10 @@
                 if(!this.form.customer_id){
                     return this.$message.error('Debe seleccionar un cliente')
                 }
-
+                                //validacion de format_print
+                                if (!this.form.format_print) {
+                    return this.$message.error('Debe seleccionar un Formato de Impresión')
+                }
                 if(this.health_sector){
                     if(this.form.health_users.length == 0)
                         return this.$message.error('Para facturas del sector salud se debe incluir los datos de al menos un usuario del servicio')
@@ -1177,7 +1325,7 @@
                                 else{
                                     this.$message.error(response.data.message);
                                 }
-                                setTimeout(this.close(), 8000)
+                                setTimeout(this.close(), 5000)
                         }
                     }
                     else {
@@ -1305,7 +1453,7 @@
             getLegacyMonetaryTotal() {
                 let line_ext_am = 0;
                 let tax_incl_am = 0;
-                let allowance_total_amount = this.total_global_discount; // descuento global
+                let allowance_total_amount = 0;
                 this.form.items.forEach(element => {
                     line_ext_am += (Number(element.price) * Number(element.quantity)) - Number(element.discount) ;
 //                    allowance_total_amount += Number(element.discount);
@@ -1321,10 +1469,6 @@
                     tax_excl_am += Number(element.taxable_amount);
                 });
                 tax_incl_am = line_ext_am + total_tax_amount;
-                if(!this.global_discount_is_amount && allowance_total_amount > 0) {
-                    allowance_total_amount = (tax_excl_am * allowance_total_amount) / 100;
-                }
-                let pay_am = tax_incl_am - allowance_total_amount;
 
                 return {
                     line_extension_amount: this.cadenaDecimales(line_ext_am),
@@ -1332,7 +1476,8 @@
                     tax_inclusive_amount: this.cadenaDecimales(tax_incl_am),
                     allowance_total_amount: this.cadenaDecimales(allowance_total_amount),
                     charge_total_amount: "0.00",
-                    payable_amount: this.cadenaDecimales(pay_am)
+                    payable_amount: this.cadenaDecimales(tax_incl_am)
+//                    payable_amount: this.cadenaDecimales(tax_incl_am - allowance_total_amount)
                 };
             },
 
