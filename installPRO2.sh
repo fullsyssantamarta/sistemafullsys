@@ -128,7 +128,7 @@ services:
             - $HOME/proxy/fpms/$DIR:/etc/nginx/sites-available
         restart: always
     fpm$SERVICE_NUMBER:
-        image: rash07/php-fpm:1.0
+        image: rash07/php-fpm:2.0
         working_dir: /var/www/html
         volumes:
             - ./:/var/www/html
