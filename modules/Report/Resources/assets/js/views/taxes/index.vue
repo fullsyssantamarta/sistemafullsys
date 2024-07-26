@@ -31,7 +31,7 @@
                 ></el-date-picker>
               </div>
 
-              <div class="col-md-6" style="margin-top:29px">
+              <div class="col-md-3" style="margin-top:29px">
                 <el-button
 
                   class="submit"
@@ -41,7 +41,7 @@
                   icon="el-icon-search"
                 >Buscar</el-button>
                 <template>
-                  <el-button v-if="records.length > 0" class="submit" type="success" @click.prevent="clickDownload('excel')">
+                  <el-button v-if="records.length > 0 && activeTab === 'sales'" class="submit" type="success" @click.prevent="clickDownload('excel')">
                     <i class="fa fa-file-excel"></i> Exportal Excel
                   </el-button>
                 </template>
@@ -51,52 +51,104 @@
           </div>
 
           <div class="col-md-12">
-            <div class="table-responsive">
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th class>#</th>
-                    <th class="text-left">Fecha emisión</th>
-                    <th class="text-center">Cliente</th>
-                    <th class>Documento</th>
-                    <th class="text-right">Base</th>
-                    <th class="text-right">Descuento</th>
-                    <th class="text-right" v-for="(col, index) in columnsTitles" :key="index + 'T'">
-                        {{ col.text }}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(row, index) in records" :key="index + 'R'">
-                    <td>{{ index }}</td>
-                    <td class="text-left">{{row.created_at}}</td>
-                    <td class="text-center">{{row.customer.name}}</td>
+            <el-tabs v-model="activeTab">
+              <el-tab-pane label="Ventas" name="sales">
+                <div class="table-responsive">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th class>#</th>
+                        <th class="text-left">Fecha emisión</th>
+                        <th class="text-center">Cliente</th>
+                        <th class>Documento</th>
+                        <th class="text-right">Base</th>
+                        <th class="text-right">Descuento</th>
+                        <th class="text-right" v-for="(col, index) in columnsTitles" :key="index + 'T'">
+                            {{ col.text }}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(row, index) in records" :key="index + 'R'">
+                        <td>{{ index }}</td>
+                        <td class="text-left">{{row.created_at}}</td>
+                        <td class="text-center">{{row.customer.name}}</td>
 
-                    <td class>
-                      <div>{{row.type_document.name}}</div>
-                      <div>
-                        {{row.prefix}}{{row.number}}
-                        <template
-                          v-if="row.type_document_id && row.type_document_id != 1"
-                        >({{row.prefix}}{{row.number}})</template>
-                      </div>
-                    </td>
+                        <td class>
+                          <div>{{row.type_document.name}}</div>
+                          <div>
+                            {{row.prefix}}{{row.number}}
+                            <template
+                              v-if="row.type_document_id && row.type_document_id != 1"
+                            >({{row.prefix}}{{row.number}})</template>
+                          </div>
+                        </td>
 
-                    <td class="text-right">$ {{row.total}}</td>
-                    <td class="text-right">$ {{row.total_discount}}</td>
+                        <td class="text-right">$ {{row.total}}</td>
+                        <td class="text-right">$ {{row.total_discount}}</td>
 
-                    <td class="text-right" v-for="(tax, index) in taxTitles" :key="index + 'TD'" >{{ratePrefix()}}{{getTaxTotalBill(tax, row.taxes)}}</td>
+                        <td class="text-right" v-for="(tax, index) in taxTitles" :key="index + 'TD'" >{{ratePrefix()}}{{getTaxTotalBill(tax, row.taxes)}}</td>
 
-                  </tr>
-                </tbody>
-                <tfoot>
-                    <td class="text-center" colspan="4"><strong>Totales:</strong></td>
-                    <td class="text-right"><strong>{{ratePrefix()}}{{getFormatDecimal(getSaleTotal()) }}</strong></td>
-                    <td class="text-right"><strong>{{ratePrefix()}}{{getFormatDecimal(getTotalDiscount()) }}</strong></td>
-                    <td class="text-right" v-for="(tax, index) in taxTitles" :key="index + 'F'"><strong>{{ratePrefix()}}{{getFormatDecimal(getTaxTotal(tax)) }}</strong></td>
-                </tfoot>
-              </table>
-            </div>
+                      </tr>
+                    </tbody>
+                    <tfoot>
+                        <td class="text-center" colspan="4"><strong>Totales:</strong></td>
+                        <td class="text-right"><strong>{{ratePrefix()}}{{getFormatDecimal(getSaleTotal()) }}</strong></td>
+                        <td class="text-right"><strong>{{ratePrefix()}}{{getFormatDecimal(getTotalDiscount()) }}</strong></td>
+                        <td class="text-right" v-for="(tax, index) in taxTitles" :key="index + 'F'"><strong>{{ratePrefix()}}{{getFormatDecimal(getTaxTotal(tax)) }}</strong></td>
+                    </tfoot>
+                  </table>
+                </div>
+              </el-tab-pane>
+              <el-tab-pane label="Compras" name="purchases">
+                <div class="table-responsive">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th class>#</th>
+                        <th class="text-left">Fecha emisión</th>
+                        <th class="text-center">Cliente</th>
+                        <th class>Documento</th>
+                        <th class="text-right">Base</th>
+                        <th class="text-right">Descuento</th>
+                        <th class="text-right" v-for="(col, index) in columnsTitles" :key="index + 'H'">
+                            {{ col.text }}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(row, index) in dataPurchases" :key="index + 'B'">
+                        <td>{{ index }}</td>
+                        <td class="text-left">{{row.created_at}}</td>
+                        <td class="text-center">{{row.customer.name}}</td>
+
+                        <td class>
+                          <div>{{row.type_document.name}}</div>
+                          <div>
+                            {{row.prefix}}{{row.number}}
+                            <template
+                              v-if="row.type_document_id && row.type_document_id != 1"
+                            >({{row.prefix}}{{row.number}})</template>
+                          </div>
+                        </td>
+
+                        <td class="text-right">$ {{row.total}}</td>
+                        <td class="text-right">$ {{row.total_discount}}</td>
+
+                        <td class="text-right" v-for="(tax, index) in taxTitles" :key="index + 'TD'" >{{ratePrefix()}}{{getTaxTotalBill(tax, row.taxes)}}</td>
+
+                      </tr>
+                    </tbody>
+                    <tfoot>
+                        <td class="text-center" colspan="4"><strong>Totales:</strong></td>
+                        <td class="text-right"><strong>{{ratePrefix()}}{{getFormatDecimal(getSaleTotal(1)) }}</strong></td>
+                        <td class="text-right"><strong>{{ratePrefix()}}{{getFormatDecimal(getTotalDiscount(1)) }}</strong></td>
+                        <td class="text-right" v-for="(tax, index) in taxTitles" :key="index + 'F'"><strong>{{ratePrefix()}}{{getFormatDecimal(getTaxTotal(tax, 1)) }}</strong></td>
+                    </tfoot>
+                  </table>
+                </div>
+              </el-tab-pane>
+            </el-tabs>
           </div>
         </div>
       </div>
@@ -133,7 +185,9 @@
                 resource: 'reports/taxes',
                 taxTitles: [],
                 taxesAll: [],
-
+                dataPurchases: [],
+                taxesPurchases: [],
+                activeTab: 'sales',
             }
         },
         filters: {
@@ -171,7 +225,7 @@
 
         },
         methods: {
-            getTotalDiscount() {
+            getTotalDiscount(is_purchase = 0) {
                 try {
                     return _.reduce(this.documents, (sum, value) => {
                         return Number(sum) + Number(value.total_discount);
@@ -181,9 +235,13 @@
                     return 0;
                 }
             },
-            getSaleTotal() {
+            getSaleTotal(is_purchase = 0) {
+                let records = this.records
+                if(is_purchase) {
+                  records = this.dataPurchases
+                }
                 try {
-                    return _.reduce(this.records, (sum, value) => {
+                    return _.reduce(records, (sum, value) => {
                         return Number(sum) + Number(value.sale);
                     }, 0);
                 }
@@ -191,9 +249,13 @@
                     return 0;
                 }
             },
-            getTaxTotal(tax) {
+            getTaxTotal(tax, is_purchase = 0) {
+                let records = this.taxesAll
+                if(is_purchase) {
+                  records = this.taxesPurchases
+                }
                 try {
-                    return _.reduce(this.taxesAll.filter(row => row.id == tax.id), (sum, value) => {
+                    return _.reduce(records.filter(row => row.id == tax.id), (sum, value) => {
                         return tax.is_retention ? (Number(sum) + Number(value.retention)) : (Number(sum) + Number(value.total));
                     }, 0);
                 }
@@ -249,6 +311,8 @@
                     this.records = response.data.data
                     this.taxTitles = response.data.taxTitles
                     this.taxesAll = response.data.taxesAll
+                    this.dataPurchases = response.data.dataPurchases
+                    this.taxesPurchases = response.data.taxesPurchases
                 }).catch((response) => {
                   console.log(response);
                 }).finally(() => {
