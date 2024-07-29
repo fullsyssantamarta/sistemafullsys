@@ -237,6 +237,7 @@
                     .then(response => {
                         if (response.data.quantity > 0) {
                             this.anular(`/${this.resource}/anulate/${id}`)
+                            this.$eventHub.$emit('reloadData');
                         }
                         else {
                             this.$message.error('No posee resoluciones para anular el documento');

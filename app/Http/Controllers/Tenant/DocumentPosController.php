@@ -1121,10 +1121,10 @@ class DocumentPosController extends Controller
             'number' => $data_consecutive->number,
             'date' => Carbon::now()->format('Y-m-d'),
             'time' => Carbon::now()->format('H:i:s'),
-            'establishment_name' => $company->name,
-            'establishment_address' => $document->establishment->address,
-            'establishment_phone' => $document->establishment->telephone,
-            'establishment_municipality' => $document->establishment->department_id,
+//            'establishment_name' => $company->name,
+//            'establishment_address' => $document->establishment->address,
+//            'establishment_phone' => $document->establishment->telephone,
+//            'establishment_municipality' => $document->establishment->department_id,
             'billing_reference' => [
                 'number' => $request_api->prefix.$request_api->number,
                 'issue_date' => $request_api->date,
@@ -1151,7 +1151,7 @@ class DocumentPosController extends Controller
     {
         $company = ServiceTenantCompany::firstOrFail();
         $base_url = config('tenant.service_fact');
-        $ch = curl_init("{$base_url}ubl2.1/credit-note/asd");
+        $ch = curl_init("{$base_url}ubl2.1/credit-note");
         $data = json_encode($json);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
@@ -1190,14 +1190,17 @@ class DocumentPosController extends Controller
                     'message' => $response->message,
                 ], 500);
             }
-            if(isset($response->success)) {
-                if(!$response->success) {
+
+            if(isset($response->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->IsValid)){
+//            if(isset($response->success)) {
+                if($response->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->IsValid == "false"){
+//                if(!$response->success) {
                     return response([
                         'success' => $response->success,
                         'message' => $response->message,
                     ], 500);
                 }
-                if($response->success) {
+                if($response->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->IsValid == "true"){
                     $obj->state_type_id = 11;
                     // guardar datos de nota de credito aqui
                     $obj->save();
@@ -1227,6 +1230,7 @@ class DocumentPosController extends Controller
                         }
                         $this->voidedLots($item);
                     }
+                    DB::connection('tenant')->commit();
                     return [
                         'success' => true,
                         'message' => 'N. Venta anulada con éxito'
