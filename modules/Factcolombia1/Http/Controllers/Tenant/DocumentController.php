@@ -1611,7 +1611,7 @@ class DocumentController extends Controller
             'number' => $number,
             'alternate_email' => $request->email,
             'email_cc_list' => [
-                ['email' => $sucursal->email]
+               /* ['email' => $sucursal->email] */
             ]
         ];
     //    \Log::debug(json_encode($send));
