@@ -112,28 +112,6 @@
     </div>
 </template>
 
-<style>
-.custom-loading-class .el-loading-text {
-    font-size: 20px; /* Tamaño de letra más grande */
-    font-weight: bold; /* Opcional: letra en negrita */
-}
-.custom-loading-class .el-loading-mask {
-    background-color: rgba(0, 0, 0, 0.7) !important; /* Fondo semi-transparente */
-}
-
-.custom-loading-class .el-loading-spinner .el-icon-loading {
-    font-size: 50px !important; /* Tamaño del spinner */
-    color: #007bff !important; /* Color del spinner */
-}
-
-.custom-loading-class .el-loading-text {
-    font-size: 20px !important; /* Tamaño de letra más grande */
-    font-weight: bold !important; /* Letra en negrita */
-    color: #007bff !important; /* Color de la letra */
-}
-
-</style>
-
 <script>
 
     import DataTable from '../../../components/DataTableDocumentsPos.vue'
@@ -254,53 +232,20 @@
                 });
             },
             clickVoided(id) {
-                this.$confirm('¿Estás seguro de que deseas anular este documento?', 'Confirmar Anulación', {
-                    confirmButtonText: 'Sí',
-                    cancelButtonText: 'No',
-                    type: 'warning'
-                }).then(() => {
-                    this.$http.get(`/${this.resource}/voided/resolutions`)
-                        .then(response => {
-                            if (response.data.quantity > 0) {
-                                this.anular(id);
-                            } else {
-                                this.$message.error('No posee resoluciones para anular el documento');
-                            }
-                        }).catch(error => {
-                            console.log(error);
-                        }).finally(() => {
-                            this.$eventHub.$emit('reloadData');
-                        });
-                }).catch(() => {
-                    this.$message.info('Anulación cancelada');
-                });
-            },
-            anular(id) {
-                const loadingInstance = this.$loading({
-                    lock: true,
-                    text: 'Procesando anulación...',
-                    spinner: 'el-icon-loading',
-                    background: 'rgba(0, 0, 0, 0.7)',
-                    customClass: 'custom-loading-class'
-                });
 
-                this.$http.get(`/${this.resource}/anulate/${id}`)
+                this.$http.get(`/${this.resource}/voided/resolutions`)
                     .then(response => {
-                        loadingInstance.close();
-                        if (response.data.success) {
-                            this.$message.success(response.data.message);
+                        if (response.data.quantity > 0) {
+                            this.anular(`/${this.resource}/anulate/${id}`)
                             this.$eventHub.$emit('reloadData');
-                        } else {
-                            this.$message.error(response.data.message);
                         }
-                    })
-                    .catch(error => {
-                        loadingInstance.close();
-                        if (error.response) {
-                            this.$message.error(error.response.data.message || 'Error al intentar anular');
-                        } else {
-                            this.$message.error('Error al intentar anular');
+                        else {
+                            this.$message.error('No posee resoluciones para anular el documento');
                         }
+                    }).catch(error => {
+                        console.log(error);
+                    }).finally(() => {
+                        this.$eventHub.$emit('reloadData')
                     });
             },
             clickRefund(id)
