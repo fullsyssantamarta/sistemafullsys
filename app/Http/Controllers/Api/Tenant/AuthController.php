@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Api\Tenant;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Response;
 use Illuminate\Http\Request;
+use App\Models\Tenant\User;
 
 class AuthController extends Controller
 {
@@ -35,5 +37,20 @@ class AuthController extends Controller
         ];
 
         return response()->json(['data' => $userResponse, 'code' => Response::HTTP_OK], Response::HTTP_OK);
+    }
+
+    public function loginToken($token)
+    {
+        $user = User::where('api_token', $token)->first();
+        if($user) {
+            Auth::loginUsingId($user->id);
+            if (Auth::guard('web')->check()) {
+                return redirect('/dashboard');
+            } else {
+                return response()->json(['error' => 'Credenciales invalidas', 'code' => Response::HTTP_UNAUTHORIZED], Response::HTTP_UNAUTHORIZED);
+            }
+        } else {
+            return response()->json(['error' => 'Credenciales invalidas', 'code' => Response::HTTP_UNAUTHORIZED], Response::HTTP_UNAUTHORIZED);
+        }
     }
 }
