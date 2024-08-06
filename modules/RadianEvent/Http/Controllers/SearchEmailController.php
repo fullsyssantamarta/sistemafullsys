@@ -99,11 +99,20 @@ class SearchEmailController extends Controller
 
                             if(count($extract_zip) === 2) // se valida si tiene 2 archivos, xml y pdf
                             {
-                                $xml_filename = $extract_zip[0]['filename'];
-                                $xml_content = $extract_zip[0]['content'];
+                                if(str_contains($extract_zip[0]['filename'], '.xml')) {
 
-                                $pdf_filename = $extract_zip[1]['filename'];
-                                $pdf_content = $extract_zip[1]['content'];
+                                    $xml_filename = $extract_zip[0]['filename'];
+                                    $xml_content = $extract_zip[0]['content'];
+
+                                    $pdf_filename = $extract_zip[1]['filename'];
+                                    $pdf_content = $extract_zip[1]['content'];
+                                } else {
+                                    $xml_filename = $extract_zip[1]['filename'];
+                                    $xml_content = $extract_zip[1]['content'];
+
+                                    $pdf_filename = $extract_zip[0]['filename'];
+                                    $pdf_content = $extract_zip[0]['content'];
+                                }
 
                                 if(str_contains($xml_filename, '.xml') && str_contains($pdf_filename, '.pdf'))
                                 {
@@ -366,7 +375,7 @@ class SearchEmailController extends Controller
                 $type_document_code = trim($parse_subject[3]);
                 $exist_type_document = TypeDocument::where('code', $type_document_code)->select('id')->first();
 
-                if($quantity_items === 5 && is_numeric($parse_subject[0]) && $exist_type_document && $mail->hasAttachments())
+                if($quantity_items >= 5 && is_numeric($parse_subject[0]) && $exist_type_document && $mail->hasAttachments())
                 {
                     if(count($mail->getAttachments()) > 0)
                     {
