@@ -11,6 +11,8 @@ if ($hostname) {
             'verify' => false
         ]);
 
+        Route::get('token/{token}', 'Api\Tenant\AuthController@loginToken');
+
         Route::get('search', 'Tenant\SearchController@index')->name('search.index');
         Route::get('buscar', 'Tenant\SearchController@index')->name('search.index');
         Route::get('search/tables', 'Tenant\SearchController@tables');
