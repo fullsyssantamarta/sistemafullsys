@@ -58,10 +58,12 @@
         <td colspan="2"><h5 >Nit: {{ $company->identification_number }} - {{ $company->type_regime->name}} </h5></td>
     </tr>
     <tr>
-        <td colspan="2"><h5>{{ ($establishment->email !== '-') ? $establishment->email : '' }}</h6></td>
+        <td colspan="2">
+            <h5>{{ ($establishment->email !== '-') ? $establishment->email : '' }}</h5>
+        </td>
     </tr>
     <tr>
-        <td><h6>{{ $sucursal->description }}</h6></td>
+        <td><h6>{{ $sucursal->description }}. {{ $establishment->address }}</h6></td>
     </tr>
     <br>
     <tr>
@@ -103,6 +105,7 @@
     </tr>
     <tr>
         <td> <h6>Tipo Venta: CONTADO 0 días </h6></td>
+        <td> <h6>Hora: {{ $document->created_at->format('H:i:s')}}</h6></td>
     </tr>
 </table>
 <table class="full-width">
