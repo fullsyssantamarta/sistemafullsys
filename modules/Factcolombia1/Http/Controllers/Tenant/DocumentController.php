@@ -1657,6 +1657,7 @@ class DocumentController extends Controller
 
             return collect($items)->transform(function($row) use($warehouse){
                 $detail = $this->getFullDescription($row, $warehouse);
+                $sale_unit_price_with_tax = $this->getSaleUnitPriceWithTax($row);
                 return [
                     'id' => $row->id,
                     'name' => $row->name,
@@ -1668,7 +1669,7 @@ class DocumentController extends Controller
                     'description' => $row->description,
                     'currency_type_id' => $row->currency_type_id,
                     'currency_type_symbol' => $row->currency_type->symbol,
-                    'sale_unit_price' => round($row->sale_unit_price, 2),
+                    'sale_unit_price' => round($sale_unit_price_with_tax, 2),
                     'purchase_unit_price' => $row->purchase_unit_price,
                     'unit_type_id' => $row->unit_type_id,
                     'sale_affectation_igv_type_id' => $row->sale_affectation_igv_type_id,
