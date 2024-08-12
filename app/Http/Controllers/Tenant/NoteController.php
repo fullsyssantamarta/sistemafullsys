@@ -12,7 +12,8 @@ class NoteController extends Controller
         $document_affected = Document::find($document_id);
         $configuration = Configuration::first();
 
-        return view('tenant.documents.note', compact('document_affected', 'configuration'));
+        $invoice = Document::with(['items'])->findOrFail($document_id);
+        return view('tenant.documents.note', compact('document_affected', 'configuration', 'invoice'));
     }
 
     public function record($document_id)
