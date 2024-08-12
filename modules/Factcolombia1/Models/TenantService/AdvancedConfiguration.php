@@ -29,15 +29,16 @@ class AdvancedConfiguration extends Model
         'radian_imap_password',
         'radian_imap_user',
         'uvt',
-
+        'item_tax_included',
     ];
 
-      
+
     protected $casts = [
         'uvt' => 'float',
+        'item_tax_included' => 'bool',
     ];
-  
-    
+
+
     /**
      * Use in resource and collection
      *
@@ -49,18 +50,19 @@ class AdvancedConfiguration extends Model
             'id' => $this->id,
             'minimum_salary' => $this->minimum_salary,
             'transportation_allowance' => $this->transportation_allowance,
-            
+
             'radian_imap_encryption' => $this->radian_imap_encryption,
             'radian_imap_host' => $this->radian_imap_host,
             'radian_imap_port' => $this->radian_imap_port,
             'radian_imap_password' => $this->radian_imap_password,
             'radian_imap_user' => $this->radian_imap_user,
             'uvt' => $this->uvt,
+            'item_tax_included' => $this->item_tax_included,
         ];
 
     }
-    
-    
+
+
     public function scopeSelectImapColumns($query)
     {
         return $query->select([
@@ -72,9 +74,9 @@ class AdvancedConfiguration extends Model
         ]);
     }
 
-    
+
     /**
-     * 
+     *
      * Configuracion para forms
      *
      * @param  array $columns
@@ -89,9 +91,9 @@ class AdvancedConfiguration extends Model
         return $query->firstOrFail();
     }
 
-    
+
     /**
-     * 
+     *
      * Limite de la uvt para validar registro de documento en pos
      *
      * @return float

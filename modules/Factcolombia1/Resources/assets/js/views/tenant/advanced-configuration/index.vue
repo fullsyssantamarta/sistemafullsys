@@ -31,7 +31,24 @@
                                             <small class="form-control-feedback" v-if="errors.uvt" v-text="errors.uvt[0]"></small>
                                         </div>
                                     </div>
+                                </div>
+                            </el-tab-pane>
 
+                            <el-tab-pane class="mb-3" name="sale">
+                                <span slot="label">Ventas</span>
+                                <div class="row">
+                                    <div class="col-md-4 mt-4" :class="{'has-danger': errors.item_tax_included}">
+                                        <label class="control-label">
+                                            Incluir impuesto al precio de registro
+                                            <el-tooltip class="item" effect="dark" content="Aplicado en Factura Electrónica" placement="top-start">
+                                                <i class="fa fa-info-circle"></i>
+                                            </el-tooltip>
+                                        </label>
+                                        <div class="form-group" :class="{'has-danger': errors.item_tax_included}">
+                                            <el-switch v-model="form.item_tax_included" active-text="Si" inactive-text="No" @change="submit"></el-switch>
+                                            <small class="form-control-feedback" v-if="errors.item_tax_included" v-text="errors.item_tax_included[0]"></small>
+                                        </div>
+                                    </div>
                                 </div>
                             </el-tab-pane>
 
@@ -212,6 +229,7 @@ export default {
                 radian_imap_password: null,
                 radian_imap_user: null,
                 uvt: 0,
+                item_tax_included: false,
             }
         },
         clickSaveEmailRadian()
