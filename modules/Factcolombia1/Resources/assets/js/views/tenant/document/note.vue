@@ -10,8 +10,6 @@
                         <div class="row">
                         </div>
                         <div class="row mt-4">
-
-
                             <div class="col-md-4 col-lg-4 pb-2">
                                 <div class="form-group" :class="{'has-danger': errors.type_document_id}">
                                     <label class="control-label">Tipo de nota</label>
@@ -261,7 +259,7 @@
     import DocumentOptions from './partials/options.vue'
 
     export default {
-        props: ['typeUser', 'note'],
+        props: ['typeUser', 'note', 'invoice'],
         components: {PersonForm, DocumentFormItem, DocumentFormRetention, DocumentOptions},
         // mixins: [Helper],
         data() {
@@ -298,13 +296,15 @@
                 documentNewId: null,
                 total_global_discount:0,
                 loading_search:false,
-                taxes:  [],
+                taxes: [],
                 type_documents: [],
                 all_type_documents: [],
                 noteService: {},
             }
         },
+
         async created() {
+            await this.initForm()
             await this.$http.get(`/${this.resource}/tables`)
                 .then(response => {
                     // this.all_customers = response.data.customers;
@@ -317,10 +317,9 @@
 
                     // this.filterCustomers();
                     this.typeNoteDocuments()
-
+                    this.load_invoice();
                 })
 
-            await this.initForm()
 
             await this.getRecordCustomer()
 
@@ -435,6 +434,27 @@
                 }
 
             },
+
+            load_invoice(){
+                if (typeof this.invoice !== 'undefined')
+                    this.form.items = this.invoice ? this.prepareItems(this.invoice.items) : [];
+            },
+
+            prepareItems(items){
+                return items.map(row => {
+                    row.item = this.prepareIndividualItem(row)
+                    row.price = row.unit_price
+                    row.id = row.item.id
+                    return row
+                })
+            },
+
+            prepareIndividualItem(row){
+                const new_item = row.item
+                new_item.presentation = (row.presentation && !_.isEmpty(row.presentation)) ? row.presentation : {}
+                return new_item
+            },
+
             initForm() {
 //                console.log(this.note)
                 this.form = {

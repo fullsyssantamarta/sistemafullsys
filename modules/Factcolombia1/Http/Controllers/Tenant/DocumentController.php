@@ -141,7 +141,8 @@ class DocumentController extends Controller
 
     public function note($id) {
         $note = Document::with(['items'])->findOrFail($id);
-        return view('factcolombia1::document.tenant.note', compact('note'));
+        $invoice = Document::with(['items'])->findOrFail($id);
+        return view('factcolombia1::document.tenant.note', compact('note', 'invoice'));
     }
 
     public function duplicate_invoice($id){
