@@ -40,18 +40,18 @@
                                     <label class="control-label">Resolución</label>
                                     <el-select @change="changeResolution" v-model="form.resolution_id" popper-class="el-select-document_type" dusk="type_invoice_id" class="border-left rounded-left border-info">
                                         <!-- Modifica el v-if para incluir la lógica basada en ambientId por cristian ok -->
-                                        <el-option 
-                                            v-for="option in resolutions" 
-                                            :key="option.id" 
-                                            :value="option.id" 
+                                        <el-option
+                                            v-for="option in resolutions"
+                                            :key="option.id"
+                                            :value="option.id"
                                             :label="`${option.prefix} / ${option.description} / ${option.resolution_number} / ${option.from} / ${option.to}`"
                                             v-if="shouldShowResolution(option)">
                                         </el-option>
                                     </el-select>
                                         <!-- Texto con estilos CSS para mejorar la presentación -->
                                         <p v-if="form.resolution_id" style="white-space: nowrap; font-size: 0.9em; line-height: 1.2; margin-top: 5px;">
-                                        Venc: <strong>{{ selectedResolutionDetails.dateEnd }}</strong> | 
-                                        Gen: <strong>{{ selectedResolutionDetails.generatedCount | numberFormat }} facs</strong> | 
+                                        Venc: <strong>{{ selectedResolutionDetails.dateEnd }}</strong> |
+                                        Gen: <strong>{{ selectedResolutionDetails.generatedCount | numberFormat }} facs</strong> |
                                         Restan: <strong>{{ selectedResolutionDetails.remainingInvoices | numberFormat }}</strong>
                                         </p>
                                     <small class="form-control-feedback" v-if="errors.type_invoice_id" v-text="errors.type_invoice_id[0]"></small>
@@ -287,6 +287,34 @@
                                         <td>:</td>
                                         <td class="text-right">{{ratePrefix()}} {{ getFormatDecimal(form.sale) }}</td>
                                     </tr>
+                                    <tr>
+                                        <td>
+                                            DESCUENTO
+                                            <el-switch
+                                                v-model="global_discount_is_amount"
+                                                :active-text="ratePrefix()"
+                                                inactive-text="%"
+                                                @change="calculateTotal">
+                                            </el-switch>
+                                        </td>
+                                        <td>:</td>
+                                        <!-- <td class="text-right">
+                                            {{ratePrefix()}} {{Number(tax.retention).toFixed(2)}}
+                                        </td> -->
+                                        <td class="text-right" id="input-with-select">
+
+                                            <el-input v-model="total_global_discount"
+                                                :min="0"
+                                                class="input-discount"
+                                                @input="calculateTotal">
+                                                <template slot="prefix">
+                                                    <span v-if="global_discount_is_amount">{{ ratePrefix() }}</span>
+                                                    <span v-else>%</span>
+                                                </template>
+                                            </el-input>
+
+                                        </td>
+                                    </tr>
                                     <tr >
                                         <td>TOTAL DESCUENTO (-)</td>
                                         <td>:</td>
@@ -384,24 +412,19 @@
 </template>
 
 <style>
-
 .c-m-top{
     margin-top: 4.5px !important;
 }
-
 .pointer{
     cursor: pointer;
 }
-
 .input-custom{
     width: 50% !important;
 }
-
 .el-textarea__inner {
     height: 65px !important;
     min-height: 65px !important;
 }
-
 @media screen and (max-width: 600px) {
     .btn .text {
         display: none; /* Oculta el texto en pantallas pequeñas */
@@ -414,7 +437,15 @@
 .btn .icon {
     display: none; /* Oculta los íconos en pantallas grandes */
 }
-
+.input-discount .el-input__inner {
+    text-align: right;
+    max-width: 100px;
+}
+.input-discount .el-input__prefix {
+    left: 10px;
+    top: 5px;
+    color: #66789C;
+}
 </style>
 <script>
     import DocumentFormItem from './partials/item.vue'
@@ -480,6 +511,7 @@
                 companies: null,
                 correlative_api: null, // Aquí almacenarás el siguiente número consecutivo
                 currentPrefix: null,
+                global_discount_is_amount: true,
             }
         },
         //filtro de separadores de mil
@@ -516,7 +548,7 @@
                     this.resolutions = response.data.resolutions
                     //ordenar resolicones por cristian
                     // Ordenar por 'id' de forma descendente
-                    this.resolutions.sort((a, b) => b.id - a.id);         
+                    this.resolutions.sort((a, b) => b.id - a.id);
                     this.form.payment_form_id = 1
                     // this.selectDocumentType()
                     this.filterCustomers();
@@ -536,25 +568,6 @@
             })
 //            console.log(this.customers)
             await this.generatedFromExternalDocument()
-        },
-        watch: {
-            typeDocuments: {
-                // handler(val) {
-                //     val.forEach(row => {
-                //     if (row.alert_range)
-                //         this.$root.$emit("addSnackbarNotification", {
-                //         text: `La resolución de ${row.name} esta próxima a vencer por rango.`,
-                //         color: "warning"
-                //         });
-                //     if (row.alert_date)
-                //         this.$root.$emit("addSnackbarNotification", {
-                //         text: `La resolución de ${row.name} esta próxima a vencer por fecha de vigencia.`,
-                //         color: "warning"
-                //         });
-                //     });
-                // },
-                // deep: true
-            }
         },
         computed: {
             generatedFromPos()
@@ -675,7 +688,7 @@
                         this.form.payment_form_id = 2
             },
             async fetchCorrelative() {
-                const typeService = 1; // supongo que es el Id del tipo de documento que para este caso es 1 factura de venta 
+                const typeService = 1; // supongo que es el Id del tipo de documento que para este caso es 1 factura de venta
                 if (this.currentPrefix) {
                     try {
                         const response = await this.$http.get(`/${this.resource}/invoice-correlative/${typeService}/${this.currentPrefix}`);
@@ -966,13 +979,13 @@
                 // }
             },
             addRow(row) {
-                    // Restar el 19% del IVA del precio del ítem por Cristian                  
+                    // Restar el 19% del IVA del precio del ítem por Cristian
                     const ivaRate = parseFloat(row.tax.rate) / row.tax.conversion; // Convertimos "19.00" a 0.19
                     // Calculamos el precio sin IVA
                     // La fórmula es: precioConIVA / (1 + tasaIVA)
                     const precioSinIVA = row.price / (1 + ivaRate);
                     // Actualizamos el objeto row con el nuevo precio
-                    row.price = precioSinIVA;  
+                    row.price = precioSinIVA;
                 if(this.recordItem)
                 {
                     //this.form.items.$set(this.recordItem.indexi, row)
@@ -1055,41 +1068,40 @@
 
             },
             setDataTotals() {
-                // console.log(val)
                 let val = this.form
+                //console.log(val.items)
                 val.taxes = JSON.parse(JSON.stringify(this.taxes));
 
                 val.items.forEach(item => {
                     item.tax = this.taxes.find(tax => tax.id == item.tax_id);
 
-                    if (
-                        item.discount == null ||
-                        item.discount == "" ||
-                        item.discount > item.price * item.quantity
-                    )
+                    // seteo de descuento en caso no posea o sea superior al precio por cantidad
+                    if (item.discount == null || item.discount == "" || item.discount > (item.price * item.quantity)) {
                         this.$set(item, "discount", 0);
+                    }
+                    // defino el total de descuento
+                    let total_discount = 0;
+                    if(item.discount > 0 && item.discount < (item.price * item.quantity)) {
+                        total_discount = item.discount;
+                        if(item.discount_type === 'percentage') {
+                            total_discount = (item.price * item.discount) / 100;
+                        }
+                    }
+                    this.$set( item, "discount", Number(total_discount).toFixed(2));
+                    this.$set( item, "total_discount", Number(total_discount).toFixed(2));
 
                     item.total_tax = 0;
 
                     if (item.tax != null) {
                         let tax = val.taxes.find(tax => tax.id == item.tax.id);
 
-                        if (item.tax.is_fixed_value)
+                        if (item.tax.is_fixed_value) {
+                            item.total_tax = ((item.tax.rate * item.quantity) - total_discount).toFixed(2);
+                        }
 
-                            item.total_tax = (
-                                item.tax.rate * item.quantity -
-                                (item.discount < item.price * item.quantity ? item.discount : 0)
-                            ).toFixed(2);
-
-                        if (item.tax.is_percentage)
-
-                            item.total_tax = (
-                                (item.price * item.quantity -
-                                (item.discount < item.price * item.quantity
-                                    ? item.discount
-                                    : 0)) *
-                                (item.tax.rate / item.tax.conversion)
-                            ).toFixed(2);
+                        if (item.tax.is_percentage) {
+                            item.total_tax = (((item.price * item.quantity) - total_discount) * (item.tax.rate / item.tax.conversion) ).toFixed(2);
+                        }
 
                         if (!tax.hasOwnProperty("total"))
                             tax.total = Number(0).toFixed(2);
@@ -1101,38 +1113,21 @@
                         Number(item.price * item.quantity) + Number(item.total_tax)
                     ).toFixed(2);
 
-                    this.$set(
-                        item,
-                        "total",
-                        (Number(item.subtotal) - Number(item.discount)).toFixed(2)
-                    );
+                    this.$set( item, "total", (Number(item.subtotal) - Number(total_discount)).toFixed(2));
 
                 });
 
-                val.subtotal = val.items
-                    .reduce(
-                        (p, c) => Number(p) + (Number(c.subtotal) - Number(c.discount)),
-                        0
-                    )
-                    .toFixed(2);
-                    val.sale = val.items
-                    .reduce(
-                        (p, c) =>
-                        Number(p) + Number(c.price * c.quantity) - Number(c.discount),
-                        0
-                    )
-                    .toFixed(2);
-                    val.total_discount = val.items
-                    .reduce((p, c) => Number(p) + Number(c.discount), 0)
-                    .toFixed(2);
-                    val.total_tax = val.items
-                    .reduce((p, c) => Number(p) + Number(c.total_tax), 0)
-                    .toFixed(2);
+                val.total_tax = val.items.reduce((p, c) => Number(p) + Number(c.total_tax), 0).toFixed(2);
+                let total = val.items.reduce((p, c) => Number(p) + Number(c.total), 0).toFixed(2);
+                let amount_total_dicount_global = this.total_global_discount;
+                if(!this.global_discount_is_amount && amount_total_dicount_global > 0) {
+                    amount_total_dicount_global = ((total - val.total_tax) * amount_total_dicount_global) / 100;
+                }
 
-                let total = val.items
-                    .reduce((p, c) => Number(p) + Number(c.total), 0)
-                    .toFixed(2);
-
+                val.subtotal = val.items.reduce((p, c) => Number(p) + (Number(c.subtotal) - Number(c.total_discount) - Number(amount_total_dicount_global, 0)), 0).toFixed(2);
+                val.sale = val.items.reduce((p, c) => Number(p) + Number(c.price * c.quantity) - Number(c.total_discount) - Number(amount_total_dicount_global, 0), 0).toFixed(2);
+                val.total_discount = (val.items.reduce((p, c) => Number(p) + Number(c.total_discount), 0) + Number(amount_total_dicount_global, 0)).toFixed(2);
+                total = (Number(total, 0) - Number(amount_total_dicount_global, 0)).toFixed(2);
                 let totalRetentionBase = Number(0);
 
                 // this.taxes.forEach(tax => {
@@ -1453,7 +1448,7 @@
             getLegacyMonetaryTotal() {
                 let line_ext_am = 0;
                 let tax_incl_am = 0;
-                let allowance_total_amount = 0;
+                let allowance_total_amount = this.total_global_discount; // descuento global
                 this.form.items.forEach(element => {
                     line_ext_am += (Number(element.price) * Number(element.quantity)) - Number(element.discount) ;
 //                    allowance_total_amount += Number(element.discount);
@@ -1469,6 +1464,10 @@
                     tax_excl_am += Number(element.taxable_amount);
                 });
                 tax_incl_am = line_ext_am + total_tax_amount;
+                if(!this.global_discount_is_amount && allowance_total_amount > 0) {
+                    allowance_total_amount = (tax_excl_am * allowance_total_amount) / 100;
+                }
+                let pay_am = tax_incl_am - allowance_total_amount;
 
                 return {
                     line_extension_amount: this.cadenaDecimales(line_ext_am),
@@ -1476,8 +1475,9 @@
                     tax_inclusive_amount: this.cadenaDecimales(tax_incl_am),
                     allowance_total_amount: this.cadenaDecimales(allowance_total_amount),
                     charge_total_amount: "0.00",
-                    payable_amount: this.cadenaDecimales(tax_incl_am)
-//                    payable_amount: this.cadenaDecimales(tax_incl_am - allowance_total_amount)
+                    // payable_amount: this.cadenaDecimales(tax_incl_am)
+                    // payable_amount: this.cadenaDecimales(tax_incl_am - allowance_total_amount)
+                    payable_amount: this.cadenaDecimales(pay_am)
                 };
             },
 
