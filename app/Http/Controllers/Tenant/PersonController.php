@@ -315,8 +315,16 @@ class PersonController extends Controller
         $client = new ClientScrap();
         $crawler = $client->request('GET', "https://www.einforma.co/servlet/app/portal/ENTP/prod/LISTA_EMPRESAS/razonsocial/{$nit}");
         $crawler->filter('h1[class="title01"]')->each(function($node) {
-            //dd($node->text());
-            $this->setNameClient($node->text());
+            // dd($node->text());
+            $text = $node->text();
+            $marker = 'Situación de la empresa:';
+            if (strpos($text, $marker) !== false) {
+                $name = substr($text, 0, strpos($text, $marker));
+            } else {
+                $name = $text;
+            }
+            $name = trim($name);
+            $this->setNameClient($name);
         });
 
         /*each(function ($node) use ($datos) {
