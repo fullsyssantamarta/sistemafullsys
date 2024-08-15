@@ -286,6 +286,7 @@
         <multiple-payment-form
             :showDialog.sync="showDialogMultiplePayment"
             :payments="payments"
+            :isPos="resource_documents === 'document-pos' ? true : false"
             @add="addRow"
             ></multiple-payment-form>
 
