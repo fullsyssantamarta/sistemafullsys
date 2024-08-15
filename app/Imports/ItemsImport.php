@@ -24,7 +24,6 @@ class ItemsImport implements ToCollection
             unset($rows[0]);
             foreach ($rows as $row)
             {
-
                 $name = $row[0];
                 $item_type_id = '01';
                 $internal_id = ($row[1])?:null;
@@ -32,15 +31,12 @@ class ItemsImport implements ToCollection
                 $currency_type_id = $row[3];
                 $sale_unit_price = $row[4];
                 $tax_id = $row[5];
-
                 $purchase_unit_price = ($row[6])?:0;
                 $purchase_tax_id = ($row[7])?:null;
                 $stock = $row[8];
                 $stock_min = $row[9];
                 $category_name = $row[10];
                 $brand_name = $row[11];
-
-
                 if($internal_id) {
                     $item = Item::where('internal_id', $internal_id)
                                     ->first();
@@ -103,5 +99,5 @@ class ItemsImport implements ToCollection
     {
         return $this->data;
     }
-    
+
 }

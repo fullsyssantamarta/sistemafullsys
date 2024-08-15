@@ -51,6 +51,10 @@ if($current_hostname) {
                 Route::get('create', 'Tenant\DocumentController@create_aiu')->name('tenant.co-documents-aiu.create');
             });
 
+            Route::prefix('co-documents-unreferenced-note')->group(function () {
+                Route::get('create', 'Tenant\DocumentController@create_unreferenced_note')->name('tenant.co-documents-unreferenced-note.create');
+            });
+
             Route::prefix('co-items')->group(function () {
                 Route::get('/items', 'Tenant\ItemController@index')->name('tenant.co-items.items');
                 Route::get('', 'Tenant\ItemController@index')->name('tenant.co-items.index');

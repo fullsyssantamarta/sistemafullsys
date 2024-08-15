@@ -119,6 +119,11 @@ class DocumentController extends Controller
         return $record;
     }
 
+    public function create_unreferenced_note() {
+        $note = null;
+        $invoice = null;
+        return view('factcolombia1::document.tenant.note', compact('note', 'invoice'));
+    }
 
     public function create() {
         /*        $company = Company::with('type_regime', 'type_identity_document')->firstOrFail();
@@ -1043,18 +1048,14 @@ class DocumentController extends Controller
 
     public function storeNote(DocumentRequest $request) {
         DB::connection('tenant')->beginTransaction();
-
         try {
-
             $note_service = $request->note_service;
             $url_name_note = '';
             $type_document_service = $note_service['type_document_id'];
-            if( $type_document_service == 4)
-            {
+            if( $type_document_service == 4){
                 $url_name_note = 'credit-note';
             }
-            elseif($type_document_service == 5)
-            {
+            elseif($type_document_service == 5){
                 $url_name_note = 'debit-note';
             }
 
@@ -1101,14 +1102,14 @@ class DocumentController extends Controller
             $sucursal = \App\Models\Tenant\Establishment::where('id', auth()->user()->establishment_id)->first();
 
             if(file_exists(storage_path('sendmail.api')))
-                $service_invoice['sendmail'] = true;
-            $service_invoice['ivaresponsable'] = $datoscompany->type_regime->name;
-            $service_invoice['establishment_name'] = $sucursal->description;
+                $note_service['sendmail'] = true;
+            $note_service['ivaresponsable'] = $datoscompany->type_regime->name;
+            $note_service['establishment_name'] = $sucursal->description;
             if($sucursal->address != '-')
-                $service_invoice['establishment_address'] = $sucursal->address;
+                $note_service['establishment_address'] = $sucursal->address;
             if($sucursal->telephone != '-')
-                $service_invoice['establishment_phone'] = $sucursal->telephone;
-            $service_invoice['establishment_email'] = $sucursal->email;
+                $note_service['establishment_phone'] = $sucursal->telephone;
+            $note_service['establishment_email'] = $sucursal->email;
             $note_service['customer']['dv'] = $this->validarDigVerifDIAN($note_service['customer']['identification_number']);
             $note_service['foot_note'] = "Modo de operación: Software Propio - by ".env('APP_NAME', 'FACTURALATAM');
 
@@ -1128,19 +1129,20 @@ class DocumentController extends Controller
                 'Accept: application/json',
                 "Authorization: Bearer {$company->api_token}"
             ));
-//            \Log::debug($data_document);
-//            return "";
             $response = curl_exec($ch);
             curl_close($ch);
-            // return $response;
+//\Log::debug("{$base_url}ubl2.1/invoice");
+//\Log::debug($company->api_token);
+//\Log::debug($correlative_api);
+//\Log::debug($data_document);
+//            return $data_document;
+\Log::debug($response);
+//return "";
 
             $response_model = json_decode($response);
             $zip_key = null;
             $invoice_status_api = null;
             $response_status = null;
-
-            // return $response_model;
-            // dd($correlative_api,  $response_model);
 
             if($company->type_environment_id == 2 && $company->test_id != 'no_test_set_id'){
                 if(array_key_exists('urlinvoicepdf', $response_model) && array_key_exists('urlinvoicexml', $response_model) )
@@ -1250,12 +1252,10 @@ class DocumentController extends Controller
 
 
             $this->document = DocumentHelper::createDocument($request, $nextConsecutive, $correlative_api, $this->company, $response, $response_status, $company->type_environment_id);
-
             $this->document->update([
                 'xml' => $this->getFileName(),
-                'cufe' => $this->getCufe()
+                'cufe' => $response_model->cude
             ]);
-
         }
         catch (\Exception $e) {
 
@@ -1631,7 +1631,7 @@ class DocumentController extends Controller
                     'conversion' =>  $row->conversion,
                     'is_percentage' =>  $row->is_percentage,
                     'is_fixed_value' =>  $row->is_fixed_value,
-                    'is_retention' =>  $row->is_retention,
+                    'is_retention' =>  isset($row->is_retention) ? $row->is_retention : false,
                     'in_base' =>  $row->in_base,
                     'in_tax' =>  $row->in_tax,
                     'type_tax_id' =>  $row->type_tax_id,

@@ -162,7 +162,7 @@ class DocumentHelper
                 'is_set' => $record_item->is_set,
                 'lots' => (isset($item['item']['lots'])) ? $item['item']['lots'] : [],
                 'IdLoteSelected' => (isset($item['IdLoteSelected']) ? $item['IdLoteSelected'] : null),
-                'discount_type' => $item['discount_type'],
+                'discount_type' => (isset($item['discount_type']) ? $item['discount_type'] : null)
             ];
 //            \Log::debug($record_item);
 //            \Log::debug($item);
