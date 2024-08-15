@@ -1,7 +1,7 @@
 <template>
     <div class="card mb-0 pt-2 pt-md-0">
         <div class="card-header bg-info">
-            Nueva Nota ({{ note.prefix }}-{{ note.number }})
+            {{ note ? `Nueva Nota (${note.prefix}-${note.number})` : 'Nota Contable Sin Referencia a Factura' }}
         </div>
         <div class="card-body" v-if="loading_form">
             <div class="invoice">
@@ -37,7 +37,6 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-2 col-lg-2">
                                 <div class="form-group" :class="{'has-danger': errors.currency_id}">
                                     <label class="control-label">Moneda</label>
@@ -47,22 +46,37 @@
                                     <small class="form-control-feedback" v-if="errors.currency_id" v-text="errors.currency_id[0]"></small>
                                 </div>
                             </div>
+                        </div>
 
-
+                        <div class="row mt-4">
                             <div class="col-md-6 col-lg-6 pb-2">
                                 <div class="form-group" :class="{'has-danger': errors.customer_id}">
                                     <label class="control-label">Cliente</label>
-                                    <el-select v-model="form.customer_id" disabled filterable @change="changeCustomer" popper-class="el-select-document_type" dusk="customer_id" class="border-left rounded-left border-info">
+                                    <el-select v-model="form.customer_id" :disabled="note !== null" filterable @change="changeCustomer" popper-class="el-select-document_type" dusk="customer_id" class="border-left rounded-left border-info">
                                         <el-option v-for="option in customers" :key="option.id" :value="option.id" :label="option.name"></el-option>
                                     </el-select>
                                     <small class="form-control-feedback" v-if="errors.customer_id" v-text="errors.customer_id[0]"></small>
                                 </div>
                             </div>
 
+                            <div v-if="note == null" class="col-md-2 col-lg-2 pb-2">
+                                <div class="form-group" :class="{'has-danger': errors.start_invoice_period}">
+                                    <label class="control-label">Ini. Periodo Facturación</label>
+                                    <el-date-picker v-model="form.start_invoice_period" type="date" value-format="yyyy-MM-dd" :clearable="false" ></el-date-picker>
+                                    <small class="form-control-feedback" v-if="errors.start_invoice_period" v-text="errors.start_invoice_period[0]"></small>
+                                </div>
+                            </div>
+
+                            <div v-if="note == null" class="col-md-2 col-lg-2 pb-2">
+                                <div class="form-group" :class="{'has-danger': errors.end_invoice_period}">
+                                    <label class="control-label">Fin. Periodo Facturación</label>
+                                    <el-date-picker v-model="form.end_invoice_period" type="date" value-format="yyyy-MM-dd" :clearable="false" ></el-date-picker>
+                                    <small class="form-control-feedback" v-if="errors.end_invoice_period" v-text="errors.end_invoice_period[0]"></small>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="row mt-2">
-
                             <div class="col-md-12">
                                 <div class="form-group">
                                     <label class="control-label">Observaciones</label>
@@ -74,7 +88,6 @@
                                     </el-input>
                                 </div>
                             </div>
-
                         </div>
 
                         <div class="row mt-4">
@@ -307,31 +320,33 @@
             await this.initForm()
             await this.$http.get(`/${this.resource}/tables`)
                 .then(response => {
-                    // this.all_customers = response.data.customers;
+                    this.all_customers = response.data.customers;
                     this.taxes = response.data.taxes
                     // console.log(this.taxes)
+//                    this.all_type_documents = response.data.type_documents.filter(doc => doc.code === 4 || doc.code === 5);
                     this.all_type_documents = response.data.type_documents;
                     this.currencies = response.data.currencies
                     this.payment_methods = response.data.payment_methods
                     this.payment_forms = response.data.payment_forms
-
-                    // this.filterCustomers();
+                    this.filterCustomers();
                     this.typeNoteDocuments()
                     this.load_invoice();
                 })
-
-
-            await this.getRecordCustomer()
-
+            if(this.note)
+                await this.getRecordCustomer()
+            else
+                this.customers = this.all_customers
             this.loading_form = true
-            this.$eventHub.$on('reloadDataPersons', (customer_id) => {
-                this.reloadDataCustomers(customer_id)
-            })
+            if(this.note){
+                this.$eventHub.$on('reloadDataPersons', (customer_id) => {
+                    this.reloadDataCustomers(customer_id)
+                })
+            }
             this.$eventHub.$on('initInputPerson', () => {
                 this.initInputPerson()
             })
-
         },
+
         methods: {
             getRecordCustomer(){
                 this.$http.get(`/${this.resource}/search/customer/${this.form.customer_id}`).then((response) => {
@@ -339,14 +354,17 @@
                     // this.form.customer_id = this.document.customer_id
                 })
             },
+
             typeNoteDocuments() {
-                this.type_documents = this.all_type_documents.filter(row => row.id != 1);
+                console.log(this.all_type_documents)
+                this.type_documents = this.all_type_documents.filter(row => row.code === "4" || row.code === "5");
             },
+
             ratePrefix(tax = null) {
                 if ((tax != null) && (!tax.is_fixed_value)) return null;
-
                 return (this.company.currency != null) ? this.company.currency.symbol : '$';
             },
+
             keyupCustomer(){
 
                 if(this.input_person.number){
@@ -436,8 +454,9 @@
             },
 
             load_invoice(){
-                if (typeof this.invoice !== 'undefined')
+                if (typeof this.invoice !== 'undefined'){
                     this.form.items = this.invoice ? this.prepareItems(this.invoice.items) : [];
+                }
             },
 
             prepareItems(items){
@@ -458,11 +477,13 @@
             initForm() {
 //                console.log(this.note)
                 this.form = {
-                    customer_id: this.note.customer_id,
+                    customer_id: this.note ? this.note.customer_id : null,
                     type_document_id: null,
                     note_concept_id: null,
-                    currency_id: this.note.currency_id,
+                    currency_id: this.note ? this.note.currency_id : 170,
                     date_issue: moment().format('YYYY-MM-DD'),
+                    start_invoice_period: moment().format('YYYY-MM-DD'),
+                    end_invoice_period: moment().format('YYYY-MM-DD'),
                     date_expiration: null,
                     type_invoice_id: null,
                     total_discount: 0,
@@ -475,31 +496,36 @@
                     sale: 0,
                     observation: null,
                     time_days_credit: 0,
-                    id: this.note.id,
-                    reference_id: this.note.id,
-                    payment_form_id: this.note.payment_form_id,
-                    payment_method_id: this.note.payment_method_id,
-                    correlative_api: this.note.correlative_api,
-                    response_api_cufe:  this.note.response_api_cufe,
+                    id: this.note ? this.note.id : null,
+                    reference_id: this.note ? this.note.id : null,
+                    payment_form_id: this.note ? this.note.payment_form_id : 1,
+                    payment_method_id: this.note ? this.note.payment_method_id : 1,
+                    correlative_api: this.note ? this.note.correlative_api : null,
+                    response_api_cufe: this.note ? this.note.response_api_cufe : null,
                     note_service: {}
                 }
 
                 this.noteService.customer = {
-                    identification_number: this.note.customer.number,
-                    name: this.note.customer.name,
-                    phone: this.note.customer.telephone,
-                    address: this.note.customer.address,
-                    email: this.note.customer.email,
+                    identification_number: this.note ? this.note.customer.number : null,
+                    name: this.note ? this.note.customer.name : null,
+                    phone: this.note ? this.note.customer.telephone : null,
+                    address: this.note ? this.note.customer.address : null,
+                    email: this.note ? this.note.customer.email : null,
                     merchant_registration: "0000-00",
-                    type_document_identification_id: this.note.customer.identity_document_type_id,
-                    type_organization_id: this.note.customer.type_person_id,
-                    municipality_id_fact: this.note.customer.city_id,
-                    type_regime_id: this.note.customer.type_regime_id
+                    type_document_identification_id: this.note ? this.note.customer.identity_document_type_id : null,
+                    type_organization_id: this.note ? this.note.customer.type_person_id : null,
+                    municipality_id_fact: this.note ? this.note.customer.city_id : null,
+                    type_regime_id: this.note ? this.note.customer.type_regime_id : null
                 }
 
-                if (this.note.customer.type_person_id == 1) {
-                    this.noteService.customer.dv = this.note.customer.dv;
+                if(this.note){
+                    if (this.note.customer.type_person_id == 1) {
+                        this.noteService.customer.dv = this.note.customer.dv;
+                    }
                 }
+                else
+                    this.noteService.customer.dv = null;
+
                 this.errors = {}
                 this.$eventHub.$emit('eventInitForm')
 
@@ -524,37 +550,43 @@
                 this.establishment = _.find(this.establishments, {'id': this.form.establishment_id})
                 this.filterSeries()
             },
+
             changeDocumentType() {
                 this.conceptss()
             },
+
             conceptss() {
                 this.form.note_concept_id = null;
-
                 if (this.form.type_document_id != null)
                     this.getConcepts(this.form.type_document_id).then(
                         rows => (this.note_concepts = rows)
                     );
             },
-            getConcepts(val) {
 
+            getConcepts(val) {
                 return axios.post(`/concepts/${val}`).then(response => {
+                                if(!this.note)
+                                    if(val == 3)
+                                        response.data.splice(1, 1);
                                 return response.data;
                             })
                             .catch(error => {
                                 console.log(error)
                             });
-
             },
+
             cleanCustomer(){
                 this.form.customer_id = null
                 // this.customers = []
             },
+
             changeDateOfIssue() {
                 this.form.date_expiration = this.form.date_of_issue
                 this.searchExchangeRateByDate(this.form.date_of_issue).then(response => {
                     this.form.exchange_rate_sale = response
                 })
             },
+
             assignmentDateOfPayment(){
                 this.form.payments.forEach((payment)=>{
                     payment.date_of_payment = this.form.date_of_issue
@@ -766,23 +798,22 @@
                     this.form.customer_id = customer_id
                 })
             },
+
             changeCustomer() {
             },
-            async submit() {
 
+            async submit() {
                 if(!this.form.customer_id){
                     return this.$message.error('Debe seleccionar un cliente')
                 }
-
                 if(!this.form.note_concept_id){
                     return this.$message.error('Debe seleccionar un concepto')
                 }
-
                 await this.generateNoteService();
                 this.form.note_service = this.noteService;
                 // return
-
                 this.loading_submit = true
+//                console.log(this.form)
                 this.$http.post(`/${this.resource}/note`, this.form).then(response => {
                     if (response.data.success) {
                         this.resetForm();
@@ -794,7 +825,6 @@
                         this.$message.error(response.data.message);
                     }
                 }).catch(error => {
-
                     if (error.response.status === 422) {
                         this.errors = error.response.data;
                     }
@@ -822,20 +852,30 @@
 
                 return id_service
             },
-            async generateNoteService() {
 
+            async generateNoteService() {
                 // let contex = this
                 this.noteService.number = 0;
                 this.noteService.type_document_id = await this.getTypeDocumentService(),
                 this.noteService.date = "";
                 this.noteService.time = "";
-
-                this.noteService.billing_reference = {
-                    number: String(this.note.correlative_api),
-                    uuid: this.note.response_api_cufe,
-                    issue_date: moment(this.note.date_issue).format('YYYY-MM-DD')
-                };
-
+                if(!this.note){
+                    this.noteService.type_operation_id = "8"
+                    this.noteService.invoice_period = {
+                        start_date: moment(this.form.start_invoice_period).format('YYYY-MM-DD'),
+                        end_date: moment(this.form.end_invoice_period).format('YYYY-MM-DD')
+                    };
+                }
+//                console.log(this.noteService)
+                if(this.note){
+                    this.noteService.billing_reference = {
+                        number: String(this.note.correlative_api),
+                        uuid: this.note.response_api_cufe,
+                        issue_date: moment(this.note.date_issue).format('YYYY-MM-DD')
+                    };
+                }
+                if(!this.note)
+                    this.noteService.customer =  this.getCustomer();
                 this.noteService.tax_totals = await this.getTaxTotal();
                 this.noteService.with_holding_tax_total = await this.getWithHolding();
 
@@ -847,38 +887,32 @@
                         this.noteService.legal_monetary_totals.allowance_total_amount, this.noteService.legal_monetary_totals.line_extension_amount
                     );
                 }
-                else if(this.noteService.type_document_id == 5)
-                {
+                else if(this.noteService.type_document_id == 5){
                     this.noteService.requested_monetary_totals = await this.getLegacyMonetaryTotal();
                     this.noteService.debit_note_lines = await this.getCreditNoteLines();
-
                     /*this.noteService.allowance_charges = await this.createAllowanceCharge(
                         this.noteService.requested_monetary_totals.allowance_total_amount, this.noteService.requested_monetary_totals.line_extension_amount
                     );*/
                 }
-
             },
 
-            // getCustomer() {
-
-            //     let customer = this.customers.find(x => x.id == this.form.customer_id);
-            //     let obj = {
-            //         identification_number: customer.identification_number,
-            //         name: customer.name,
-            //         phone: customer.phone,
-            //         address: customer.address,
-            //         email: customer.email,
-            //         merchant_registration: "000000"
-            //     };
-
-            //     this.form.customer_id = customer.id
-
-            //     if (customer.type_person_id == 2) {
-            //         obj.dv = customer.dv;
-            //     }
-
-            //     return obj;
-            // },
+            getCustomer() {
+                let customer = this.customers.find(x => x.id == this.form.customer_id);
+                console.log(customer)
+                let obj = {
+                    identification_number: customer.number,
+                    name: customer.name,
+                    phone: customer.phone,
+                    address: customer.address,
+                    email: customer.email,
+                    merchant_registration: "000000"
+                };
+                this.form.customer_id = customer.id
+                if (customer.type_person_id == 2) {
+                    obj.dv = customer.dv;
+                }
+                return obj;
+            },
 
             getTaxTotal() {
                 let tax = [];
