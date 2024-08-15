@@ -1,6 +1,7 @@
 @php
     use Mpdf\QrCode\QrCode;
     use Mpdf\QrCode\Output;
+    use Carbon\Carbon;
 
     $establishment = $document->establishment;
     $customer = $document->customer;
@@ -101,11 +102,11 @@
         <td colspan="2"><h6>{{$customer->identity_document_type->name}}: {{ $customer->code }}</h6></td>
     </tr>
     <tr>
-        <td colspan="2"> <h6>Direccion: {{ $customer->address }} </h6></td>
+        <td> <h6>Direccion: {{ $customer->address }} </h6></td>
+        <td> <h6>Hora: {{ $document->created_at->format('H:i:s')}}</h6></td>
     </tr>
     <tr>
-        <td> <h6>Tipo Venta: CONTADO 0 días </h6></td>
-        <td> <h6>Hora: {{ $document->created_at->format('H:i:s')}}</h6></td>
+        <td> {{--<h6>Tipo Venta: CONTADO 0 días </h6>--}}</td>
     </tr>
 </table>
 <table class="full-width">
@@ -196,7 +197,7 @@
             <span>PAGOS:</span><br>
             <ul>
                 @foreach($payments as $row)
-                    <li>{{ $row->date_of_payment->format('d/m/Y') }} {{ $row->payment_method_type->description }} {{ $row->reference ? $row->reference.' - ':'' }} {{ $document->currency_type->symbol }}{{ $row->payment }}</li>
+                    <li>{{ $row->payment_method_type->number_days ? $row->date_of_payment->addDays($row->payment_method_type->number_days)->format('d/m/Y') : $row->date_of_payment->format('d/m/Y') }} {{ $row->payment_method_type->description }} {{ $row->reference ? $row->reference.' - ':'' }} {{ $document->currency_type->symbol }}{{ $row->payment }}</li>
                     @php
                         $payment += (float) $row->payment;
                     @endphp
