@@ -76,7 +76,8 @@ class DocumentController extends Controller
     {
         return [
             'number' => 'Número',
-            'date_of_issue' => 'Fecha de emisión'
+            'date_of_issue' => 'Fecha de emisión',
+            'customer' => 'Cliente',
         ];
     }
 
