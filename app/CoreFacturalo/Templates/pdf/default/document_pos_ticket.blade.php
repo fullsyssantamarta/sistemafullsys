@@ -99,7 +99,7 @@
         <td><h6>Ciudad: {{ ($customer->city_id)? ''.$customer->city->name : '' }}</h6></td>
     </tr>
     <tr>
-        <td colspan="2"><h6>{{$customer->identity_document_type->name}}: {{ $customer->code }}</h6></td>
+        <td colspan="2"><h6>{{$customer->identity_document_type->name}}: {{ $customer->identity_document_type->id == 3 ? $customer->number : $customer->code }}</h6></td>
     </tr>
     <tr>
         <td> <h6>Direccion: {{ $customer->address }} </h6></td>
