@@ -54,7 +54,7 @@ class DocumentCollection extends ResourceCollection
                 'total_discount' => $row->total_discount,
                 'total_tax' => $row->total_tax,
                 'subtotal' => $row->subtotal,
-                'total' => $row->total,
+                'total' => (in_array($row->type_document_id,[3])) ? '-'.$row->total : $row->total,
                 'type_environment_id' => $row->type_environment_id,
                 'state_document_id' => $row->state_document_id,
                 'btn_query' => $btn_query,

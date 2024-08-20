@@ -6,27 +6,27 @@ use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class DocumentCollection extends ResourceCollection
 {
-     
+
 
     public function toArray($request) {
-        
 
-        return $this->collection->transform(function($row, $key){ 
-            
+
+        return $this->collection->transform(function($row, $key){
+
             $affected_document = null;
 
             if(in_array($row->type_document_id,[2,3]) && $row->reference){
 
-                $series = $row->reference->series; 
+                $series = $row->reference->series;
                 $number =  $row->reference->number;
                 $affected_document = $series.' - '.$number;
             }
 
             $signal = $row->document_type_id;
             $state = $row->state_type_id;
-            
- 
-               
+
+
+
             return [
                 'id' => $row->id,
                 'group_id' => $row->group_id,
@@ -46,16 +46,17 @@ class DocumentCollection extends ResourceCollection
                 // 'total_free' =>  (in_array($row->document_type_id,['01','03']) && in_array($row->state_type_id,['09','11'])) ? number_format(0,2, ".","") : number_format($row->total_free,2, ".",""),
                 // 'total_taxed' => (in_array($row->document_type_id,['01','03']) && in_array($row->state_type_id,['09','11'])) ? number_format(0,2, ".","") : number_format($row->total_taxed,2, ".",""),
                 // 'total_igv' =>  (in_array($row->document_type_id,['01','03']) && in_array($row->state_type_id,['09','11'])) ? number_format(0,2, ".","") : number_format($row->total_igv,2, ".",""),
-                'total' =>  (in_array($row->document_type_id,['01','03']) && in_array($row->state_type_id,['09','11'])) ? number_format(0,2, ".","") : number_format($row->total,2, ".",""),
- 
- 
+                'total' => (in_array($row->document_type_id,[3])) ? '-'.$row->total : $row->total,
+                // 'total' => (in_array($row->document_type_id,['01','03']) && in_array($row->state_type_id,['09','11'])) ? number_format(0,2, ".","") : 'asdqwe',
+
+
 
                 'state_type_id' => $row->state_type_id,
                 'state_type_description' => $row->state_document->name,
                 // 'document_type_description' => $row->document_type->description,
                 'document_type_description' => $row->type_document->name,
-                'document_type_id' => $row->document_type->id,   
-                'affected_document' => $affected_document,   
+                'document_type_id' => $row->document_type->id,
+                'affected_document' => $affected_document,
                 'user_name' => ($row->user) ? $row->user->name : '',
                 'user_email' => ($row->user) ? $row->user->email : '',
 
@@ -67,7 +68,7 @@ class DocumentCollection extends ResourceCollection
                 //         'description' => $row->document->number_full,
                 //     ];
                 // }) : null,
-                
+
                 'notes' => null,
                 'quotation_number_full' => ($row->quotation) ? $row->quotation->number_full : '',
                 'sale_opportunity_number_full' => isset($row->quotation->sale_opportunity) ? $row->quotation->sale_opportunity->number_full : '',

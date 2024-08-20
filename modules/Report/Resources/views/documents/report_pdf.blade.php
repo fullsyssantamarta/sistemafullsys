@@ -11,38 +11,38 @@
                 font-family: sans-serif;
                 font-size: 12px;
             }
-            
+
             table {
                 width: 100%;
                 border-spacing: 0;
                 border: 1px solid black;
             }
-            
+
             .celda {
                 text-align: center;
                 padding: 5px;
                 border: 0.1px solid black;
             }
-            
+
             th {
                 padding: 5px;
                 text-align: center;
                 border-color: #0088cc;
                 border: 0.1px solid black;
             }
-            
+
             .title {
                 font-weight: bold;
                 padding: 5px;
                 font-size: 20px !important;
                 text-decoration: underline;
             }
-            
+
             p>strong {
                 margin-left: 5px;
                 font-size: 13px;
             }
-            
+
             thead {
                 font-weight: bold;
                 background: #0088cc;
@@ -102,7 +102,7 @@
                                 $sum_total = 0;
                             @endphp
                             @foreach($records as $key => $value)
-                            
+
                                 @php
                                     $serie_affec = '';
                                 @endphp
@@ -111,33 +111,34 @@
                                     <td class="celda">{{$value->type_document->name}}</td>
                                     <td class="celda">{{$value->series}}-{{$value->number}}</td>
                                     <td class="celda">{{$value->date_of_issue->format('Y-m-d')}}</td>
-                                       
-                                        @php 
-                                            
+
+                                        @php
+
                                             if(in_array($value->type_document_id,[2,3]) && $value->reference){
 
-                                                $series = $value->reference->series; 
+                                                $series = $value->reference->series;
                                                 $number =  $value->reference->number;
                                                 $serie_affec = $series.' - '.$number;
                                             }
-                                            
-                                            $sum_total += $value->total;
+                                            $total = in_array($value->document_type_id,[3]) ? -abs($value->total) : $value->total;
+
+                                            $sum_total += $total;
                                         @endphp
-                                        
+
 
 
                                     <td class="celda">{{  $serie_affec }} </td>
                                     <td class="celda">{{$value->customer->name}}</td>
                                     <td class="celda">{{$value->customer->number}}</td>
                                     <td class="celda">{{$value->state_document->name}}</td>
-                                    
+
                                     <td class="celda">{{$value->currency_type_id}}</td>
-                                    <td class="celda">{{$value->total}}</td>
+                                    <td class="celda">{{$total}}</td>
                                 </tr>
 
- 
+
                             @endforeach
-                            
+
                             <tr>
                                 <td class="celda" colspan="8"></td>
                                 <td class="celda" >Total:</td>

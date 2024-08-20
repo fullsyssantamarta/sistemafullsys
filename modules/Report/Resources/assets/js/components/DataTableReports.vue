@@ -144,31 +144,6 @@
                                 <td class="text-right">$ {{ returnTotal }}</td>
                             </tr>
                         </tfoot>
-                        <!-- <tfoot v-if="resource == 'reports/sales' || resource == 'reports/purchases'">
-                            <tr>
-                                <td :colspan="(resource == 'reports/sales') ? 10:8"></td>
-                                <td ><strong>Totales PEN</strong></td>
-                                <td>{{totals.acum_total_exonerated}}</td>
-                                <td>{{totals.acum_total_unaffected}}</td>
-                                <td>{{totals.acum_total_free}}</td>
-
-                                <td>{{totals.acum_total_taxed}}</td>
-                                <td>{{totals.acum_total_igv}}</td>
-                                <td>{{totals.acum_total}}</td>
-                            </tr>
-                            <tr>
-                                <td :colspan="(resource == 'reports/sales') ? 10:8"></td>
-                                <td ><strong>Totales USD</strong></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-
-                                <td>{{totals.acum_total_taxed_usd}}</td>
-                                <td>{{totals.acum_total_igv_usd}}</td>
-                                <td>{{totals.acum_total_usd}}</td>
-
-                            </tr>
-                        </tfoot> -->
                     </table>
                     <div>
                         <el-pagination

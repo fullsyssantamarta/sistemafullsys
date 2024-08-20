@@ -43,7 +43,7 @@
         <br>
         @if(!empty($records))
             <div class="">
-                <div class=" "> 
+                <div class=" ">
                     <table class="">
                         <thead>
                             <tr>
@@ -58,12 +58,12 @@
                                 <th>Cliente</th>
                                 <th>N° Documento</th>
                                 <th>Estado</th>
-                                <th class="">Moneda</th> 
+                                <th class="">Moneda</th>
                                 <th>Total</th>
                             </tr>
                         </thead>
                         <tbody>
-                            
+
                             @php
                                 $sum_total = 0;
                             @endphp
@@ -78,16 +78,17 @@
                                 <td class="celda">{{$value->type_document->name}}</td>
                                 <td class="celda">{{$value->series}}-{{$value->number}}</td>
                                 <td class="celda">{{$value->date_of_issue->format('Y-m-d')}}</td>
-                                  
-                                @php 
+
+                                @php
                                     if(in_array($value->type_document_id,[2,3]) && $value->reference){
 
-                                        $series = $value->reference->series; 
+                                        $series = $value->reference->series;
                                         $number =  $value->reference->number;
                                         $serie_affec = $series.' - '.$number;
                                     }
 
-                                    $sum_total += $value->total;
+                                    $total = in_array($value->document_type_id,[3]) ? -abs($value->total) : $value->total;
+                                    $sum_total += $total;
 
                                 @endphp
                                 <td class="celda">{{$serie_affec }} </td>
@@ -98,15 +99,15 @@
                                 <td class="celda">{{$value->customer->name}}</td>
                                 <td class="celda">{{$value->customer->number}}</td>
                                 <td class="celda">{{$value->state_document->name}}</td>
-                               
-                                <td class="celda">{{$value->currency_type_id}}</td>
-                                
-                                <td class="celda">{{$value->total}}</td>
 
-                                
+                                <td class="celda">{{$value->currency_type_id}}</td>
+
+                                <td class="celda">{{$total}}</td>
+
+
                             </tr>
                             @endforeach
-                            
+
                             <tr>
                                 <td class="celda" colspan="11"></td>
                                 <td class="celda" >Total:</td>
