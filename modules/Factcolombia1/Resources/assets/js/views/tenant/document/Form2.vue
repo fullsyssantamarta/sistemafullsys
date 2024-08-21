@@ -773,12 +773,22 @@
             {
                 // sumarle el iva al producto para editarlo modificado por Cristian
                 // Declara las variables con 'let' para un alcance local
-                let ivaRate = parseFloat(row.tax.rate) / row.tax.conversion; // Obtiene la tasa de IVA
-                let precioConIVA = row.price * (1 + ivaRate); // Calcula el precio con IVA
-                // Redondea el precio con IVA a dos decimales
-                precioConIVA = Math.round(precioConIVA * 100) / 100;
-                // Actualiza el precio en el ítem para la edición
-                row.price = precioConIVA;
+                if(row.tax !== undefined){
+                    let ivaRate = parseFloat(row.tax.rate) / row.tax.conversion; // Obtiene la tasa de IVA
+                    let precioConIVA = row.price * (1 + ivaRate); // Calcula el precio con IVA
+                    // Redondea el precio con IVA a dos decimales
+                    precioConIVA = Math.round(precioConIVA * 100) / 100;
+                    // Actualiza el precio en el ítem para la edición
+                    row.price = precioConIVA;
+                }
+                else{
+                    let ivaRate = null
+                    let precioConIVA = row.price
+                    // Redondea el precio con IVA a dos decimales
+                    precioConIVA = precioConIVA
+                    // Actualiza el precio en el ítem para la edición
+                    row.price = precioConIVA;
+                }
                 // Configura el ítem para la edición
                 row.indexi = index;
                 this.recordItem = row;
