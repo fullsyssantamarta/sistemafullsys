@@ -690,7 +690,9 @@ class DocumentController extends Controller
                 "Authorization: Bearer {$company->api_token}"
             ));
             $response = curl_exec($ch);
-//\Log::debug($response);
+            if(config('tenant.show_log')) {
+                \Log::debug('DocumentController:694: '.$response);
+            }
             curl_close($ch);
             $response_model = json_decode($response);
             // dd($response_model);
