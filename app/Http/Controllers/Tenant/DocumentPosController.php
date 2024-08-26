@@ -583,7 +583,7 @@ class DocumentPosController extends Controller
                 'line' => $e->getLine(),
                 'trace' => $e->getTrace(),
             ];
-        }
+    }
         DB::connection('tenant')->commit();
 
         return [
