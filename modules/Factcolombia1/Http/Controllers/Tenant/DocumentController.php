@@ -849,9 +849,39 @@ class DocumentController extends Controller
         }
         catch (\Exception $e) {
             DB::connection('tenant')->rollBack();
+            // Inicializar el mensaje de error
+            $userFriendlyMessage = 'Ocurrió un error inesperado.';
+            // Verificar si hay un mensaje de error específico en la respuesta de la API
+            if (isset($response_model->message)) {
+                $userFriendlyMessage = $response_model->message;  // Mensaje general de la API
+                // Verificar si hay detalles de errores específicos
+                if (isset($response_model->errors) && is_object($response_model->errors)) {
+                    $errorDetailsArray = []; // Cambia a array para mejorar eficiencia
+                    foreach ($response_model->errors as $field => $errorMessages) {
+                        if (is_array($errorMessages)) {
+                            $errorDetailsArray[] = implode(', ', $errorMessages);
+                        } else {
+                            $errorDetailsArray[] = $errorMessages;
+                        }
+                    }
+                    // Concatenar detalles de los errores al mensaje para el usuario
+                    if (!empty($errorDetailsArray)) {
+                        $userFriendlyMessage .= ' ' . implode(' ', $errorDetailsArray);
+                    }
+                }
+            }
+            // Obtener el mensaje de la excepción
+            $errorMessage = $e->getMessage();
+            // Verificar si el mensaje contiene "Undefined property: stdClass::$Response"
+            if (strpos($errorMessage, 'Undefined property: stdClass::$Response') !== false) {
+                // Si el mensaje contiene "Undefined property: stdClass::$Response", no mostrar nada
+                $errorMessage = '';
+            }
+            // Devolver la respuesta con un mensaje de error más detallado
             return [
                 'success' => false,
-                'message' => $e->getMessage(),
+                'validation_errors' => true,
+                'message' =>  $errorMessage . ' ' . $userFriendlyMessage,
                 'line' => $e->getLine(),
                 'trace' => $e->getTrace(),
             ];
@@ -1261,12 +1291,40 @@ class DocumentController extends Controller
             ]);
         }
         catch (\Exception $e) {
-
             DB::connection('tenant')->rollBack();
-
+            // Inicializar el mensaje de error
+            $userFriendlyMessage = 'Ocurrió un error inesperado.';
+            // Verificar si hay un mensaje de error específico en la respuesta de la API
+            if (isset($response_model->message)) {
+                $userFriendlyMessage = $response_model->message;  // Mensaje general de la API
+                // Verificar si hay detalles de errores específicos
+                if (isset($response_model->errors) && is_object($response_model->errors)) {
+                    $errorDetailsArray = []; // Cambia a array para mejorar eficiencia
+                    foreach ($response_model->errors as $field => $errorMessages) {
+                        if (is_array($errorMessages)) {
+                            $errorDetailsArray[] = implode(', ', $errorMessages);
+                        } else {
+                            $errorDetailsArray[] = $errorMessages;
+                        }
+                    }
+                    // Concatenar detalles de los errores al mensaje para el usuario
+                    if (!empty($errorDetailsArray)) {
+                        $userFriendlyMessage .= ' ' . implode(' ', $errorDetailsArray);
+                    }
+                }
+            }
+            // Obtener el mensaje de la excepción
+            $errorMessage = $e->getMessage();
+            // Verificar si el mensaje contiene "Undefined property: stdClass::$Response"
+            if (strpos($errorMessage, 'Undefined property: stdClass::$Response') !== false) {
+                // Si el mensaje contiene "Undefined property: stdClass::$Response", no mostrar nada
+                $errorMessage = '';
+            }
+            // Devolver la respuesta con un mensaje de error más detallado
             return [
                 'success' => false,
-                'message' => $e->getMessage(),
+                'validation_errors' => true,
+                'message' =>  $errorMessage . ' ' . $userFriendlyMessage,
                 'line' => $e->getLine(),
                 'trace' => $e->getTrace(),
             ];
