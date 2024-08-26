@@ -221,9 +221,11 @@
             @endif
 
         </td>
+    </tr>
+    <tr>
         @if($is_epos)
             <td>
-                <img src="data:image/png;base64,{{ base64_encode($imagenCodigoQR) }}" alt="QR" style="margin-right: -20px;">
+                <img src="data:image/png;base64,{{ base64_encode($imagenCodigoQR) }}" alt="QR" style="width: 160px; margin-right: -20px;">
             </td>
         @endif
     </tr>
