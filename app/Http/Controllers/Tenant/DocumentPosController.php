@@ -62,6 +62,7 @@ use App\Models\Tenant\DocumentPosPayment;
 use App\Models\Tenant\ConfigurationPos;
 use App\Http\Resources\Tenant\DocumentPosResource;
 use App\Models\Tenant\Cash;
+use Modules\Factcolombia1\Http\Controllers\Tenant\DocumentController;
 
 
 
@@ -328,7 +329,7 @@ class DocumentPosController extends Controller
 //                ]
 //            ];
             // gestion DIAN
-            if($data['electronic'] == true){
+            if ($data['electronic'] === true && (!isset($data['sincronize']) || $data['sincronize'] !== true)) {
                 $company = ServiceTenantCompany::firstOrFail();
                 $id_test = $company->test_set_id_eqdocs;
                 $base_url = config('tenant.service_fact');
@@ -347,11 +348,11 @@ class DocumentPosController extends Controller
                     "Authorization: Bearer {$company->api_token}"
                 ));
                 $response = curl_exec($ch);
-//                \Log::debug($company->eqdocs_type_environment_id);
-//                \Log::debug($company->test_set_id_eqdocs);
-//                \Log::debug("{$base_url}ubl2.1/eqdoc");
-//                \Log::debug($company->api_token);
-//                \Log::debug($data_document);
+                // \Log::debug($company->eqdocs_type_environment_id);
+                // \Log::debug($company->test_set_id_eqdocs);
+                // \Log::debug("{$base_url}ubl2.1/eqdoc");
+                // \Log::debug($company->api_token);
+                // \Log::debug($data_document);
                 if(config('tenant.show_log')) {
                     \Log::debug('DocumentPosController:356: '.$response);
                 }
@@ -503,7 +504,8 @@ class DocumentPosController extends Controller
                     }
                 }
             }
-            // gestion DIAN
+
+            // fin gestion DIAN
             $this->sale_note =  DocumentPos::create($data);
             // $this->sale_note->payments()->delete();
             $this->deleteAllPayments($this->sale_note->payments);
@@ -547,43 +549,13 @@ class DocumentPosController extends Controller
 //                'trace' => $e->getTrace(),
 //            ]));
             DB::connection('tenant')->rollBack();
-            // Inicializar el mensaje de error
-            $userFriendlyMessage = 'Ocurrió un error inesperado.';
-            // Verificar si hay un mensaje de error específico en la respuesta de la API
-            if (isset($response_model->message)) {
-                $userFriendlyMessage = $response_model->message;  // Mensaje general de la API
-                // Verificar si hay detalles de errores específicos
-                if (isset($response_model->errors) && is_object($response_model->errors)) {
-                    $errorDetailsArray = []; // Cambia a array para mejorar eficiencia
-                    foreach ($response_model->errors as $field => $errorMessages) {
-                        if (is_array($errorMessages)) {
-                            $errorDetailsArray[] = implode(', ', $errorMessages);
-                        } else {
-                            $errorDetailsArray[] = $errorMessages;
-                        }
-                    }
-                    // Concatenar detalles de los errores al mensaje para el usuario
-                    if (!empty($errorDetailsArray)) {
-                        $userFriendlyMessage .= ' ' . implode(' ', $errorDetailsArray);
-                    }
-                }
-            }
-            // Obtener el mensaje de la excepción
-            $errorMessage = $e->getMessage();
-            // Verificar si el mensaje contiene "Undefined property: stdClass::$Response"
-            if (strpos($errorMessage, 'Undefined property: stdClass::$Response') !== false) {
-                // Si el mensaje contiene "Undefined property: stdClass::$Response", no mostrar nada
-                $errorMessage = '';
-            }
-            // Devolver la respuesta con un mensaje de error más detallado
             return [
                 'success' => false,
-                'validation_errors' => true,
-                'message' =>  $errorMessage . ' ' . $userFriendlyMessage,
+                'message' => $e->getMessage(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTrace(),
             ];
-    }
+        }
         DB::connection('tenant')->commit();
 
         return [
@@ -1432,6 +1404,195 @@ class DocumentPosController extends Controller
             }
         }
 
+    }
+
+    public function sincronize()
+    {
+        try {
+            $company = ServiceTenantCompany::firstOrFail();
+            $docController = new DocumentController();
+            $docController->sincronize_resolutions($company->identification_number);
+            $base_url = config('tenant.service_fact');
+
+            $ch2 = curl_init("{$base_url}information/{$company->identification_number}");
+            curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch2, CURLOPT_CUSTOMREQUEST, "GET");
+            curl_setopt($ch2, CURLOPT_POSTFIELDS, "");
+            curl_setopt($ch2, CURLOPT_HTTPHEADER, array(
+                'Content-Type: application/json',
+                'Accept: application/json',
+                "Authorization: Bearer {$company->api_token}"
+            ));
+            $response = curl_exec($ch2);
+            curl_close($ch2);
+
+            $response_decoded = json_decode($response);
+            $filteredDocuments = [];
+
+            if(!$response_decoded->success) {
+                throw new Exception("No se obtuvo datos del API");
+            }
+
+            // dd($response_decoded->data);
+            foreach ($response_decoded->data as $item) {
+                if ($item->type_document_id == 15) {
+                    $filteredDocuments = $item->documents;
+                    break;
+                }
+            }
+            $i = 0;
+            foreach($filteredDocuments as $document){
+                if($document->cufe != null){
+                    $document_pos = DocumentPos::where('prefix', $document->prefix)->where('number', $document->number)->get();
+                    if(count($document_pos) == 0){
+                        $this->store_sincronize($document);
+                        $i++;
+                    }
+                }
+            }
+            return [
+                "success" => true,
+                "message" => $i===0?"Sin documentos por sincronizar":"Se sincronizaron satisfactoriamente, {$i} registros que se habian enviado directamente desde API...",
+            ];
+        } catch (Exception $e) {
+            return [
+                "success" => false,
+                "message" => $e->getMessage()
+            ];
+        }
+    }
+
+    public function store_sincronize($document)
+    {
+        $json_api = json_decode($document->request_api);
+        $items = json_decode(json_encode($json_api->invoice_lines), true);
+        $taxes = Tax::all();
+        $tax_totals = [];
+
+        foreach ($items as &$item) {
+            $item_search = Item::where('internal_id', $item['code'])->first();
+            $total_tax = 0;
+            if (isset($item['tax_totals']) && is_array($item['tax_totals'])) {
+                foreach ($item['tax_totals'] as $tax_total) {
+                    if (isset($tax_total['tax_amount'])) {
+                        $total_tax += floatval($tax_total['tax_amount']);
+                    }
+                    // Acumula el total para cada tax_id
+                    $tax_id = $tax_total['tax_id'];
+                    if (!isset($tax_totals[$tax_id])) {
+                        $tax_totals[$tax_id] = 0;
+                    }
+                    $tax_totals[$tax_id] += $tax_total['tax_amount'];
+                }
+            }
+            if($item_search) {
+                $item['item'] = $item_search->toArray();
+                $item['item']['unit_type']['code'] = $item['item']['unit_type_id'];
+                $item['item']['edit_sale_unit_price'] = $item['price_amount'];
+                $item['item']['tax'] = null;
+
+                $item['item_id'] = $item_search->id;
+                $item['quantity'] = $item['invoiced_quantity'];
+                $item['total'] = $item['price_amount'];
+                $item['total_tax'] = $total_tax;
+                $item['unit_type_id'] = $item['item']['unit_type_id'];
+                $item['tax_id'] = $item['tax_totals'][0]['tax_id'];
+                $item['subtotal'] = $item['price_amount'] - $total_tax;
+                $item['discount'] = 0;
+                $item['unit_price'] = $item['price_amount'] / $item['invoiced_quantity'];
+            }
+        }
+
+        foreach ($taxes as &$tax) {
+            if (isset($tax_totals[$tax->id])) {
+                $tax->total = $tax_totals[$tax->id];
+            } else {
+                $tax->total = 0; // Si no hay acumulación para ese tax_id, el total es 0
+            }
+        }
+        // dd($items);
+        // dd($document->request_api);
+        $request = new Request();
+        $request->merge([
+            'currency_id' => 170,
+            'customer_id' => $this->getCustomerId($document),
+            'date_expiration' => null,
+            'date_issue' => $json_api->date,
+            'date_of_issue' => $json_api->date,
+            'document_type_id' => '90',
+            'electronic' => false,
+            'sincronize' => true,
+            'establishment_id' => 1,
+            'exchange_rate_sale' => 0,
+            'paid' => 1,
+            'payment_form_id' => $json_api->payment_form->payment_form_id,
+            'payment_method_id' => $json_api->payment_form->payment_method_id,
+            'prefix' => $document->prefix,
+            'series_id' => null,
+            'service_invoice' => [],
+            'subtotal' => $document->subtotal,
+            'time_days_credit' => 0,
+            'time_of_issue' => $json_api->time,
+            'total_discount' => $document->total_discount,
+            'total_tax' => $document->total_tax,
+            'total' => $document->total,
+            'sale' => $document->total,
+            'type_document_id' => $document->type_document_id,
+            'type_invoice_id' => null,
+            'watch' => false,
+            'payments' => [
+                [
+                    "id" => null,
+                    "document_id" => null,
+                    "sale_note_id" => null,
+                    "date_of_payment" => $json_api->date,
+                    "payment_method_type_id" => "01",
+                    "payment_destination_id" => "cash",
+                    "reference" => null,
+                    "payment" => $document->total,
+                ]
+            ],
+            'items' => $items,
+            'taxes' => $taxes,
+            'xml' => $document->xml,
+            'cude' => $document->cufe,
+            'request_api' => $document->request_api
+        ]);
+
+        try {
+            $store = $this->store($request);
+            if($store['success'] === false) {
+                throw new Exception($store['message']);
+            }
+        } catch (Exception $e) {
+            \Log::error('Sincronizacion POS: '.$e);
+        }
+    }
+
+    private function getCustomerId($document)
+    {
+        $customer = Person::where('number', $document->customer_document->identification_number)->first();
+        if (!$customer) {
+            $customer = new Person();
+            $customer->type = 'customers';
+            $customer->number = $document->customer_document->identification_number;
+            $customer->dv = $document->customer_document->dv ?? NULL;
+            $customer->name = $document->customer_document->name;
+            $customer->telephone = $document->customer_document->phone;
+            $customer->address = $document->customer_document->address;
+            $customer->email = $document->customer_document->email;
+            $customer->type_regime_id = $document->client->type_regime_id ?? 2;
+            $customer->type_person_id = $document->client->type_organization_id ?? 2;
+            $customer->type_obligation_id = $document->client->type_liability_id ?? 117;
+            $customer->identity_document_type_id = $document->client->type_document_identification_id;
+            $customer->code = $document->customer_document->identification_number;
+            $customer->country_id = 47;
+            $customer->department_id = 779;
+            $customer->city_id = $document->customer_document->municipality_id_fact ?? 12688;
+            $customer->save();
+        }
+
+        return $customer->id;
     }
 
 }
