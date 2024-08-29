@@ -6,6 +6,7 @@
                 <li class="active"><span>Documentos POS</span></li>
             </ol>
             <div class="right-wrapper pull-right">
+                <el-button class="btn btn-custom btn-sm  mt-2 mr-2" :loading="sincronizing" @click.prevent="clickSincronize()"><i class="fas fa-sync-alt" ></i> Sincronizar Envios API</el-button>
             </div>
         </div>
         <div class="card mb-0">
@@ -181,8 +182,8 @@
                         title: 'Por pagar',
                         visible: false
                     }
-
-                }
+                },
+                sincronizing: false,
             }
         },
         created() {
@@ -306,8 +307,30 @@
             clickRefund(id)
             {
                 location.href = `/${this.resource}/refund/${id}`
-            }
+            },
+            async clickSincronize() {
+                this.sincronizing = true
 
+                await this.$http.get(`/${this.resource}/sincronize`).then(response => {
+                    // console.log(response)
+                    if (response.data.success) {
+                        this.$message.success(response.data.message)
+                    }
+                    else {
+                        this.$message.error(response.data.message)
+                    }
+                    this.$eventHub.$emit('reloadData')
+                }).catch(error => {
+                    if (error.response.status === 422) {
+                        this.errors = error.response.data
+                    }
+                    else {
+                        this.$message.error(error.response.data.message)
+                    }
+                }).then(() => {
+                    this.sincronizing = false
+                })
+            }
         }
     }
 </script>
