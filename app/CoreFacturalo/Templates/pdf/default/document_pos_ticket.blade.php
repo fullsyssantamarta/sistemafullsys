@@ -33,7 +33,7 @@
     else
         $filename_logo = public_path("storage/uploads/logos/{$company->logo}");
 
-    if($is_epos) {
+    if($is_epos && $document->qr) {
         $data_qr = $document->qr;
         $codigoQR = new QrCode($data_qr);
         $output = new Output\Png();
@@ -223,7 +223,7 @@
         </td>
     </tr>
     <tr>
-        @if($is_epos)
+        @if($is_epos && $document->qr)
             <td>
                 <img src="data:image/png;base64,{{ base64_encode($imagenCodigoQR) }}" alt="QR" style="width: 160px; margin-right: -20px;">
             </td>
