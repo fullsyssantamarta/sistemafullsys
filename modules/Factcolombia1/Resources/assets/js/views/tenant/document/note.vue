@@ -143,7 +143,7 @@
                             <div class="col-lg-12 col-md-6 d-flex align-items-end">
                                 <div class="form-group">
                                     <button type="button" class="btn waves-effect waves-light btn-primary" @click.prevent="clickAddItemInvoice">+ Agregar Producto</button>
-                                    <button type="button" class="ml-3 btn waves-effect waves-light btn-primary" @click.prevent="clickAddRetention">+ Agregar Retención</button>
+<!--                                    <button type="button" class="ml-3 btn waves-effect waves-light btn-primary" @click.prevent="clickAddRetention">+ Agregar Retención</button> -->
                                 </div>
                             </div>
 
@@ -456,6 +456,7 @@
             load_invoice(){
                 if (typeof this.invoice !== 'undefined'){
                     this.form.items = this.invoice ? this.prepareItems(this.invoice.items) : [];
+                    this.calculateTotal();
                 }
             },
 

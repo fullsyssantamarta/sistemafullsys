@@ -20,6 +20,9 @@ class HttpConnectionApi
     public function sendRequestToApi($url, $params, $method = 'PUT')
     {
         try {
+//            \Log::debug($url);
+//            \Log::debug(json_encode($params));
+//            \Log::debug($this->api_token);
             $ch = curl_init("{$this->base_url}{$url}");
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
@@ -27,24 +30,20 @@ class HttpConnectionApi
             curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
             curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-                'Content-Type: application/json',
-                'Accept: application/json',
-                "Authorization: Bearer {$this->api_token}"
+                    'Content-Type: application/json',
+                    'Accept: application/json',
+                    "Authorization: Bearer {$this->api_token}"
             ));
 
             $response = curl_exec($ch);
+//            \Log::debug($response);
             $curl_error = curl_error($ch);
             if($curl_error) return $this->responseMessage(false, 'Error en la petición a la Api');
-
-            // dd($response);
-
-            return json_decode($response, true);
-
-        }catch (Exception $e)
-        {
+                        // dd($response);
+                return json_decode($response, true);
+        }catch (Exception $e){
             return $this->responseError($e);
         }
-
     }
 
     public function responseMessage($success, $message)
