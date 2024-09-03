@@ -14,6 +14,7 @@ use App\Models\Tenant\Document;
 use App\Models\Tenant\Company;
 use Carbon\Carbon;
 use Modules\Report\Http\Resources\ReportCommissionCollection;
+use Modules\Factcolombia1\Models\Tenant\TypeDocument;
 
 class ReportCommissionController extends Controller
 {
@@ -42,16 +43,11 @@ class ReportCommissionController extends Controller
     public function records(Request $request)
     {
         $records = $this->getRecords($request->all(), User::class);
-        
+
         return new ReportCommissionCollection($records->paginate(config('tenant.items_per_page')));
     }
 
 
-
-
-
-
-    
     public function getRecords($request, $model){
 
         $document_type_id = $request['document_type_id'];
@@ -93,16 +89,18 @@ class ReportCommissionController extends Controller
 
     private function data($document_type_id, $establishment_id, $date_start, $date_end, $model)
     {
- 
+        // code 1 = factura de venta nacional
+        $types = TypeDocument::whereNotNull('resolution_number')->where('code', 1)->pluck('id');
+
         if($establishment_id){
 
-            $data = $model::with(['documents'=>function($q) use($date_start, $date_end){
+            $data = $model::with(['documents'=>function($q) use($date_start, $date_end, $types){
 
                                 $q->whereStateTypeAccepted()
-                                ->whereIn('type_document_id', [1, 2])
+                                ->whereIn('type_document_id', $types)
                                 ->whereBetween('date_of_issue', [$date_start, $date_end]);
 
-                            },'sale_notes'=>function($z) use($date_start, $date_end){
+                            },'sale_notes'=>function($z) use($date_start, $date_end, $types){
 
                                 $z->whereStateTypeAccepted()
                                 ->whereBetween('date_of_issue', [$date_start, $date_end]);
@@ -114,27 +112,24 @@ class ReportCommissionController extends Controller
 
         }else{
 
-            $data = $model::with(['documents'=>function($q) use($date_start, $date_end){
-                            
+            $data = $model::with(['documents'=>function($q) use($date_start, $date_end, $types){
+
                                 $q->whereStateTypeAccepted()
-                                ->whereIn('type_document_id', [1, 2])
+                                ->whereIn('type_document_id', $types)
                                 ->whereBetween('date_of_issue', [$date_start, $date_end]);
-                            
-                            },'sale_notes'=>function($z) use($date_start, $date_end){
+
+                            },'sale_notes'=>function($z) use($date_start, $date_end, $types){
 
                                 $z->whereStateTypeAccepted()
                                 ->whereBetween('date_of_issue', [$date_start, $date_end]);
-                            
+
                             }])
                             ->latest()
                             ->whereTypeUser();
         }
 
         return $data;
-
     }
-
- 
 
 
     public function pdf(Request $request) {
@@ -149,8 +144,6 @@ class ReportCommissionController extends Controller
 
         return $pdf->download($filename.'.pdf');
     }
-
-
 
 
     public function excel(Request $request) {
