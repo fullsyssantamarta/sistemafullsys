@@ -90,7 +90,7 @@ class ReportInventoryController extends Controller
 
 
 
-        $pdf = PDF::loadView('inventory::reports.inventory.report_pdf', compact("records", "company", "establishment"));
+        $pdf = PDF::loadView('inventory::reports.inventory.report_pdf', compact("records", "company", "establishment"))->setPaper('a4', 'landscape');
         $filename = 'Reporte_Inventario'.date('YmdHis');
 
         return $pdf->download($filename.'.pdf');

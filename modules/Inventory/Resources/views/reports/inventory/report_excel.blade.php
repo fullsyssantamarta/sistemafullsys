@@ -44,7 +44,7 @@
         @if(!empty($records))
 
             @include('inventory::reports.inventory.table_records')
-            
+
             {{-- <div class="">
                 <div class=" ">
                     <table class="">
