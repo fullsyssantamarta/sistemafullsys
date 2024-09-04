@@ -92,30 +92,12 @@
                         <td v-if="columns.total_perception.visible" class="text-right">{{ row.total_perception ? row.total_perception : 0 }}</td>
                         <td class="text-right">{{ row.total   }}</td>
                         <td>
-
                             <a v-if="row.state_type_id != '11'" :href="`/${resource}/edit/${row.id}`" type="button" class="btn waves-effect waves-light btn-xs btn-info">Editar</a>
                             <button v-if="row.state_type_id != '11'" type="button" class="btn waves-effect waves-light btn-xs btn-danger" @click.prevent="clickAnulate(row.id)">Anular</button>
                             <button v-if="row.state_type_id == '11'" type="button" class="btn waves-effect waves-light btn-xs btn-danger" @click.prevent="clickDelete(row.id)">Eliminar</button>
-
-
+                            <a :href="`/${resource}/pdf/${row.id}`" type="button" class="btn waves-effect waves-light btn-xs btn-info" target="_blank">PDF</a>
 
                         </td>
-
-                        <!-- <td class="text-right">
-                            <button type="button" class="btn waves-effect waves-light btn-xs btn-danger"
-                                    @click.prevent="clickVoided(row.id)"
-                                    v-if="row.btn_voided">Anular</button>
-                            <a :href="`/${resource}/note/${row.id}`" class="btn waves-effect waves-light btn-xs btn-warning"
-                               v-if="row.btn_note">Nota</a>
-                            <button type="button" class="btn waves-effect waves-light btn-xs btn-info"
-                                    @click.prevent="clickResend(row.id)"
-                                    v-if="row.btn_resend">Reenviar</button>
-                            <button type="button" class="btn waves-effect waves-light btn-xs btn-info"
-                                    @click.prevent="clickConsultCdr(row.id)"
-                                    v-if="row.btn_consult_cdr">Consultar CDR</button>
-                            <button type="button" class="btn waves-effect waves-light btn-xs btn-info"
-                                    @click.prevent="clickOptions(row.id)">Opciones</button>
-                        </td> -->
                     </tr>
                 </data-table>
             </div>
@@ -130,7 +112,7 @@
             <purchase-import :showDialog.sync="showImportDialog"></purchase-import>
         </div>
 
-        
+
         <purchase-payments
             :showDialog.sync="showDialogPurchasePayments"
             :purchaseId="recordId"

@@ -3,7 +3,14 @@
                :close-on-click-modal="false"
                :close-on-press-escape="false"
                :show-close="false">
-    
+        <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-12 text-center font-weight-bold mt-5">
+                <button type="button" class="btn btn-lg btn-info waves-effect waves-light" @click="clickDownload()">
+                    <i class="fa fa-file-pdf"></i>
+                </button>
+                <p>Descargar PDF</p>
+            </div>
+        </div>
         <span slot="footer" class="dialog-footer">
             <template v-if="showClose">
                 <el-button @click="clickClose">Cerrar</el-button>
@@ -51,7 +58,7 @@
                         this.titleDialog = `Compra ${typei}: ` +this.form.number
                     })
             },
-          
+
             clickFinalize() {
                 location.href = `/${this.resource}`
             },
@@ -61,6 +68,9 @@
             clickClose() {
                 this.$emit('update:showDialog', false)
                 this.initForm()
+            },
+            clickDownload() {
+                window.open( `/${this.resource}/pdf/${this.recordId}`, '_blank');
             },
         }
     }

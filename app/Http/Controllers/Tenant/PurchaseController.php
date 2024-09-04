@@ -39,6 +39,7 @@ use Modules\Factcolombia1\Models\Tenant\{
     Currency,
     Tax,
 };
+use Barryvdh\DomPDF\Facade as PDF;
 
 class PurchaseController extends Controller
 {
@@ -639,6 +640,19 @@ class PurchaseController extends Controller
 
         return $persons;
 
+    }
+
+    public function pdf($id)
+    {
+        $document = $this->record($id);
+        $document['establishment'] = Establishment::where('id', $document->establishment_id)->first();
+        // dd($document);
+        $company = Company::active();
+
+        $pdf = PDF::loadView('tenant.purchases.pdf', compact("document", "company"));
+        $filename = 'COMPRA_'.$document->series.$document->number;
+
+        return $pdf->stream($filename.'.pdf');
     }
 
 
