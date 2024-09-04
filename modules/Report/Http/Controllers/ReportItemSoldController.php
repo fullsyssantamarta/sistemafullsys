@@ -7,6 +7,7 @@ use Barryvdh\DomPDF\Facade as PDF;
 use Illuminate\Http\Request;
 use App\Models\Tenant\Establishment;
 use App\Models\Tenant\Company;
+use Modules\Report\Exports\ItemSoldExport;
 use Carbon\Carbon;
 use App\Models\Tenant\{
     DocumentItem,
@@ -23,7 +24,7 @@ class ReportItemSoldController extends Controller
         return view('report::co-items-sold.index');
     }
 
-    
+
     /**
      *
      * @param  Request $request
@@ -39,7 +40,7 @@ class ReportItemSoldController extends Controller
             case 'documents':
                 $records = DocumentItem::filterReportSoldItems($request)->get();
                 break;
-            
+
             case 'documents_pos':
                 $records = DocumentPosItem::filterReportSoldItems($request)->get();
                 break;
@@ -55,13 +56,26 @@ class ReportItemSoldController extends Controller
         return $records;
     }
 
-        
+    public function export(Request $request, $type)
+    {
+        switch ($type) {
+            case 'excel':
+                return $this->excel($request);
+                break;
+
+            default:
+                return $this->pdf($request);
+                break;
+        }
+    }
+
+
     /**
      *
      * @param  Request $request
      * @return mixed
      */
-    public function pdf(Request $request) 
+    public function pdf(Request $request)
     {
         $records = $this->getQueryRecords($request);
         $filters = $request;
@@ -74,6 +88,27 @@ class ReportItemSoldController extends Controller
         $filename = 'Reporte_Articulos_Vendidos_'.date('YmdHis');
 
         return $pdf->stream($filename.'.pdf');
+    }
+
+    /**
+     * Excel
+     * @param  Request $request
+     * @return \Illuminate\Http\Response
+     */
+    public function excel(Request $request) {
+        $records = $this->getQueryRecords($request);
+        $filters = $request;
+
+        $company = Company::first();
+        $establishment = auth()->user()->establishment;
+
+
+        return (new ItemSoldExport)
+            ->records($records)
+            ->company($company)
+            ->establishment($establishment)
+            ->filters($filters)
+            ->download('ReporteArticulosVendidos'.Carbon::now().'.xlsx');
     }
 
 }

@@ -142,7 +142,7 @@ if($current_hostname) {
 
                 Route::prefix('co-items-sold')->group(function () {
                     Route::get('', 'ReportItemSoldController@index')->name('tenant.co-items-sold.index');
-                    Route::get('/export/{type}', 'ReportItemSoldController@pdf');
+                    Route::get('/export/{type}', 'ReportItemSoldController@export');
                 });
 
 

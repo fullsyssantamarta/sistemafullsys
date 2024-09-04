@@ -6,7 +6,7 @@
         <div class="card mb-0">
             <div class="card-body">
                 <div class="row mt-2">
-                
+
                     <div class="col-md-3 pb-1">
                         <div class="form-group">
                             <label class="control-label">Fecha Desde</label>
@@ -30,14 +30,14 @@
                             <el-time-picker
                                 v-model="form.start_time"
                                 class="full"
-                                value-format="HH:mm" 
-                                format="HH:mm" 
+                                value-format="HH:mm"
+                                format="HH:mm"
                                 :clearable="true"
                                 @change="changeDisabledTimes"
                             >
                             </el-time-picker>
                         </div>
-                    </div> 
+                    </div>
 
                     <div class="col-md-3 pb-1">
                         <div class="form-group">
@@ -45,14 +45,14 @@
                             <el-time-picker
                                 v-model="form.end_time"
                                 class="full"
-                                value-format="HH:mm" 
-                                format="HH:mm" 
+                                value-format="HH:mm"
+                                format="HH:mm"
                                 :clearable="true"
                                 @change="changeDisabledTimes"
                             >
                             </el-time-picker>
                         </div>
-                    </div> 
+                    </div>
 
                     <div class="col-md-4 pb-1">
                         <document-pos-types
@@ -72,7 +72,7 @@
                         </search-customers>
                     </div>
 
-                    
+
                     <div class="col-md-4 pb-1">
                         <search-users
                             @changeUser="changeUser"
@@ -90,7 +90,7 @@
                         >
                         </search-brands>
                     </div>
-                    
+
                     <div class="col-md-4 pb-1">
                         <search-items
                             @changeItem="changeItem"
@@ -103,16 +103,17 @@
 
                     <div class="col-lg-12 col-md-12 col-md-12 col-sm-12" style="margin-top:29px">
                         <el-button class="submit" type="danger"  icon="el-icon-tickets" @click.prevent="clickDownload('pdf')" >Exportar PDF</el-button>
+                        <el-button class="submit" type="info"  icon="el-icon-tickets" @click.prevent="clickDownload('excel')" >Exportar EXCEL</el-button>
                     </div>
-                </div> 
-            </div> 
+                </div>
+            </div>
         </div>
- 
+
     </div>
 </template>
 
 <script>
- 
+
     import moment from 'moment'
     import queryString from 'query-string'
     import SearchCustomers from '@components/filters/SearchCustomers.vue'
@@ -121,7 +122,7 @@
     import SearchItems from '@components/filters/SearchItems.vue'
     import DocumentPosTypes from '@components/filters/DocumentPosTypes.vue'
 
-    export default { 
+    export default {
         components: {
             SearchCustomers,
             SearchUsers,
@@ -131,8 +132,8 @@
         },
         data() {
             return {
-                resource: 'reports/co-items-sold',                 
-                form: {}, 
+                resource: 'reports/co-items-sold',
+                form: {},
                 pickerOptionsDates: {
                     disabledDate: (time) => {
                         time = moment(time).format('YYYY-MM-DD')
@@ -142,15 +143,15 @@
             }
         },
         async created()
-        { 
+        {
             this.initForm()
         },
         mounted()
         {
             this.$refs.document_pos_types.setValue(this.form.document_type_id)
         },
-        methods: 
-        { 
+        methods:
+        {
             changeItem(item_id)
             {
                 this.form.item_id = item_id
@@ -171,27 +172,27 @@
             {
                 this.form.customer_id = customer_id
             },
-            getQueryParameters() 
+            getQueryParameters()
             {
                 return queryString.stringify({
                     ...this.form
                 })
             },
-            changeDisabledDates() 
+            changeDisabledDates()
             {
-                if (this.form.end_date < this.form.start_date) 
+                if (this.form.end_date < this.form.start_date)
                 {
                     this.form.end_date = this.form.start_date
                 }
             },
             changeDisabledTimes()
             {
-                if (this.form.end_time < this.form.start_time) 
+                if (this.form.end_time < this.form.start_time)
                 {
                     this.form.end_time = this.form.start_time
                 }
             },
-            clickDownload(type) 
+            clickDownload(type)
             {
                 window.open(`/${this.resource}/export/${type}?${this.getQueryParameters()}`, '_blank')
             },
@@ -208,8 +209,8 @@
                     start_time: null,
                     end_time: null,
                 }
-            }, 
-            
+            },
+
         }
     }
 </script>

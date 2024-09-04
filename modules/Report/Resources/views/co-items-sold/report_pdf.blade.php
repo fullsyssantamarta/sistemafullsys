@@ -6,12 +6,12 @@
         <meta http-equiv="Content-Type" content="application/pdf; charset=utf-8" />
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <title>Artículos Vendidos</title>
-        
+
         @include('report::commons.styles')
     </head>
     <body>
         @include('report::commons.header')
-        
+
         <div>
             <p align="left" class="title"><strong>Artículos Vendidos</strong></p>
         </div>
@@ -36,9 +36,23 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @php
+                                $total = 0;
+                                $total_tax = 0;
+                                $total_utility = 0;
+                                $total_quantity = 0;
+                                $total_net_value = 0;
+                                $total_cost = 0;
+                            @endphp
                             @foreach($records as $value)
                                 @php
                                     $row = $value->getDataReportSoldItems();
+                                    $total = $total + $row['total'];
+                                    $total_tax = $total_tax + $row['total_tax'];
+                                    $total_utility = $total_utility + $row['utility'];
+                                    $total_quantity = $total_quantity + $row['quantity'];
+                                    $total_net_value = $total_net_value + $row['net_value'];
+                                    $total_cost = $total_cost + $row['cost'];
                                 @endphp
                                 <tr>
                                     <td class="celda">{{ $row['type_name'] }}</td>
@@ -52,6 +66,15 @@
                                     <td class="celda">{{ $row['total'] }}</td>
                                 </tr>
                             @endforEach
+                            <tr>
+                                <td colspan="3" class="celda text-right-td">TOTALES </td>
+                                <td class="celda">{{ $total_quantity }}</td>
+                                <td class="celda">{{ number_format($total_cost, 2) }}</td>
+                                <td class="celda">{{ number_format($total_net_value, 2) }}</td>
+                                <td class="celda">{{ number_format($total_utility, 2) }}</td>
+                                <td class="celda">{{ number_format($total_tax, 2) }}</td>
+                                <td class="celda">{{ number_format($total, 2) }}</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
