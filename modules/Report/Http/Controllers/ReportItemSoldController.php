@@ -83,7 +83,7 @@ class ReportItemSoldController extends Controller
         $company = Company::first();
         $establishment = auth()->user()->establishment;
 
-        $pdf = PDF::loadView('report::co-items-sold.report_pdf', compact('records', 'company', 'establishment', 'filters'));
+        $pdf = PDF::loadView('report::co-items-sold.report_pdf', compact('records', 'company', 'establishment', 'filters'))->setPaper('a4', 'landscape');
 
         $filename = 'Reporte_Articulos_Vendidos_'.date('YmdHis');
 
