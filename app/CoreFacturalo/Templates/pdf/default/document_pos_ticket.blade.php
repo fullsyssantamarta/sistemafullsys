@@ -37,7 +37,7 @@
         $data_qr = $document->qr;
         $codigoQR = new QrCode($data_qr);
         $output = new Output\Png();
-        $imagenCodigoQR = $output->output($codigoQR, 90);
+        $imagenCodigoQR = $output->output($codigoQR, 140);
     }
 @endphp
 <html>
@@ -64,7 +64,7 @@
         </td>
     </tr>
     <tr>
-        <td><h6>{{ $sucursal->description }}. {{ $establishment->address }}</h6></td>
+        <td colspan="2"> <h6>{{ $sucursal->description }}. {{ $establishment->address }}</h6></td>
     </tr>
     <br>
     <tr>
@@ -225,7 +225,7 @@
     <tr>
         @if($is_epos && $document->qr)
             <td>
-                <img src="data:image/png;base64,{{ base64_encode($imagenCodigoQR) }}" alt="QR" style="width: 160px; margin-right: -20px;">
+                <img src="data:image/png;base64,{{ base64_encode($imagenCodigoQR) }}" alt="QR" >
             </td>
         @endif
     </tr>
@@ -255,7 +255,7 @@
     </tr>
 </table>
 @if($is_epos)
-    <p>cude: {{ $document->cude }}</p>
+    <p><h6>cude: {{ $document->cude }}</h6></p>
 @endif
 </body>
 </html>
