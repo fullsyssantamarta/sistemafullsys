@@ -6,24 +6,24 @@
         <meta http-equiv="Content-Type" content="application/pdf; charset=utf-8" />
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <title>Libro Ventas</title>
-        
+
         @include('report::commons.styles')
 
         <style>
             @page {
               margin: 10;
             }
-            
+
             html {
                 font-family: sans-serif;
                 font-size: 12px;
             }
-            
+
         </style>
     </head>
     <body>
         @include('report::commons.header')
-        
+
         <div>
             <p align="left" class="title">
                 <strong>
