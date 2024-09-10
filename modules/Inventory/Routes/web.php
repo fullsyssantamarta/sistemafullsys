@@ -26,15 +26,12 @@ if($hostname) {
                 Route::get('record/{inventory}', 'InventoryController@record');
                 Route::post('/', 'InventoryController@store');
                 Route::post('/transaction', 'InventoryController@store_transaction');
+                Route::post('/transaction/import/input', 'InventoryController@transactionImport');
                 Route::post('move', 'InventoryController@move');
-
                 Route::get('moves', 'MovesController@index')->name('inventory.moves.index');
-
                 Route::post('remove', 'InventoryController@remove');
                 Route::get('initialize', 'InventoryController@initialize');
-
                 Route::get('download', 'InventoryController@download');
-
             });
 
             Route::prefix('reports')->group(function () {

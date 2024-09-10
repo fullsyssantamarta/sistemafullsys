@@ -17,6 +17,8 @@ use Modules\Inventory\Http\Requests\InventoryRequest;
 use Modules\Item\Models\ItemLot;
 use Modules\Item\Models\ItemLotsGroup;
 use Barryvdh\DomPDF\Facade as PDF;
+use Maatwebsite\Excel\Facades\Excel;
+use Modules\Inventory\Imports\TransactionInputImport;
 
 
 class InventoryController extends Controller
@@ -382,4 +384,40 @@ class InventoryController extends Controller
     }
 
 
+    public function transactionImport(Request $request)
+    {
+        try {
+            if ($request->hasFile('file')) Excel::import(new TransactionInputImport($request->warehouse_id), $request->file('file'));
+        }
+        catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $failures = $e->failures();
+
+            $errors = [];
+            foreach ($failures as $failure) {
+                $errors[] = [
+                    'row' => $failure->row(),
+                    'attribute' => $failure->attribute(),
+                    'errors' => $failure->errors(),
+                    'values' => $failure->values(),
+                ];
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Errores de validación durante la importación.',
+                'errors' => $errors
+            ], 422);
+        }
+        catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+
+        return [
+            'success' => true,
+            'message' => 'Importación exítosa.'
+        ];
+    }
 }
