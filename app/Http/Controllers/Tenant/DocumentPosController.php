@@ -356,10 +356,23 @@ class DocumentPosController extends Controller
                 if(config('tenant.show_log')) {
                     \Log::debug('DocumentPosController:356: '.$response);
                 }
+                $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
                 curl_close($ch);
                 $response_model = json_decode($response);
                 $zip_key = null;
                 $invoice_status_api = null;
+
+                if($httpcode === 422) {
+                    $firstError = reset($response_model->errors)[0];
+                    return [
+                        'success' => false,
+                        'message' => "Error el Documento Equivalente POS Nro: {$data['series']}{$data['number']}, Errores: {$response_model->message}, ".$firstError,
+                        'errors' => $response_model->errors,
+                        'data' => [
+                            'id' => null,
+                        ],
+                    ];
+                }
 
                 if($company->eqdocs_type_environment_id == 2 && $company->test_set_id_eqdocs != 'no_test_set_id'){
                     if(property_exists($response_model, 'urlinvoicepdf') && property_exists($response_model, 'urlinvoicexml')){
