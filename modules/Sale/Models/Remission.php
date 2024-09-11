@@ -72,17 +72,17 @@ class Remission extends ModelTenant
         return $this->currency->name;
     }
 
-    public function items() 
+    public function items()
     {
         return $this->hasMany(RemissionItem::class);
     }
 
-    public function currency() 
+    public function currency()
     {
         return $this->belongsTo(Currency::class);
     }
 
-    public function getTaxesCollectAttribute() 
+    public function getTaxesCollectAttribute()
     {
         return collect($this->taxes);
     }
@@ -147,7 +147,7 @@ class Remission extends ModelTenant
         return $this->belongsTo(StateType::class);
     }
 
-    public function person() 
+    public function person()
     {
         return $this->belongsTo(Person::class, 'customer_id');
     }
@@ -181,7 +181,7 @@ class Remission extends ModelTenant
     public function getRowResource()
     {
         return [
-            
+
             'id' => $this->id,
             'user_id' => $this->user_id,
             'external_id' => $this->external_id,
@@ -220,6 +220,9 @@ class Remission extends ModelTenant
             'time_days_credit' => $this->time_days_credit,
             'filename' => $this->filename,
 
+            'items' => $this->items,
+            'payments' => $this->payments,
+            'customer' => $this->customer,
         ];
     }
 

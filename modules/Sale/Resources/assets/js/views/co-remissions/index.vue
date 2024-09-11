@@ -30,7 +30,7 @@
                         <th class="text-center"></th>
                         <th class="text-center">Descargas</th>
                         <th class="text-right">Acciones</th>
-                    <tr>
+                    </tr>
                     <tr slot-scope="{ index, row }" >
                         <td>{{ index }}</td>
                         <td class="text-center">{{ row.date_of_issue }}</td>
@@ -53,33 +53,46 @@
                                     @click.prevent="clickDownload(row.external_id)">PDF</button>
                         </td>
                         <td class="text-right" >
+                            <el-tooltip class="item" effect="dark" content="Generar comprobante" placement="top-start">
+                                <button v-if="enableToDocument(row)"
+                                    type="button"
+                                    class="btn waves-effect waves-light btn-xs btn-info"
+                                    @click.prevent="clickDialogDocument(row)" >
+                                    Comprobante
+                                </button>
+                            </el-tooltip>
                             <button type="button" class="btn waves-effect waves-light btn-xs btn-info m-1__2"
                                     @click.prevent="clickOptions(row.id)">Opciones</button>
                         </td>
                     </tr>
                 </data-table>
             </div>
-
-
-            <remission-payments :showDialog.sync="showDialogPayments"
-                               :remissionId="recordId"></remission-payments>
-
-            <remission-options :showDialog.sync="showDialogOptions"
-                              :showDownload="false"
-                              :recordId="recordId"
-                              :showClose="true"></remission-options>
         </div>
+        <remission-payments :showDialog.sync="showDialogPayments"
+            :remissionId="recordId"></remission-payments>
+        <remission-options :showDialog.sync="showDialogOptions"
+            :showDownload="false"
+            :recordId="recordId"
+            :showClose="true"></remission-options>
+        <generate-document :showDialog.sync="showDialogDocument"
+            :record="recordToDocument"></generate-document>
     </div>
 </template>
 
 <script>
-
+    import moment from 'moment';
     import DataTable from '@components/DataTable.vue'
     import RemissionOptions from './partials/options.vue'
     import RemissionPayments from './partials/payments.vue'
+    import GenerateDocument from './partials/generateDocument.vue'
 
     export default {
-        components: {DataTable, RemissionOptions, RemissionPayments},
+        components: {
+            DataTable,
+            RemissionOptions,
+            RemissionPayments,
+            GenerateDocument
+        },
         data() {
             return {
                 showImportDialog: false,
@@ -87,6 +100,8 @@
                 showDialogPayments: false,
                 recordId: null,
                 showDialogOptions: false,
+                showDialogDocument: false,
+                recordToDocument: {}
             }
         },
         created() {
@@ -102,7 +117,15 @@
             clickOptions(recordId = null) {
                 this.recordId = recordId
                 this.showDialogOptions = true
-            }
+            },
+            enableToDocument(document) {
+                let date_document = moment(document.date_of_issue , "YYYY-MM-DD");
+                return date_document.isSame(moment(), 'day');
+            },
+            clickDialogDocument(document) {
+                this.recordToDocument = document
+                this.showDialogDocument = true
+            },
         }
     }
 </script>
