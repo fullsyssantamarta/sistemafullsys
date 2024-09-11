@@ -34,4 +34,6 @@ return [
     'service_fact' => env('SERVICE_FACT'),
     'api_token_service_fact' => env('API_TOKEN_SERVICE_FACT'),
     'show_log' => env('SHOW_LOG', false),
+    'app_owner_name' => env('APP_OWNER_NAME'),
+    'app_business_name' => env('APP_BUSINESS_NAME'),
 ];

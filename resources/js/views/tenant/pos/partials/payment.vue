@@ -170,6 +170,14 @@
                                 </div>
 
                             </div>
+
+                            <div class="row mt-2" v-show="service_dian_enable">
+                                <div class="col-12">
+                                    <div class="alert alert-warning mb-0">
+                                        El servicio de la DIAN no está disponible en este momento. Por favor, inténtelo más tarde.
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -396,7 +404,8 @@
                         url: 'co-remissions',
                         description: 'Remisión'
                     }
-                ]
+                ],
+                service_dian_enable: false,
             }
         },
         async created() {
@@ -730,11 +739,17 @@
                             this.$message.success(response.data.message);
                             this.$eventHub.$emit('saleSuccess');
                         }
-                        else
+                        else {
                             this.$message.error(response.data.message);
+                        }
+                        this.service_dian_enable = false;
                     }
                     else {
                         this.$message.error(response.data.message);
+                        if (response.data.message.includes("El servicio de la DIAN no está disponible en este momento")) {
+                            this.service_dian_enable = true;
+                            console.log("El servicio de la DIAN no está disponible en este momento. Por favor, inténtelo más tarde.");
+                        }
                     }
                 }).catch(error => {
                     if (error.response && error.response.status === 422){

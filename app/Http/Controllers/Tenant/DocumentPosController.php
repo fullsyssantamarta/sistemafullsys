@@ -274,9 +274,9 @@ class DocumentPosController extends Controller
                 'sendmail' => true,
                 'sendmailtome' => true,
                 'software_manufacturer' => [
-                    'name' => env('APP_OWNER_NAME'),
-                    'business_name' => env('APP_BUSINESS_NAME'),
-                    'software_name' => env('APP_NAME'),
+                    'name' => config('tenant.app_owner_name'),
+                    'business_name' => config('tenant.app_business_name'),
+                    'software_name' => config('app.name'),
                 ],
                 'buyer_benefits' => [
                     'code' => $data['customer']['number'],
