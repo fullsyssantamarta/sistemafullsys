@@ -105,12 +105,14 @@ export default {
         clickFinalize() {
             this.$eventHub.$emit('reloadData');
             this.$emit("update:showDialog", false);
+            this.generate_success = false;
         },
         async assignDocument() {
             let q = this.record;
+            this.document.remission_id = q.id,
             this.document.date_issue = q.date_of_issue
             this.document.customer_id = q.customer_id
-            this.document.customer = q.customer // falta
+            this.document.customer = q.customer
             this.document.currency_id = q.currency_id
             this.document.purchase_order = null
             this.document.total_discount = q.total_discount

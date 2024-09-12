@@ -21,6 +21,7 @@
                         <th class="text-center">Fecha Emisión</th>
                         <th>Cliente</th>
                         <th>Documento</th>
+                        <th>Comprobantes</th>
                         <th class="text-center">Moneda</th>
                         <th class="text-right">T.Venta</th>
                         <th class="text-right">T.Descuentos</th>
@@ -36,6 +37,11 @@
                         <td class="text-center">{{ row.date_of_issue }}</td>
                         <td>{{ row.customer_name }}<br/><small v-text="row.customer_number"></small></td>
                         <td>{{ row.number_full }}<br/></td>
+                        <td>
+                            <span v-for="(doc, index) in row.documents" :key="index">
+                                {{ doc.number_full }}<br/>
+                            </span>
+                        </td>
                         <td class="text-center">{{ row.currency_name }}</td>
                         <td class="text-right">{{ row.sale }}</td>
                         <td class="text-right">{{ row.total_discount }}</td>
@@ -56,7 +62,7 @@
                             <el-tooltip class="item" effect="dark" content="Generar comprobante" placement="top-start">
                                 <button v-if="enableToDocument(row)"
                                     type="button"
-                                    class="btn waves-effect waves-light btn-xs btn-info"
+                                    class="btn waves-effect waves-light btn-xs btn-info m-1__2"
                                     @click.prevent="clickDialogDocument(row)" >
                                     Comprobante
                                 </button>

@@ -25,6 +25,7 @@ use Modules\Factcolombia1\Models\TenantService\{
     TypeEnvironment
 };
 use Illuminate\Database\Eloquent\Builder;
+use Modules\Sale\Models\Remission;
 
 
 class Document extends ModelTenant
@@ -54,6 +55,7 @@ class Document extends ModelTenant
         // 'currency_type_id',
         // 'purchase_order',
         'quotation_id',
+        'remission_id',
         // 'exchange_rate_sale',
         // 'total_prepayment',
         'total_discount',
@@ -452,6 +454,11 @@ class Document extends ModelTenant
     public function sale_note()
     {
         return $this->belongsTo(SaleNote::class, 'sale_note_id');
+    }
+
+    public function remission()
+    {
+        return $this->belongsTo(Remission::class);
     }
 
     public function hotel()

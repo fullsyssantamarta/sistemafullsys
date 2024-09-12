@@ -15,6 +15,7 @@ use App\Models\Tenant\{
     User,
     Establishment,
     Quotation,
+    Document,
 };
 use App\Models\Tenant\ModelTenant;
 use Modules\Inventory\Models\InventoryKardex;
@@ -95,6 +96,11 @@ class Remission extends ModelTenant
     public function quotation()
     {
         return $this->belongsTo(Quotation::class);
+    }
+
+    public function documents()
+    {
+        return $this->hasMany(Document::class);
     }
 
     public function payment_method()
@@ -223,6 +229,11 @@ class Remission extends ModelTenant
             'items' => $this->items,
             'payments' => $this->payments,
             'customer' => $this->customer,
+            'documents' => $this->documents->transform(function($row) {
+                return [
+                    'number_full' => $row->prefix.'-'.$row->number
+                ];
+            }),
         ];
     }
 

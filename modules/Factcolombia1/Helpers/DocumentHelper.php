@@ -69,7 +69,7 @@ class DocumentHelper
         $document->response_api_status = $response_status;
         $document->correlative_api = $correlative_api;
         $document->sale_note_id = $request->sale_note_id;
-        $document->quotation_id = $request->quotation_id;
+        $document->remission_id = $request->remission_id;
 //\Log::debug("4");
         $document->xml = $request->xml;
         $document->cufe = $request->cufe;
