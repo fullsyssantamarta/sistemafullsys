@@ -347,7 +347,10 @@ class DocumentController extends Controller
                 $request->observation = (key_exists('notes', $service_invoice)) ? $service_invoice['notes'] : "";
                 $request->sale = $service_invoice['legal_monetary_totals']['payable_amount'];
                 $request->total = $service_invoice['legal_monetary_totals']['payable_amount'];
-                $request->total_discount = $service_invoice['legal_monetary_totals']['allowance_total_amount'];
+                if(isset($service_invoice['legal_monetary_totals']['allowance_total_amount']))
+                    $request->total_discount = $service_invoice['legal_monetary_totals']['allowance_total_amount'];
+                else
+                    $request->total_discount = 0;
                 $request->taxes = Tax::all();
                 $request->total_tax = $service_invoice['legal_monetary_totals']['tax_inclusive_amount'] - $service_invoice['legal_monetary_totals']['line_extension_amount'];
                 $request->subtotal = $service_invoice['legal_monetary_totals']['line_extension_amount'];
@@ -828,7 +831,10 @@ class DocumentController extends Controller
                 $request->observation = $service_invoice['notes'];
                 $request->sale = $service_invoice['legal_monetary_totals']['payable_amount'];
                 $request->total = $service_invoice['legal_monetary_totals']['payable_amount'];
-                $request->total_discount = $service_invoice['legal_monetary_totals']['allowance_total_amount'];
+                if(isset($service_invoice['legal_monetary_totals']['allowance_total_amount']))
+                    $request->total_discount = $service_invoice['legal_monetary_totals']['allowance_total_amount'];
+                else
+                $request->total_discount = 0;
                 $request->taxes = Tax::all();
                 $request->total_tax = $service_invoice['legal_monetary_totals']['tax_inclusive_amount'] - $service_invoice['legal_monetary_totals']['line_extension_amount'];
                 $request->subtotal = $service_invoice['legal_monetary_totals']['line_extension_amount'];
