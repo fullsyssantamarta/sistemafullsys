@@ -123,8 +123,8 @@ class DocumentHelper
                 $record_item->description = (key_exists('description', $item)) ? $item['description'] : $item['item']['name'];
                 $record_item->item_type_id = "01";
                 $record_item->internal_id = $item['code'];
-                $record_item->tax_id = 8;
-                $record_item->purchase_tax_id = 8;
+                $record_item->tax_id = null;
+                $record_item->purchase_tax_id = null;
                 $record_item->unit_type_id = 10;
                 $record_item->currency_type_id = 170;
                 $record_item->sale_unit_price = (key_exists('price_amount', $item)) ? $item['price_amount'] : $item['item']['sale_unit_price'];
