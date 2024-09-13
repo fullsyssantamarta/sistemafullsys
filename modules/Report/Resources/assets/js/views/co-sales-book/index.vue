@@ -6,7 +6,7 @@
         <div class="card mb-0">
             <div class="card-body">
                 <div class="row mt-2">
-                
+
                     <div class="col-md-3 pb-1">
                         <div class="form-group">
                             <label class="control-label">Fecha Desde</label>
@@ -51,30 +51,31 @@
 
                     <div class="col-lg-12 col-md-12 col-md-12 col-sm-12 mt-3">
                         <el-button class="submit" type="danger"  icon="el-icon-tickets" @click.prevent="clickDownload('pdf')" >Exportar PDF</el-button>
+                        <el-button class="submit" type="warning"  icon="el-icon-tickets" @click.prevent="clickDownload('excel')" >Exportar Excel</el-button>
                     </div>
-                </div> 
-            </div> 
+                </div>
+            </div>
         </div>
- 
+
     </div>
 </template>
 
 <script>
- 
+
     import moment from 'moment'
     import queryString from 'query-string'
     import SearchCustomers from '@components/filters/SearchCustomers.vue'
     import DocumentPosTypes from '@components/filters/DocumentPosTypes.vue'
 
-    export default { 
+    export default {
         components: {
             SearchCustomers,
             DocumentPosTypes,
         },
         data() {
             return {
-                resource: 'reports/co-sales-book',                 
-                form: {}, 
+                resource: 'reports/co-sales-book',
+                form: {},
                 pickerOptionsDates: {
                     disabledDate: (time) => {
                         time = moment(time).format('YYYY-MM-DD')
@@ -84,15 +85,15 @@
             }
         },
         async created()
-        { 
+        {
             this.initForm()
         },
         mounted()
         {
             this.$refs.document_pos_types.setValue(this.form.document_type_id)
         },
-        methods: 
-        { 
+        methods:
+        {
             changeDocumentType(document_type_id)
             {
                 this.form.document_type_id = document_type_id
@@ -101,20 +102,20 @@
             {
                 this.form.customer_id = customer_id
             },
-            getQueryParameters() 
+            getQueryParameters()
             {
                 return queryString.stringify({
                     ...this.form
                 })
             },
-            changeDisabledDates() 
+            changeDisabledDates()
             {
-                if (this.form.end_date < this.form.start_date) 
+                if (this.form.end_date < this.form.start_date)
                 {
                     this.form.end_date = this.form.start_date
                 }
             },
-            clickDownload(type) 
+            clickDownload(type)
             {
                 window.open(`/${this.resource}/export/${type}?${this.getQueryParameters()}`, '_blank')
             },
@@ -127,8 +128,8 @@
                     end_date: moment().endOf('month').format('YYYY-MM-DD'),
                     summary_sales_book: false,
                 }
-            }, 
-            
+            },
+
         }
     }
 </script>
