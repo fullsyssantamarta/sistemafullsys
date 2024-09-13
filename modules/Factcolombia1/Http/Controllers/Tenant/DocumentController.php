@@ -196,25 +196,27 @@ class DocumentController extends Controller
     public function sincronize_resolutions($identification_number){
         $resolutions = $this->api_conection("table/resolutions/{$identification_number}", "GET")->resolutions;
         foreach($resolutions as $resolution){
-            $r = TypeDocument::where('resolution_number', $resolution->resolution)->where('prefix', $resolution->prefix)->orderBy('resolution_date', 'desc')->get();
-            if(count($r) == 0){
-                $rs = new TypeDocument();
-                $rs->template = "face_sincronize";
-                $rs->name = $resolution->type_document->name;
-                $rs->code = $resolution->type_document_id;
-                $rs->resolution_number = $resolution->resolution;
-                $rs->prefix = $resolution->prefix;
-                $rs->generated = null;
-                $rs->description = "SINCRONIZADA API";
+            if(in_array($resolution->type_document_id, [1, 2, 4, 5])){
+                $r = TypeDocument::where('resolution_number', $resolution->resolution)->where('prefix', $resolution->prefix)->orderBy('resolution_date', 'desc')->get();
+                if(count($r) == 0){
+                    $rs = new TypeDocument();
+                    $rs->template = "face_sincronize";
+                    $rs->name = $resolution->type_document->name;
+                    $rs->code = $resolution->type_document_id;
+                    $rs->resolution_number = $resolution->resolution;
+                    $rs->prefix = $resolution->prefix;
+                    $rs->generated = null;
+                    $rs->description = "SINCRONIZADA API";
+                }
+                else
+                    $rs = $r[0];
+                $rs->resolution_date = $resolution->resolution_date;
+                $rs->resolution_date_end = $resolution->date_to;
+                $rs->technical_key = $resolution->technical_key;
+                $rs->from = $resolution->from;
+                $rs->to = $resolution->to;
+                $rs->save();
             }
-            else
-                $rs = $r[0];
-            $rs->resolution_date = $resolution->resolution_date;
-            $rs->resolution_date_end = $resolution->date_to;
-            $rs->technical_key = $resolution->technical_key;
-            $rs->from = $resolution->from;
-            $rs->to = $resolution->to;
-            $rs->save();
         }
     }
 
@@ -262,7 +264,7 @@ class DocumentController extends Controller
                 $response_status_decoded = json_decode($response_status);
                 $documents = $response_status_decoded->data[0]->documents;
                 foreach($documents as $document){
-                    if($document->cufe != 'cufe-initial-number'){
+                    if($document->cufe != 'cufe-initial-number' && in_array($document->type_document_id, [1, 2, 4, 5])){
                         $d = Document::where('prefix', $document->prefix)->where('number', $document->number)->get();
                         if(count($d) == 0){
                             $this->store_sincronize($document);
