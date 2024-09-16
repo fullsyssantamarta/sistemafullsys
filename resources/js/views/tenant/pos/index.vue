@@ -237,74 +237,67 @@
                     <div class="row py-1 border-bottom m-0 p-0">
                         <div class="col-12">
                             <table class="table table-sm table-borderless mb-0">
-                                <template v-for="(item,index) in form.items">
-                                    <tr :key="index">
-                                        <td width="5%" style="text-align: center;" class="pos-list-label" v-if="item.unit_type">
-                                            {{ item.unit_type.name }}
-                                        </td>
-                                        <td width="20%">
-                                            <el-input v-model="item.item.aux_quantity" :readonly="item.item.calculate_quantity" class @input="clickAddItem(item,index,true)"></el-input>
-                                        </td>
-                                        <td width="20%">
-                                            <p class="m-0">{{item.item.name}}</p>
-                                            <small> {{nameSets(item.item_id)}} </small>
-                                        </td>
-                                        <td>
-                                            <p class="font-weight-semibold m-0 text-center">{{currency.symbol}}</p>
-                                        </td>
-                                        <td width="20%">
-                                            <p class="font-weight-semibold m-0 text-center">
-                                                <el-input v-model="item.sale_unit_price_with_tax" class="input-text-right" @input="clickAddItem(item,index,true)" :readonly="item.item.calculate_quantity">
-                                                </el-input>
-                                            </p>
-                                        </td>
-                                        <td width="30%">
-                                            <p class="font-weight-semibold m-0 text-center">
-                                                <el-input v-model="item.total" @input="calculateQuantity(index)" class="input-text-right" :readonly="!item.item.calculate_quantity">
-                                                </el-input>
-                                            </p>
-                                        </td>
-                                        <td class="text-right">
-                                            <a class="btn btn-sm btn-default" @click="clickDeleteItem(index)">
-                                                <i class="fas fa-trash fa-wf"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                </template>
-                                <template v-for="(item,index) in items_refund">
-                                    <tr :key="index + 'R'">
-                                        <td width="5%" style="text-align: center;" class="pos-list-label" v-if="item.unit_type">
-                                            {{ item.unit_type.name }}
-                                        </td>
-                                        <td width="20%">
-                                            <el-input :value=" '-' +item.quantity" :readonly="true" class></el-input>
-                                        </td>
-                                        <td width="20%">
-                                            <p class="m-0">{{item.item.name}}</p>
-                                            <small> {{nameSets(item.item_id)}} </small>
-                                        </td>
-                                        <td>
-                                            <p class="font-weight-semibold m-0 text-center">{{currency.symbol}}</p>
-                                        </td>
-                                        <td width="20%">
-                                            <p class="font-weight-semibold m-0 text-center">
-                                                <el-input v-model="item.sale_unit_price_with_tax" class @input="clickAddItem(item,index,true)" :readonly="item.item.calculate_quantity">
-                                                </el-input>
-                                            </p>
-                                        </td>
-                                        <td width="30%">
-                                            <p class="font-weight-semibold m-0 text-center">
-                                                <el-input :value="'-' + item.total" :readonly="true">
-                                                </el-input>
-                                            </p>
-                                        </td>
-                                        <td class="text-right">
-                                            <a class="btn btn-sm btn-default" @click="clickDeleteItemRefund(index)">
-                                                <i class="fas fa-trash fa-wf"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                </template>
+                                <tr v-for="(item,index) in form.items" :key="index">
+                                    <td width="20%">
+                                        <el-input v-model="item.item.aux_quantity" :readonly="item.item.calculate_quantity" class @input="clickAddItem(item,index,true)"></el-input>
+                                    </td>
+                                    <td width="20%">
+                                        <p class="m-0" style="line-height: 1em;">
+                                            {{item.item.name}}<br>
+                                            <small v-if="item.unit_type">{{ item.unit_type.name }}</small>
+                                        </p>
+                                        <small> {{nameSets(item.item_id)}} </small>
+                                    </td>
+                                    <td width="20%">
+                                        <p class="font-weight-semibold m-0 text-center">
+                                            <el-input v-model="item.sale_unit_price_with_tax" class="input-text-right" @input="clickAddItem(item,index,true)" :readonly="item.item.calculate_quantity">
+                                            </el-input>
+                                        </p>
+                                    </td>
+                                    <td width="30%">
+                                        <p class="font-weight-semibold m-0 text-center">
+                                            <el-input v-model="item.total" @input="calculateQuantity(index)" class="input-text-right" :readonly="!item.item.calculate_quantity">
+                                            </el-input>
+                                        </p>
+                                    </td>
+                                    <td class="text-right">
+                                        <a class="btn btn-sm btn-default" @click="clickDeleteItem(index)">
+                                            <i class="fas fa-trash fa-wf"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr v-for="(item,index) in items_refund" :key="index + 'R'">
+                                    <td width="5%" style="text-align: center;" class="pos-list-label" v-if="item.unit_type">
+                                        {{ item.unit_type.name }}
+                                    </td>
+                                    <td width="20%">
+                                        <el-input :value=" '-' +item.quantity" :readonly="true" class></el-input>
+                                    </td>
+                                    <td width="20%">
+                                        <p class="m-0">{{item.item.name}}</p>
+                                        <small> {{nameSets(item.item_id)}} </small>
+                                    </td>
+                                    <td>
+                                        <p class="font-weight-semibold m-0 text-center">{{currency.symbol}}</p>
+                                    </td>
+                                    <td width="20%">
+                                        <p class="font-weight-semibold m-0 text-center">
+                                            <el-input v-model="item.sale_unit_price_with_tax" class @input="clickAddItem(item,index,true)" :readonly="item.item.calculate_quantity">
+                                            </el-input>
+                                        </p>
+                                    </td>
+                                    <td width="30%">
+                                        <p class="font-weight-semibold m-0 text-center">
+                                            <el-input :value="'-' + item.total" :readonly="true">
+                                            </el-input>
+                                        </p>
+                                    </td>
+                                    <td class="text-right">
+                                        <a class="btn btn-sm btn-default" @click="clickDeleteItemRefund(index)">
+                                            <i class="fas fa-trash fa-wf"></i>
+                                        </a>
+                                    </td>
+                                </tr>
                             </table>
                         </div>
                     </div>
