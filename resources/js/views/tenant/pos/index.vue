@@ -243,7 +243,7 @@
                                     </td>
                                     <td width="20%">
                                         <p class="m-0" style="line-height: 1em;">
-                                            {{item.item.name}}<br>
+                                            <span v-html="item.item.name"></span><br>
                                             <small v-if="item.unit_type">{{ item.unit_type.name }}</small>
                                         </p>
                                         <small> {{nameSets(item.item_id)}} </small>
