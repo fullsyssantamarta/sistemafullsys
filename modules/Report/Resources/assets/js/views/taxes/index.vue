@@ -41,7 +41,7 @@
                   icon="el-icon-search"
                 >Buscar</el-button>
                 <template>
-                  <el-button v-if="records.length > 0 && activeTab === 'sales'" class="submit" type="success" @click.prevent="clickDownload('excel')">
+                  <el-button v-if="records.length > 0" class="submit" type="success" @click.prevent="clickDownload(activeTab)">
                     <i class="fa fa-file-excel"></i> Exportal Excel
                   </el-button>
                 </template>
@@ -284,7 +284,14 @@
                 let query = queryString.stringify({
                     ...this.form
                 });
-                window.open(`/${this.resource}/${type}/?${query}`, '_blank');
+                switch (type) {
+                  case 'purchases':
+                    window.open(`/${this.resource}/${type}/excel/?${query}`, '_blank');
+                    break;
+                  default:
+                    window.open(`/${this.resource}/excel/?${query}`, '_blank');
+                    break;
+                }
             },
             initForm(){
 

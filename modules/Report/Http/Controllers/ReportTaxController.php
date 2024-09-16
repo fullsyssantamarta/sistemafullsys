@@ -13,6 +13,7 @@ use App\Models\Tenant\Document;
 use App\Models\Tenant\DocumentPos;
 use App\Models\Tenant\DocumentPosItem;
 use Modules\Report\Exports\TaxExport;
+use Modules\Report\Exports\TaxPurchasesExport;
 use App\Models\Tenant\Purchase;
 
 
@@ -127,8 +128,6 @@ class ReportTaxController extends Controller
 
         $taxTitles = $taxesAll->unique('id')->values();
 
-        //$records =  //(object)array_merge($documents->toArray(), $documents_pos->toArray());
-
         return (new TaxExport)
                 ->records($documents)
                 ->company($company)
@@ -136,7 +135,34 @@ class ReportTaxController extends Controller
                 ->taxitles($taxTitles)
                 ->taxesall($taxesAll)
                 ->download('Reporte_Impuestos_'.Carbon::now().'.xlsx');
+    }
 
+    public function excelPurchases(Request $request)
+    {
+        $company = Company::first();
+        $establishment = ($request->establishment_id) ? Establishment::findOrFail($request->establishment_id) : auth()->user()->establishment;
+
+        $purchases = Purchase::query()
+            ->whereBetween('date_of_issue', [
+                Carbon::parse($request->date_start)->startOfDay()->format('Y-m-d'),
+                Carbon::parse($request->date_end)->endOfDay()->format('Y-m-d')
+            ])
+            ->get();
+        $taxesPurchases = collect();
+        $purchases->pluck('taxes')->each(function($taxes) use($taxesPurchases) {
+            collect($taxes)->each(function($tax) use($taxesPurchases) {
+                $taxesPurchases->push($tax);
+            });
+        });
+        $taxTitles = $taxesPurchases->unique('id')->values();
+
+        return (new TaxPurchasesExport)
+                ->company($company)
+                ->establishment($establishment)
+                ->taxitles($taxTitles)
+                ->taxPurchases($taxesPurchases)
+                ->purchases($purchases)
+                ->download('Reporte_Impuestos_Compras'.Carbon::now().'.xlsx');
     }
 
 

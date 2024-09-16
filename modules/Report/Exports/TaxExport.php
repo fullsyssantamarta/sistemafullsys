@@ -42,8 +42,6 @@ class TaxExport implements  FromView, ShouldAutoSize
         return $this;
     }
 
-
-
     public function view(): View {
         return view('report::tax.report_excel', [
             'records'=> $this->records,
