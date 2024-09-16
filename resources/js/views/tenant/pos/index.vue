@@ -243,7 +243,7 @@
                                     </td>
                                     <td width="20%">
                                         <p class="m-0" style="line-height: 1em;">
-                                            <span v-html="item.item.name"></span><br>
+                                            {{ clearText(item.item.name) }}<br>
                                             <small v-if="item.unit_type">{{ item.unit_type.name }}</small>
                                         </p>
                                         <small> {{nameSets(item.item_id)}} </small>
@@ -1518,6 +1518,9 @@ export default {
                 }
 
             }
+        },
+        clearText(texto) {
+            return texto.replace(/&nbsp;/g, ' ').replace(/\s{2,}/g, ' ').trim();
         }
     }
 };
