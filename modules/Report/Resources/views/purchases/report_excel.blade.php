@@ -58,6 +58,7 @@
                                 <th class="">F. Pago</th>
                                 <th>Estado</th>
                                 <th>Moneda</th>
+                                <th>T. Impuestos</th>
                                 <th>Total</th>
                             </tr>
                         </thead>
@@ -65,7 +66,7 @@
                             @php
                                 $sum_total = 0;
                             @endphp
-        
+
                             @foreach($records as $key => $value)
                             <tr>
                                 <td class="celda">{{$loop->iteration}}</td>
@@ -78,10 +79,11 @@
                                 <td class="celda">{{$value->supplier->number}}</td>
                                 <td class="celda">{{isset($value->purchase_payments['payment_method_type']['description'])?$value->purchase_payments['payment_method_type']['description']:'-'}}</td>
                                 <td class="celda">{{$value->state_type->description}}</td>
-                                <td class="celda">{{$value->currency_type_id}}</td> 
+                                <td class="celda">{{$value->currency_type_id}}</td>
+                                <td class="celda">{{$value->total_tax}}</td>
                                 <td class="celda">{{$value->state_type_id == '11' ? 0 : $value->total + $value->total_perception}}</td>
 
-                                
+
                                 @php
                                     $value->total_taxed = (in_array($value->document_type_id,['01','03']) && in_array($value->state_type_id,['09','11'])) ? 0 : $value->total_taxed;
                                     $value->total_igv = (in_array($value->document_type_id,['01','03']) && in_array($value->state_type_id,['09','11'])) ? 0 : $value->total_igv;
@@ -92,9 +94,9 @@
                                 @endphp
                             </tr>
                             @endforeach
-                            
+
                             <tr>
-                                <td class="celda" colspan="9"></td>
+                                <td class="celda" colspan="10"></td>
                                 <td class="celda" >Total:</td>
                                 <td class="celda">{{ number_format($sum_total, 2, ".", "") }}</td>
                             </tr>
