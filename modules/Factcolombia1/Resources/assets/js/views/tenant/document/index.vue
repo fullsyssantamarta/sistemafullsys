@@ -46,7 +46,7 @@
                         <th class="text-center"></th>
                         <th class="text-right">Descargas</th>
                         <th class="text-right">Acciones</th>
-                    <tr>
+                    </tr>
                     <tr slot-scope="{ index, row }" >
                         <td>{{ index }}</td>
                         <td class="text-center">{{ row.date_of_issue }}</td>

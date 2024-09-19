@@ -421,7 +421,9 @@ class QuotationController extends Controller
 
                 $warehouse = Warehouse::where('establishment_id', auth()->user()->establishment_id)->first();
 
-                $items = Item::orderBy('description')->whereIsActive()
+                $items = Item::orderBy('description')
+                    ->whereIsActive()
+                    ->take(20)
                     // ->with(['warehouses' => function($query) use($warehouse){
                     //     return $query->where('warehouse_id', $warehouse->id);
                     // }])
