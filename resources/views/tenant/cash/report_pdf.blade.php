@@ -11,6 +11,7 @@
     $document_count = 0;
     $cash_taxes = 0;
     $cash_documents = $cash->cash_documents;
+    // dd($cash_documents);
     $is_complete = $only_head === 'resumido' ? false : true;
     $first_document = '';
     $last_document = '';

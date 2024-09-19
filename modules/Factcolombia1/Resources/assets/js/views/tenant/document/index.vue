@@ -8,7 +8,7 @@
             </ol>
             <div class="right-wrapper pull-right" >
                 <a :href="`/${resource}/create`" class="btn btn-custom btn-sm  mt-2 mr-2"><i class="fa fa-plus-circle"></i> Nuevo</a>
-                <el-tooltip class="item" effect="dark" content="Almacena las facturas con estado Aceptada en el API" placement="bottom">
+                <el-tooltip class="item" effect="dark" content="Importa las facturas con estado Aceptada en el API que no se encuentran registradas" placement="bottom">
                     <el-button class="btn btn-custom btn-sm  mt-2 mr-2" :loading="Sincronizing" @click.prevent="clickSincronize()"><i class="fas fa-sync-alt" ></i> Sincronizar Envios API</el-button>
                 </el-tooltip>
                 <el-button class="btn btn-custom btn-sm  mt-2 mr-2" @click.prevent="clickImport()"><i class="fa fa-arrows-alt" ></i> Carga Masiva</el-button>
