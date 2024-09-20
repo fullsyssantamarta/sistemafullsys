@@ -52,12 +52,14 @@ class RemissionController extends Controller
     {
         return view('sale::co-remissions.form', compact('id'));
     }
- 
+
     public function columns()
     {
         return [
             'date_of_issue' => 'Fecha de emisión',
-            'number' => 'Número'
+            'number' => 'Número',
+            'prefix' => 'Prefijo',
+            'customer' => 'Cliente'
         ];
     }
 
@@ -70,8 +72,8 @@ class RemissionController extends Controller
         return new RemissionCollection($records->paginate(config('tenant.items_per_page')));
     }
 
-    
-    public function tables() 
+
+    public function tables()
     {
         $customers = $this->table('customers');
         $payment_methods = PaymentMethod::all();
@@ -93,7 +95,7 @@ class RemissionController extends Controller
 
 
     public function table($table)
-    { 
+    {
 
         if ($table === 'customers') {
             $persons = app(PersonController::class)->searchCustomers(new Request());
@@ -120,7 +122,7 @@ class RemissionController extends Controller
 
         return $record;
     }
- 
+
 
     public function store(RemissionRequest $request) {
 
@@ -148,7 +150,7 @@ class RemissionController extends Controller
             ],
         ];
     }
- 
+
 
     public function mergeData($inputs)
     {
@@ -164,7 +166,7 @@ class RemissionController extends Controller
             'establishment' => EstablishmentInput::set($establishment_id),
             'establishment_id' => $establishment_id,
             'state_type_id' => '01',
-            'number' => $this->getNumber(),
+            'number' => $this->getNumber($inputs->prefix),
             'items' => $items,
         ];
 
@@ -172,15 +174,15 @@ class RemissionController extends Controller
 
         return $inputs->all();
     }
-    
+
     /**
      * Obtener ultimo numero correlativo
      *
      * @return int
      */
-    private function getNumber()
+    private function getNumber($prefix)
     {
-        $remission = Remission::select('number')->latest()->first();
+        $remission = Remission::where('prefix', $prefix)->select('number')->latest()->first();
 
         return ($remission) ? (int) $remission->number + 1 : 1;
     }
@@ -194,7 +196,7 @@ class RemissionController extends Controller
     }
 
 
-    public function toPrint($external_id, $format) 
+    public function toPrint($external_id, $format)
     {
         $remission = Remission::where('external_id', $external_id)->first();
         if (!$remission) throw new Exception("El código {$external_id} es inválido, no se encontro el registro relacionado");
@@ -207,11 +209,11 @@ class RemissionController extends Controller
         return response()->file($temp);
     }
 
-    
 
-    public function createPdf($remission = null, $format_pdf = 'a4', $filename = null) 
+
+    public function createPdf($remission = null, $format_pdf = 'a4', $filename = null)
     {
-     
+
         ini_set("pcre.backtrack_limit", "5000000");
         $template = new Template();
         $pdf = new Mpdf();
@@ -271,13 +273,13 @@ class RemissionController extends Controller
     }
 
 
-    public function uploadFile($filename, $file_content, $file_type) 
+    public function uploadFile($filename, $file_content, $file_type)
     {
         $this->uploadStorage($filename, $file_content, $file_type);
     }
 
 
-    public function download($external_id, $format = 'a4') 
+    public function download($external_id, $format = 'a4')
     {
         $remission = Remission::where('external_id', $external_id)->first();
 

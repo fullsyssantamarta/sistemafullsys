@@ -54,6 +54,15 @@
                             </div>
 
                             <div class="col-lg-2">
+                                <div class="form-group">
+                                    <label class="control-label">Prefijo</label>
+                                    <el-select v-model="form.prefix">
+                                        <el-option v-for="(row, index) in prefixes" :key="index" :value="row.value" :label="row.value"></el-option>
+                                    </el-select>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-2">
                                 <div class="form-group" :class="{'has-danger': errors.currency_id}">
                                     <label class="control-label">Moneda</label>
                                     <el-select v-model="form.currency_id" @change="changeCurrencyType" filterable>
@@ -305,6 +314,14 @@
                 total_global_discount:0,
                 loading_search:false,
                 taxes:  [],
+                prefixes: [
+                    {
+                        value: 'RM',
+                    },
+                    {
+                        value: 'FB'
+                    }
+                ],
             }
         },
         async created() {
