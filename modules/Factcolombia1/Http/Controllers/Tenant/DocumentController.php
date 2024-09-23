@@ -227,7 +227,8 @@ class DocumentController extends Controller
             if(count($advanced_configuration) > 0){
 //                $lastsync_date = new DateTime($advanced_configuration[0]->lastsync);
 //                $lastsync = $lastsync_date->modify('-1 day')->format('Y-m-d');
-                $lastsync = $advanced_configuration[0]->lastsync;
+//                $lastsync = $advanced_configuration[0]->lastsync;
+                $lastsync = 0;
             }
             else{
                 $advanced_configuration = AdvancedConfiguration::where('lastsync', 0)->get();
