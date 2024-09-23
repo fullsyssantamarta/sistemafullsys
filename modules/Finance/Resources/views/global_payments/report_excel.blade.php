@@ -84,7 +84,7 @@
                                         @if($value->payment_type === 'Modules\Expense\Models\ExpensePayment')
                                             @foreach($value->payment->associated_record_payment->items as $item)
                                                 {{ $item->description }}
-                                                @if($loop->first)
+                                                @if(!$loop->first)
                                                     <br>
                                                 @endif
                                             @endforeach
