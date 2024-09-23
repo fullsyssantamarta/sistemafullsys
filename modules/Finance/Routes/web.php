@@ -6,7 +6,7 @@ if($hostname) {
     Route::domain($hostname->fqdn)->group(function () {
         Route::middleware(['auth', 'redirect.module', 'locked.tenant'])->group(function() {
 
- 
+
             Route::prefix('finances')->group(function () {
 
                 Route::get('global-payments', 'GlobalPaymentController@index')->name('tenant.finances.global_payments.index');
@@ -15,13 +15,13 @@ if($hostname) {
                 Route::get('global-payments/filter', 'GlobalPaymentController@filter');
                 Route::get('global-payments/records', 'GlobalPaymentController@records');
 
-                
+
                 Route::get('balance', 'BalanceController@index')->name('tenant.finances.balance.index');
                 Route::get('balance/pdf', 'BalanceController@pdf');
                 Route::get('balance/excel', 'BalanceController@excel');
                 Route::get('balance/filter', 'BalanceController@filter');
                 Route::get('balance/records', 'BalanceController@records');
-                
+
                 Route::get('payment-method-types', 'PaymentMethodTypeController@index')->name('tenant.finances.payment_method_types.index');
                 Route::get('payment-method-types/pdf', 'PaymentMethodTypeController@pdf');
                 Route::get('payment-method-types/excel', 'PaymentMethodTypeController@excel');
@@ -44,7 +44,7 @@ if($hostname) {
                 Route::get('to-pay/to-pay-all', 'ToPayController@toPayAll')->name('toPayAll');
                 Route::get('to-pay/to-pay', 'ToPayController@toPay');
 
-                
+
                 Route::prefix('income')->group(function () {
 
                     Route::get('', 'IncomeController@index')->name('tenant.finances.income.index');

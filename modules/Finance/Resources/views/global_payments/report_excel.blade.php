@@ -43,7 +43,7 @@
         <br>
         @if(!empty($records))
             <div class="">
-                <div class=" "> 
+                <div class=" ">
                     <table class="">
                         <thead>
                             <tr>
@@ -58,13 +58,14 @@
                                 <th class="">F. Pago</th>
                                 <th class="">Método</th>
                                 <th class="">Referencia</th>
+                                <th class="">Ref. Gasto</th>
                                 <th class="">Pago</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($records as $key => $value)
                                 <tr>
-                                    @php 
+                                    @php
                                         $data_person = $value->data_person;
                                         $document_type = $value->getDocumentTypeDescription();
                                     @endphp
@@ -76,14 +77,22 @@
                                     <td class="celda">{{$value->payment->associated_record_payment->currency_type_id}}</td>
                                     <td class="celda">{{$value->instance_type_description}}</td>
                                     <td class="celda">{{$value->destination_description}}</td>
-                                    <td class="celda">{{$value->payment->date_of_payment->format('Y-m-d')}}</td> 
-                                    <td class="celda">{{(($value->payment->payment_method_type) ? $value->payment->payment_method_type->description:$value->payment->expense_method_type->description)}}</td>  
+                                    <td class="celda">{{$value->payment->date_of_payment->format('Y-m-d')}}</td>
+                                    <td class="celda">{{(($value->payment->payment_method_type) ? $value->payment->payment_method_type->description:$value->payment->expense_method_type->description)}}</td>
                                     <td class="celda">{{$value->payment->reference}}</td>
+                                    <td class="celda">
+                                        @if($value->payment_type === 'Modules\Expense\Models\ExpensePayment')
+                                            @foreach($value->payment->associated_record_payment->items as $item)
+                                                {{ $item->description }}
+                                                @if($loop->first)
+                                                    <br>
+                                                @endif
+                                            @endforeach
+                                        @endif
+                                    </td>
                                     <td class="celda">{{$value->payment->payment}}</td>
                                 </tr>
-
-                                 
-                            @endforeach 
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
