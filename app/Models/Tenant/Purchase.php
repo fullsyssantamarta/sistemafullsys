@@ -72,6 +72,7 @@ class Purchase extends ModelTenant
         'sale',
         'total_tax',
         'subtotal',
+        'affected_document',
     ];
 
     protected $casts = [
@@ -80,7 +81,7 @@ class Purchase extends ModelTenant
         'taxes' => 'object',
     ];
 
-    
+
     public function currency() {
         return $this->belongsTo(Currency::class);
     }

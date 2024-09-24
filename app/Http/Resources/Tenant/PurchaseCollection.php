@@ -24,6 +24,7 @@ class PurchaseCollection extends ResourceCollection
             return [
                 'id' => $row->id,
                 'document_type_description' => $row->document_type->description,
+                'document_type_id' => $row->document_type_id,
                 'group_id' => $row->group_id,
                 'soap_type_id' => $row->soap_type_id,
                 'date_of_issue' => $row->date_of_issue->format('Y-m-d'),
@@ -63,6 +64,7 @@ class PurchaseCollection extends ResourceCollection
                         'quantity' => round($row->quantity,2)
                     ];
                 }),
+                'affected_document' => $row->affected_document,
             ];
         });
     }

@@ -34,6 +34,7 @@
                         <th>Estado</th>
                         <th>Estado de pago</th>
                         <th>Número</th>
+                        <th v-if="columns.affected_document.visible">Documento Afectado</th>
                         <th>Productos</th>
                         <th>Pagos</th>
                         <!-- <th>F. Pago</th> -->
@@ -44,7 +45,7 @@
                         <th class="text-right">Total</th>
                         <!-- <th class="text-center">Descargas</th> -->
                         <th class="text-right">Acciones</th>
-                    <tr>
+                    </tr>
                     <tr slot-scope="{ index, row }">
                         <td>{{ index }}</td>
                         <td class="text-center">{{ row.date_of_issue }}</td>
@@ -55,6 +56,7 @@
                         <td>{{ row.number }}<br/>
                             <small v-text="row.document_type_description"></small><br/>
                         </td>
+                        <td v-if="columns.affected_document.visible">{{ row.affected_document }}</td>
                         <td>
 
                             <el-popover
@@ -93,6 +95,7 @@
                         <td class="text-right">{{ row.total   }}</td>
                         <td>
                             <a v-if="row.state_type_id != '11'" :href="`/${resource}/edit/${row.id}`" type="button" class="btn waves-effect waves-light btn-xs btn-info">Editar</a>
+                            <a v-if="row.state_type_id != '11' && !['07', '08'].includes(String(row.document_type_id))" :href="`/${resource}/note/${row.id}`" type="button" class="btn waves-effect waves-light btn-xs btn-warning">Nota</a>
                             <button v-if="row.state_type_id != '11'" type="button" class="btn waves-effect waves-light btn-xs btn-danger" @click.prevent="clickAnulate(row.id)">Anular</button>
                             <button v-if="row.state_type_id == '11'" type="button" class="btn waves-effect waves-light btn-xs btn-danger" @click.prevent="clickDelete(row.id)">Eliminar</button>
                             <a :href="`/${resource}/pdf/${row.id}`" type="button" class="btn waves-effect waves-light btn-xs btn-info" target="_blank">PDF</a>
@@ -170,6 +173,10 @@
                     // },
                     total_perception:{
                         title: 'Percepcion',
+                        visible: false
+                    },
+                    affected_document: {
+                        title: 'Documento Afectado',
                         visible: false
                     }
 

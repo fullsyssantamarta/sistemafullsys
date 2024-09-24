@@ -118,6 +118,7 @@ class PurchaseController extends Controller
         $establishment = Establishment::where('id', auth()->user()->establishment_id)->first();
         // $currency_types = CurrencyType::whereActive()->get();
         $document_types_invoice = DocumentType::whereIn('id', ['01', 'GU75', 'NE76'])->get();
+        $document_types_notes = DocumentType::whereIn('id', ['07', '08'])->get();
         // $discount_types = ChargeDiscountType::whereType('discount')->whereLevel('item')->get();
         // $charge_types = ChargeDiscountType::whereType('charge')->whereLevel('item')->get();
         $company = Company::active();
@@ -129,7 +130,7 @@ class PurchaseController extends Controller
         $taxes = $this->table('taxes');
 
         return compact('suppliers', 'establishment','currencies',
-                    'taxes', 'document_types_invoice','company','payment_method_types', 'payment_destinations', 'customers');
+                    'taxes', 'document_types_invoice','company','payment_method_types', 'payment_destinations', 'customers', 'document_types_notes');
     }
 
     public function item_tables()
@@ -163,10 +164,14 @@ class PurchaseController extends Controller
         return view('tenant.purchases.form_edit', compact('resourceId'));
     }
 
+    public function note($id)
+    {
+        $resourceId = $id;
+        return view('tenant.purchases.note', compact('resourceId'));
+    }
+
     public function store(PurchaseRequest $request)
     {
-
-        //return 'asd';
         $data = self::convert($request);
 
         $purchase = DB::connection('tenant')->transaction(function () use ($data) {
@@ -180,9 +185,7 @@ class PurchaseController extends Controller
                 $p_item->save();
 
                 if(array_key_exists('lots', $row)){
-
                     foreach ($row['lots'] as $lot){
-
                         $p_item->lots()->create([
                             'date' => $lot['date'],
                             'series' => $lot['series'],
@@ -191,42 +194,31 @@ class PurchaseController extends Controller
                             'has_sale' => false,
                             'state' => $lot['state']
                         ]);
-
                     }
-
                 }
 
                 if(array_key_exists('item', $row))
                 {
                     if( $row['item']['lots_enabled'] == true)
                     {
-
                         ItemLotsGroup::create([
                             'code'  => $row['lot_code'],
                             'quantity'  => $row['quantity'],
                             'date_of_due'  => $row['date_of_due'],
                             'item_id' => $row['item_id']
                         ]);
-
                     }
                 }
-
             }
 
-
             foreach ($data['payments'] as $payment) {
-
                 $record_payment = $doc->purchase_payments()->create($payment);
-
                 if(isset($payment['payment_destination_id'])){
                     $this->createGlobalPayment($record_payment, $payment);
                 }
             }
-
             return $doc;
         });
-
-
 
         return [
             'success' => true,
@@ -239,9 +231,6 @@ class PurchaseController extends Controller
 
     public function update(PurchaseRequest $request)
     {
-
-
-
         $purchase = DB::connection('tenant')->transaction(function () use ($request) {
 
             $doc = Purchase::firstOrNew(['id' => $request['id']]);
@@ -267,7 +256,6 @@ class PurchaseController extends Controller
                 // dd($it);
                 $it->lots()->delete();
             }
-
 
             $doc->items()->delete();
 
@@ -322,10 +310,8 @@ class PurchaseController extends Controller
                 'id' => $purchase->id,
             ],
         ];
-
-
-
     }
+
 
     public function anular($id)
     {

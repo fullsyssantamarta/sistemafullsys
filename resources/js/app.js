@@ -166,6 +166,7 @@ Vue.component('tenant-dispatches-create', require('./views/tenant/dispatches/cre
 Vue.component('tenant-purchases-index', require('./views/tenant/purchases/index.vue'));
 Vue.component('tenant-purchases-form', require('./views/tenant/purchases/form.vue'));
 Vue.component('tenant-purchases-edit', require('./views/tenant/purchases/form_edit.vue'));
+Vue.component('tenant-purchases-note-form', require('./views/tenant/purchases/form_note.vue'));
 
 Vue.component('tenant-purchases-items', require('./views/tenant/dispatches/items.vue'));
 Vue.component('tenant-attribute_types-index', require('./views/tenant/attribute_types/index.vue'));

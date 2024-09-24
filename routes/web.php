@@ -345,6 +345,7 @@ if ($hostname) {
             Route::get('purchases/delete/{id}', 'Tenant\PurchaseController@delete');
             Route::post('purchases/import', 'Tenant\PurchaseController@import');
             Route::get('purchases/pdf/{id}', 'Tenant\PurchaseController@pdf');
+            Route::get('purchases/note/{id}', 'Tenant\PurchaseController@note');
 
 
             // Route::get('documents/send/{document}', 'Tenant\DocumentController@send');

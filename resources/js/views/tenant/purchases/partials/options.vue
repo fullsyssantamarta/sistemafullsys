@@ -56,6 +56,9 @@
                         this.form = response.data.data
                         let typei = this.type == 'edit' ? 'editada' : 'registrada'
                         this.titleDialog = `Compra ${typei}: ` +this.form.number
+                        if(this.type === 'note') {
+                            this.titleDialog = `Compra: ` +this.form.number
+                        }
                     })
             },
 
@@ -63,6 +66,9 @@
                 location.href = `/${this.resource}`
             },
             clickNewDocument() {
+                if(this.type === 'note') {
+                    location.href = `/${this.resource}/create`
+                }
                 this.clickClose()
             },
             clickClose() {
