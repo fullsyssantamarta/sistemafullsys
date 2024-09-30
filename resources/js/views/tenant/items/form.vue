@@ -102,6 +102,34 @@
                         </div>
 
                         <div class="col-md-3">
+                            <div class="form-group" :class="{'has-danger': errors.color_id}">
+                                <label class="control-label">Color</label>
+                                <a href="#" v-if="form_color.add == false" class="control-label" @click="form_color.add = true"> [ + Nuevo]</a>
+                                <a href="#" v-if="form_color.add == true" class="control-label" @click="saveEntity('colors', form_color)"> [ + Guardar]</a>
+                                <a href="#" v-if="form_color.add == true" class="control-label text-danger" @click="form_color.add = false"> [ Cancelar]</a>
+                                <el-input v-if="form_color.add == true" v-model="form_color.name" dusk="item_code" style="margin-bottom:1.5%;"></el-input>
+                                <el-select v-if="form_color.add == false" v-model="form.color_id" filterable clearable>
+                                    <el-option v-for="option in colors" :key="option.id" :value="option.id" :label="option.name"></el-option>
+                                </el-select>
+                                <small class="form-control-feedback" v-if="errors.color_id" v-text="errors.color_id[0]"></small>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="form-group" :class="{'has-danger': errors.size_id}">
+                                <label class="control-label">Talla</label>
+                                <a href="#" v-if="form_size.add == false" class="control-label" @click="form_size.add = true"> [ + Nuevo]</a>
+                                <a href="#" v-if="form_size.add == true" class="control-label" @click="saveEntity('sizes', form_size)"> [ + Guardar]</a>
+                                <a href="#" v-if="form_size.add == true" class="control-label text-danger" @click="form_size.add = false"> [ Cancelar]</a>
+                                <el-input v-if="form_size.add == true" v-model="form_size.name" dusk="item_code" style="margin-bottom:1.5%;"></el-input>
+                                <el-select v-if="form_size.add == false" v-model="form.size_id" filterable clearable>
+                                    <el-option v-for="option in sizes" :key="option.id" :value="option.id" :label="option.name"></el-option>
+                                </el-select>
+                                <small class="form-control-feedback" v-if="errors.size_id" v-text="errors.size_id[0]"></small>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
                             <div class="form-group" :class="{'has-danger': errors.brand_id}">
                                 <label class="control-label">Marca</label>
                                 <a href="#" v-if="form_brand.add == false" class="control-label" @click="form_brand.add = true"> [ + Nuevo]</a>
@@ -449,6 +477,8 @@
                 showDialogLots:false,
                 form_category:{ add: false, name: null, id: null },
                 form_brand:{ add: false, name: null, id: null },
+                form_color:{ add: false, name: null, id: null },
+                form_size:{ add: false, name: null, id: null },
                 warehouses: [],
                 loading_submit: false,
                 showPercentagePerception: false,
@@ -468,6 +498,8 @@
                 affectation_igv_types: [],
                 categories: [],
                 brands: [],
+                sizes: [],
+                colors: [],
                 accounts: [],
                 show_has_igv:true,
                 have_account:false,
@@ -497,6 +529,8 @@
                     this.warehouses = response.data.warehouses
                     this.categories = response.data.categories
                     this.brands = response.data.brands
+                    this.colors = response.data.colors
+                    this.sizes = response.data.sizes
                     this.attribute_types = response.data.attribute_types
                     this.configuration = response.data.configuration
 
@@ -833,6 +867,23 @@
                     this.form.suggested_price = 0
                 }
             },
+            saveEntity(entity, form) {
+                form.add = false;
+
+                this.$http.post(`/${entity}`, form)
+                .then(response => {
+                    if (response.data.success) {
+                        this.$message.success(response.data.message);
+                        this[`${entity}`].push(response.data.data);
+                        form.name = null;
+                    } else {
+                        this.$message.error('No se guardaron los cambios');
+                    }
+                })
+                .catch(error => {
+                    console.error(error)
+                });
+            },
             saveCategory()
             {
                 this.form_category.add = false
@@ -869,9 +920,6 @@
                 .catch(error => {
 
                 })
-
-
-
             },
             changeAttributeType(index) {
                 let attribute_type_id = this.form.attributes[index].attribute_type_id

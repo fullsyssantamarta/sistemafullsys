@@ -6,7 +6,6 @@ if($hostname) {
     Route::domain($hostname->fqdn)->group(function () {
         Route::middleware(['auth', 'locked.tenant'])->group(function() {
 
-
             Route::get('categories', 'CategoryController@index')->name('tenant.categories.index')->middleware('redirect.level');
             Route::get('categories/records', 'CategoryController@records');
             Route::get('categories/columns', 'CategoryController@columns');
@@ -34,6 +33,10 @@ if($hostname) {
             Route::post('items/import/item-price-lists', 'ItemController@importItemPriceLists');
 
             Route::get('items/co-export', 'ItemController@coExport');
+
+            Route::post('sizes', 'SizeController@store');
+
+            Route::post('colors', 'ColorController@store');
 
         });
     });

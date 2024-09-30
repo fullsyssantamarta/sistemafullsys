@@ -38,6 +38,8 @@ use Modules\Factcolombia1\Models\Tenant\{
     Tax,
 };
 use Illuminate\Support\Facades\Log;
+use Modules\Item\Models\Color;
+use Modules\Item\Models\Size;
 
 
 class ItemController extends Controller
@@ -133,10 +135,12 @@ class ItemController extends Controller
         $tags = Tag::all();
         $categories = Category::all();
         $brands = Brand::all();
+        $colors = Color::all();
+        $sizes = Size::all();
         $configuration = Configuration::select('affectation_igv_type_id')->firstOrFail();
 
         return compact('unit_types', 'attribute_types','warehouses', 'accounts', 'tags', 'categories', 'brands',
-                        'configuration', 'taxes', 'currency_types');
+                        'configuration', 'taxes', 'currency_types','colors','sizes');
     }
 
     public function record($id)

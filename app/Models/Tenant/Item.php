@@ -16,6 +16,8 @@ use Modules\Factcolombia1\Models\Tenant\TypeUnit;
 use Modules\Factcolombia1\Models\Tenant\Tax;
 use Modules\Factcolombia1\Models\Tenant\Currency;
 use Modules\Inventory\Models\Warehouse;
+use Modules\Item\Models\Color;
+use Modules\Item\Models\Size;
 
 
 class Item extends ModelTenant
@@ -72,6 +74,8 @@ class Item extends ModelTenant
         'purchase_tax_id',
         'model',
         // 'warehouse_id'
+        'color_id',
+        'size_id',
     ];
 
 
@@ -242,6 +246,16 @@ class Item extends ModelTenant
         return $this->belongsTo(Category::class);
     }
 
+    public function color()
+    {
+        return $this->belongsTo(Color::class);
+    }
+
+    public function size()
+    {
+        return $this->belongsTo(Size::class);
+    }
+
     public function item_lots()
     {
         return $this->hasMany(ItemLot::class, 'item_id');
@@ -398,11 +412,14 @@ class Item extends ModelTenant
             'unit_type' => $this->unit_type,
             'tax' => $this->tax,
             'is_set' => (bool) $this->is_set,
-            
+            'size_id' => $this->size_id,
+            'color_id' => $this->color_id,
+            'size' => $detail['size'],
+            'color' => $detail['color'],
         ];
     }
 
-        
+
     /**
      * Descripción para busqueda de items
      *
@@ -415,6 +432,8 @@ class Item extends ModelTenant
         $desc = ($this->internal_id)?$this->internal_id.' - '.$this->name : $this->name;
         $category = ($this->category) ? "{$this->category->name}" : "";
         $brand = ($this->brand) ? "{$this->brand->name}" : "";
+        $color = ($this->color) ? "{$this->color->name}" : "";
+        $size = ($this->size) ? "{$this->size->name}" : "";
 
         $desc = "{$desc} - {$brand}";
 
@@ -422,12 +441,14 @@ class Item extends ModelTenant
             'full_description' => $desc,
             'brand' => $brand,
             'category' => $category,
+            'color' => $color,
+            'size' => $size,
         ];
     }
 
-    
+
     /**
-     * 
+     *
      * Filtros para busqueda de productos
      * Usado en:
      * ItemController
@@ -441,7 +462,7 @@ class Item extends ModelTenant
                     ->orWhere('internal_id','like', "%{$input}%")
                     ->orderBy('name');
     }
-    
+
     public function scopeWhereFilterAllowedItem($query)
     {
         return $query->whereWarehouse()
@@ -450,9 +471,9 @@ class Item extends ModelTenant
                         ->whereNotItemsAiu();
     }
 
-    
+
     /**
-     * 
+     *
      * Filtros opcionales para componente de busqueda
      *
      * @param  Builder $query
