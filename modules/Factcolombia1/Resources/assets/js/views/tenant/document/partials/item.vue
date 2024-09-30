@@ -3,6 +3,15 @@
         <form autocomplete="off" @submit.prevent="clickAddItem">
             <div class="form-body">
                 <div class="row">
+                    <div class="col-6">
+                        <div class="form-group">
+                            <template v-if="!is_client">
+                                <el-checkbox  v-model="search_item_by_barcode" :disabled="recordItem != null" >Buscar por código de barras</el-checkbox>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
                     <div class="col-md-7 col-lg-7 col-xl-7 col-sm-7">
                         <div class="form-group" id="custom-select" :class="{'has-danger': errors.item_id}">
                             <label class="control-label">
@@ -46,37 +55,38 @@
                             </template>
                             <template v-else>
                                 <el-input id="custom-input">
-                                    <el-select :disabled="recordItem != null" v-model="form.item_id"
-                                            @change="changeItem"
-                                            filterable
-                                            placeholder="Buscar"
-                                            popper-class="el-select-items"
-                                            dusk="item_id"
-                                            @visible-change="focusTotalItem"
-                                            slot="prepend"
-                                            id="select-width"
-                                            remote
-                                            :remote-method="searchRemoteItems"
-                                            :loading="loading_search">
-
-                                          <el-tooltip v-for="option in items"  :key="option.id" placement="top">
+                                    <el-select
+                                        :disabled="recordItem != null"
+                                        v-model="form.item_id"
+                                        @change="changeItem"
+                                        placeholder="Buscar"
+                                        filterable
+                                        remote
+                                        :remote-method="searchRemoteItems"
+                                        :loading="loading_search"
+                                        value-key="id"
+                                        ref="selectBarcode"
+                                        slot="prepend">
+                                        <el-tooltip v-for="option in items"  :key="option.id" placement="top">
                                             <div slot="content">
                                                 Marca: {{option.brand}} <br>
                                                 Categoria: {{option.category}} <br>
                                                 Stock: {{option.stock}} <br>
                                                 Precio: {{option.currency_type_symbol}} {{option.sale_unit_price}} <br>
                                             </div>
-                                            <el-option  :value="option.id" :label="option.full_description"></el-option>
+                                            <el-option :value="option.id" :label="option.full_description"></el-option>
                                         </el-tooltip>
                                     </el-select>
-                                    <el-tooltip slot="append" class="item" effect="dark" content="Ver Stock del Producto" placement="bottom" :disabled="recordItem != null">
+                                    <el-tooltip
+                                        slot="append"
+                                        class="item"
+                                        effect="dark"
+                                        content="Ver Stock del Producto"
+                                        placement="bottom"
+                                        :disabled="recordItem != null">
                                         <el-button :disabled="isEditItemNote"  @click.prevent="clickWarehouseDetail()"><i class="fa fa-search"></i></el-button>
                                     </el-tooltip>
                                 </el-input>
-                            </template>
-
-                            <template v-if="!is_client">
-                                <el-checkbox  v-model="search_item_by_barcode" :disabled="recordItem != null" >Buscar por código de barras</el-checkbox><br>
                             </template>
                             <small class="form-control-feedback" v-if="errors.item_id" v-text="errors.item_id[0]"></small>
                         </div>
@@ -346,8 +356,8 @@
         methods: {
             async searchRemoteItems(input) {
 
-                if (input.length > 2) {
-
+                if (input.length > 2 || this.search_item_by_barcode) {
+                    console.log(input);
                     this.loading_search = true
                     let parameters = `input=${input}`
 
@@ -379,12 +389,13 @@
                     return 0
             },
             enabledSearchItemsBarcode(){
-
                 if(this.search_item_by_barcode){
-
+                    if (this.$refs.selectBarcode) {
+                        this.$refs.selectBarcode.$data.selectedLabel = '';
+                    }
                     if (this.items.length == 1){
-
                         this.form.item_id = this.items[0].id
+                        this.$refs.selectBarcode.blur();
                         this.changeItem()
                     }
                 }
@@ -493,6 +504,9 @@
                 this.cleanTotalItem();
                 this.showListStock = true
                 this.form.lots_group = this.form.item.lots_group
+                if(this.search_item_by_barcode){
+                    this.items = [];
+                }
             },
 
             getItemsAiu(detailAiu)
@@ -616,6 +630,9 @@
 //                console.log(this.form)
                 this.$emit('add', this.form);
 
+                if (this.search_item_by_barcode) {
+                    this.cleanItems()
+                }
 
                 if (this.recordItem){
                     this.close()
@@ -630,6 +647,10 @@
                 // this.row = calculateRowItem(this.form, this.currencyTypeIdActive, this.exchangeRateSale);
                // this.row.edit = false;
                 //this.initializeFields()
+            },
+            cleanItems() {
+                this.items = []
+                this.$refs.selectBarcode.$el.getElementsByTagName('input')[0].focus()
             },
             validateTotalItem(){
 

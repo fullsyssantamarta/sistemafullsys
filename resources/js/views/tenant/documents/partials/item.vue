@@ -3,6 +3,15 @@
         <form autocomplete="off" @submit.prevent="clickAddItem">
             <div class="form-body">
                 <div class="row">
+                    <div class="col-6">
+                        <div class="form-group">
+                            <template v-if="!is_client">
+                                <el-checkbox  v-model="search_item_by_barcode" :disabled="recordItem != null" >Buscar por código de barras</el-checkbox>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
                     <div class="col-md-7 col-lg-7 col-xl-7 col-sm-7">
                         <div class="form-group" id="custom-select" :class="{'has-danger': errors.item_id}">
                             <label class="control-label">
@@ -76,12 +85,12 @@
                                             placeholder="Buscar"
                                             popper-class="el-select-items"
                                             dusk="item_id"
-                                            @visible-change="focusTotalItem"
                                             slot="prepend"
                                             id="select-width"
                                             remote
                                             :remote-method="searchRemoteItems"
-                                            :loading="loading_search">
+                                            :loading="loading_search"
+                                            ref="selectBarcode">
 
                                           <el-tooltip v-for="option in items"  :key="option.id" placement="top">
                                             <div slot="content">
@@ -97,10 +106,6 @@
                                         <el-button :disabled="isEditItemNote"  @click.prevent="clickWarehouseDetail()"><i class="fa fa-search"></i></el-button>
                                     </el-tooltip>
                                 </el-input>
-                            </template>
-
-                            <template v-if="!is_client">
-                                <el-checkbox  v-model="search_item_by_barcode" :disabled="recordItem != null" >Buscar por código de barras</el-checkbox><br>
                             </template>
                             <el-checkbox v-model="form.has_plastic_bag_taxes" :disabled="isEditItemNote" >Impuesto a la Bolsa Plástica</el-checkbox>
                             <small class="form-control-feedback" v-if="errors.item_id" v-text="errors.item_id[0]"></small>
@@ -600,7 +605,7 @@
             async searchRemoteItems(input) {
                 // console.log(input)
 
-                if (input.length > 2) {
+                if (input.length > 2 || this.search_item_by_barcode) {
 
                     this.loading_search = true
                     let parameters = `input=${input}`
@@ -629,7 +634,7 @@
             enabledSearchItemsBarcode(){
 
                 if(this.search_item_by_barcode){
-
+                    this.$refs.selectBarcode.blur();
                     if (this.items.length == 1){
 
                         this.form.item_id = this.items[0].id
