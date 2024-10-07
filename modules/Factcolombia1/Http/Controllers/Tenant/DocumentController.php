@@ -594,6 +594,11 @@ class DocumentController extends Controller
                   $service_invoice['firma_facturacion'] = $firma_facturacion;
               }
 
+            if(file_exists(storage_path('logo_empresa_emisora.jpg'))){
+                $logo_empresa_emisora = base64_encode(file_get_contents(storage_path('logo_empresa_emisora')));
+                $service_invoice['logo_empresa_emisora'] = $logo_empresa_emisora;
+            }
+
             if ($request->order_reference)
             {
                 if (isset($request['order_reference']['issue_date_order']) && isset($request['order_reference']['id_order']))

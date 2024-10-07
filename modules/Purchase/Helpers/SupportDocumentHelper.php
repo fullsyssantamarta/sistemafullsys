@@ -186,6 +186,11 @@ class SupportDocumentHelper
         $form_api['seller']['dv'] = $this->validarDigVerifDIAN($form_api['seller']['identification_number']);
         $form_api['seller']['postal_zone_code'] = '111611';
 
+        if(file_exists(storage_path('logo_empresa_emisora.jpg'))){
+            $logo_empresa_emisora = base64_encode(file_get_contents(storage_path('logo_empresa_emisora')));
+            $form_api['logo_empresa_emisora'] = $logo_empresa_emisora;
+        }
+
         if($support_document->isAdjustNote())
         {
             $affected_document = $support_document->support_document_adjust_note->affected_support_document;
