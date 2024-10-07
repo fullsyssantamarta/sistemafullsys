@@ -595,7 +595,7 @@ class DocumentController extends Controller
               }
 
             if(file_exists(storage_path('logo_empresa_emisora.jpg'))){
-                $logo_empresa_emisora = base64_encode(file_get_contents(storage_path('logo_empresa_emisora')));
+                $logo_empresa_emisora = base64_encode(file_get_contents(storage_path('logo_empresa_emisora.jpg')));
                 $service_invoice['logo_empresa_emisora'] = $logo_empresa_emisora;
             }
 
