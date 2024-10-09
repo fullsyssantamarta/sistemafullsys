@@ -9,6 +9,8 @@ use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Modules\Item\Models\Category;
 use Modules\Item\Models\Brand;
+use Modules\Item\Models\Color;
+use Modules\Item\Models\Size;
 
 
 class ItemsImport implements ToCollection
