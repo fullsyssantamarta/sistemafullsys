@@ -1183,6 +1183,10 @@ class DocumentPosController extends Controller
         $response = curl_exec($ch);
         curl_close($ch);
 
+        if(config('tenant.show_log')) {
+            \Log::debug('DocumentPosController:1186: '.$response);
+        }
+
         return json_decode($response);
     }
 
@@ -1215,8 +1219,8 @@ class DocumentPosController extends Controller
                 if($response->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->IsValid == "false"){
 //                if(!$response->success) {
                     return response([
-                        'success' => $response->success,
-                        'message' => $response->message,
+                        'success' => $response->success ?? false,
+                        'message' => 'Rechazado: '.$response->message,
                     ], 500);
                 }
                 if($response->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->IsValid == "true"){
