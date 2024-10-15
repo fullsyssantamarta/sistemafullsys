@@ -583,7 +583,9 @@ class DocumentController extends Controller
                 $service_invoice['number'] = $correlative_api;
                 $service_invoice['prefix'] = $request->prefix;
                 $service_invoice['resolution_number'] = $request->resolution_number;
-                $service_invoice['foot_note'] = "Modo de operación: Software Propio - by ".env('APP_NAME', 'FACTURALATAM')." La presente Factura Electrónica de Venta, es un título valor de acuerdo con lo establecido en el Código de Comercio y en especial en los artículos 621,772 y 774. El Decreto 2242 del 24 de noviembre de 2015 y el Decreto Único 1074 de mayo de 2015. El presente título valor se asimila en todos sus efectos a una letra de cambio Art. 779 del Código de Comercio. Con esta el Comprador declara haber recibido real y materialmente las mercancías o prestación de servicios descritos en este título valor.";
+                if($request->format_print != "2"){
+                    $service_invoice['foot_note'] = "Modo de operación: Software Propio - by ".env('APP_NAME', 'FACTURALATAM')." La presente Factura Electrónica de Venta, es un título valor de acuerdo con lo establecido en el Código de Comercio y en especial en los artículos 621,772 y 774. El Decreto 2242 del 24 de noviembre de 2015 y el Decreto Único 1074 de mayo de 2015. El presente título valor se asimila en todos sus efectos a una letra de cambio Art. 779 del Código de Comercio. Con esta el Comprador declara haber recibido real y materialmente las mercancías o prestación de servicios descritos en este título valor.";
+                }
             }
 //\Log::debug(json_encode($service_invoice));
             $service_invoice['web_site'] = env('APP_NAME', 'FACTURALATAM');
@@ -636,8 +638,10 @@ class DocumentController extends Controller
                 $service_invoice['template_token'] = password_hash($company->identification_number, PASSWORD_DEFAULT);
             }
             else{
-                $service_invoice['invoice_template'] = $request->format_print;
-                $service_invoice['template_token'] = password_hash($company->identification_number, PASSWORD_DEFAULT);
+                if($request->format_print != "2"){
+                    $service_invoice['invoice_template'] = $request->format_print;
+                    $service_invoice['template_token'] = password_hash($company->identification_number, PASSWORD_DEFAULT);
+                }
             }
 
             $sucursal = \App\Models\Tenant\Establishment::where('id', auth()->user()->establishment_id)->first();
