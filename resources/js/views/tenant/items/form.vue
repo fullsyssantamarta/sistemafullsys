@@ -828,6 +828,11 @@
                 }
 
                 this.loading_submit = true
+                if(!this.showAdditionalFields) {
+                    if(this.form.description == null) {
+                        this.form.description = this.form.name
+                    }
+                }
                 await this.$http.post(`/${this.resource}`, this.form)
                     .then(response => {
                         if (response.data.success) {
