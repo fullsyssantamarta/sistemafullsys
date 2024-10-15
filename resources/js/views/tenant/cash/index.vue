@@ -49,6 +49,7 @@
                         <td class="text-center">
                             <button type="button" class="btn waves-effect waves-light btn-xs btn-primary" @click.prevent="clickDownload(row.id)">Reporte</button>
                             <button type="button" class="btn waves-effect waves-light btn-xs btn-primary" @click.prevent="clickDownload(row.id, 'resumido')">Reporte Resumen</button>
+                            <button type="button" class="btn waves-effect waves-light btn-xs btn-primary" @click.prevent="clickDownloadArqueo(row.id)">Arqueo</button>
 
                             <template v-if="row.state">
 
@@ -105,6 +106,9 @@
         methods: {
             clickDownload(id, only_head = '') {
                 window.open(`/${this.resource}/report/${id}/${only_head}`, '_blank');
+            },
+            clickDownloadArqueo(id) {
+                window.open(`/${this.resource}/report-ticket/${id}`, '_blank');
             },
             clickDownloadIncomeSummary(id) {
                 window.open(`/${this.resource}/report/income-summary/${id}`, '_blank');
