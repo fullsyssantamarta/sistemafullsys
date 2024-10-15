@@ -11,15 +11,15 @@ class NoteConcept extends Model
     use SoftDeletes, UsesTenantConnection;
 
     protected $table = 'co_note_concepts';
-    
-    
+
+
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = ['type_document_id', 'name', 'code'];
-    
+
     /**
      * The attributes that should be mutated to dates.
      *

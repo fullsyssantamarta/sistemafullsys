@@ -10,6 +10,7 @@ use Modules\Purchase\Models\PurchaseOrder;
 use Modules\Factcolombia1\Models\Tenant\{
     Currency,
 };
+use Modules\Factcolombia1\Models\Tenant\NoteConcept;
 
 class Purchase extends ModelTenant
 {
@@ -73,6 +74,7 @@ class Purchase extends ModelTenant
         'total_tax',
         'subtotal',
         'affected_document',
+        'note_concept_id',
     ];
 
     protected $casts = [
@@ -292,5 +294,9 @@ class Purchase extends ModelTenant
     public function scopeWhereCurrency($query, $currency_id)
     {
         return $query->where('currency_id', $currency_id);
+    }
+
+    public function note_concepts() {
+        return $this->belongsTo(NoteConcept::class, 'note_concept_id');
     }
 }

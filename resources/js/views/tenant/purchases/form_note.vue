@@ -8,7 +8,7 @@
                 <div class="form-body">
 
                     <div class="row">
-                        <div class="col-lg-4">
+                        <div class="col-lg-2">
                             <div class="form-group" :class="{ 'has-danger': errors.document_type_id }">
                                 <label class="control-label">Tipo comprobante</label>
                                 <el-select v-model="form.document_type_id" @change="changeDocumentType">
@@ -17,6 +17,15 @@
                                 </el-select>
                                 <small class="form-control-feedback" v-if="errors.document_type_id"
                                     v-text="errors.document_type_id[0]"></small>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group" :class="{'has-danger': errors.note_concept_id}">
+                                <label class="control-label">Concepto</label>
+                                <el-select v-model="form.note_concept_id" filterable  popper-class="el-select-document_type" dusk="note_concept_id" class="border-left rounded-left border-info">
+                                    <el-option v-for="option in note_concepts" :key="option.id" :value="option.id" :label="option.name"></el-option>
+                                </el-select>
+                                <small class="form-control-feedback" v-if="errors.note_concept_id" v-text="errors.note_concept_id[0]"></small>
                             </div>
                         </div>
                         <div class="col-lg-2">
@@ -404,7 +413,8 @@ export default {
             loading_search: false,
             currency_type: {},
             taxes: [],
-            purchaseNewId: null
+            purchaseNewId: null,
+            note_concepts: [],
         }
     },
     async created() {
@@ -836,6 +846,7 @@ export default {
                 has_client: false,
                 taxes: [],
                 has_payment: false,
+                note_concept_id: null,
             }
 
             // this.clickAddPayment()
@@ -859,6 +870,7 @@ export default {
         },
         changeDocumentType() {
             this.filterSuppliers()
+            this.conceptsNote()
         },
         addRow(row) {
             this.form.items.push(row)
@@ -919,6 +931,9 @@ export default {
             if (!validate.success) {
                 return this.$message.error(validate.message);
             }
+            if(!this.form.note_concept_id){
+                return this.$message.error('Debe seleccionar un concepto')
+            }
 
             this.loading_submit = true
             // await this.changePaymentMethodType(false)
@@ -956,6 +971,23 @@ export default {
                 this.filterSuppliers()
 
             })
+        },
+        conceptsNote() {
+            this.form.note_concept_id = null;
+            if (this.form.document_type_id != null) {
+                let id = this.form.document_type_id == '07' ? 3 : 2;
+                this.getConcepts(id).then(
+                    rows => (this.note_concepts = rows)
+                );
+            }
+        },
+        getConcepts(val) {
+            return this.$http.post(`/concepts/${val}`).then(response => {
+                return response.data;
+            })
+            .catch(error => {
+                console.log(error)
+            });
         },
     }
 }

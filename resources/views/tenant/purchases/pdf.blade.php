@@ -60,7 +60,11 @@
         </td>
         <td width="30%" class="border-box py-4 px-2 text-center">
             <h5 class="text-center">COMPRA</h5>
-            <h3 class="text-center">{{ $tittle }}</h3>
+            <h3>
+                {{ $document->document_type->description }}
+                <br>
+                {{ $tittle }}
+            </h3>
         </td>
     </tr>
 </table>
@@ -111,6 +115,14 @@
         <td class="align-top">Teléfono:</td>
         <td colspan="3">
             {{ $supplier->telephone }}
+        </td>
+    </tr>
+    @endif
+    @if ($document->document_type_id == '07' || $document->document_type_id == '08')
+    <tr>
+        <td class="align-top">Concepto:</td>
+        <td colspan="3">
+            {{ $document->note_concepts->name }}
         </td>
     </tr>
     @endif
