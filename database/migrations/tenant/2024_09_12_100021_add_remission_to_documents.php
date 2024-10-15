@@ -13,9 +13,12 @@ class AddRemissionToDocuments extends Migration
      */
     public function up()
     {
-        Schema::table('documents', function (Blueprint $table) {
-            $table->unsignedInteger('remission_id')->nullable()->after('order_note_id');
-        });
+        // Verifica si la columna 'remission_id' no existe antes de agregarla
+        if (!Schema::hasColumn('documents', 'remission_id')) {
+            Schema::table('documents', function (Blueprint $table) {
+                $table->unsignedInteger('remission_id')->nullable()->after('order_note_id');
+            });
+        }
     }
 
     /**
@@ -25,8 +28,11 @@ class AddRemissionToDocuments extends Migration
      */
     public function down()
     {
-        Schema::table('documents', function (Blueprint $table) {
-            $table->dropColumn('remission_id');
-        });
+        // Verifica si la columna existe antes de eliminarla
+        if (Schema::hasColumn('documents', 'remission_id')) {
+            Schema::table('documents', function (Blueprint $table) {
+                $table->dropColumn('remission_id');
+            });
+        }
     }
 }
