@@ -1137,6 +1137,7 @@ class DocumentPosController extends Controller
         $request_api = json_decode($document->request_api);
         $json = [
             'prefix' => $document_type->prefix,
+            'resolution_number' => $document_type->resolution_number,
             'number' => $data_consecutive->number,
             'date' => Carbon::now()->format('Y-m-d'),
             'time' => Carbon::now()->format('H:i:s'),
