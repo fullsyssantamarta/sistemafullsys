@@ -353,9 +353,7 @@ class DocumentPosController extends Controller
                 // \Log::debug("{$base_url}ubl2.1/eqdoc");
                 // \Log::debug($company->api_token);
                 // \Log::debug($data_document);
-                if(config('tenant.show_log')) {
-                    \Log::debug('DocumentPosController:356: '.$response);
-                }
+                //\Log::debug($response);
                 $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
                 curl_close($ch);
                 $response_model = json_decode($response);
