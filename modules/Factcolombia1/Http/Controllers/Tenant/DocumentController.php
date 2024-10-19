@@ -1254,6 +1254,8 @@ class DocumentController extends Controller
 
             $ch = curl_init("{$base_url}ubl2.1/invoice/preeliminar-view");
             $data_document = json_encode($service_invoice);
+            \Log::debug($datoscompany);
+            
 //\Log::debug("{$base_url}ubl2.1/invoice");
 //\Log::debug($company->api_token);
 //\Log::debug($correlative_api);

@@ -489,139 +489,190 @@ export default {
             datEmision: {
                 disabledDate(time) {
                     return time.getTime() > moment();
-                }
-            },
-            input_person: {},
-            company: {},
-            health_sector: false,
-            is_contingency_3: false,
-            is_contingency_4: false,
-            is_client: false,
-            recordItem: null,
-            recordItemHealthUser: null,
-            resource: 'co-documents',
-            showDialogAddItem: false,
-            showDialogAddHealthUser: false,
-            showDialogAddRetention: false,
-            showDialogNewPerson: false,
-            showDialogOptions: false,
-            loading_submit: false,
-            loading_preeliminar_view: false,
-            loading_form: false,
-            errors: { format_print: null },
-            form: {},
-            type_invoices: [],
-            currencies: [],
-            all_customers: [],
-            payment_methods: [],
-            payment_forms: [],
-            form_payment: {},
-            customers: [],
-            all_series: [],
-            series: [],
-            currency_type: {},
-            documentNewId: null,
-            total_global_discount: 0,
-            loading_search: false,
-            taxes: [],
-            resolutions: [],
-            typeDocuments: [],
-            duplicated_health_fields: {},
-            duplicated_health_users: [],
-            companies: null,
-            correlative_api: null, // Aquí almacenarás el siguiente número consecutivo
-            currentPrefix: null,
-            global_discount_is_amount: true,
-        }
-    },
-    //filtro de separadores de mil
-    filters: {
-        numberFormat(value) {
+                  }
+                },
+                input_person:{},
+                company:{},
+                health_sector: false,
+                is_client: false,
+                recordItem: null,
+                recordItemHealthUser: null,
+                resource: 'co-documents',
+                showDialogAddItem: false,
+                showDialogAddHealthUser: false,
+                showDialogAddRetention: false,
+                showDialogNewPerson: false,
+                showDialogOptions: false,
+                loading_submit: false,
+                loading_preeliminar_view: false,
+                loading_form: false,
+                errors: {format_print: null},
+                form: {},
+                type_invoices: [],
+                currencies: [],
+                all_customers: [],
+                payment_methods: [],
+                payment_forms: [],
+                form_payment: {},
+                customers: [],
+                all_series: [],
+                series: [],
+                currency_type: {},
+                documentNewId: null,
+                total_global_discount:0,
+                loading_search:false,
+                taxes:  [],
+                resolutions:[],
+                typeDocuments: [],
+                duplicated_health_fields: {},
+                duplicated_health_users: [],
+                companies: null,
+                correlative_api: null, // Aquí almacenarás el siguiente número consecutivo
+                currentPrefix: null,
+                global_discount_is_amount: true,
+                lastResolutionId: null, // Para almacenar el último ID de resolución seleccionado
+                expirationAlertShown: false, // Para evitar mostrar la alerta de vencimiento más de una vez
+                remainingInvoicesAlertShown: false // Para evitar mostrar la alerta de facturas restantes más de una vez
+            }
+        },
+        //filtro de separadores de mil
+        filters: {
+            numberFormat(value) {
             if (isNaN(value) || value === null || value === undefined) return '';
             const parts = value.toString().split('.');
             const formattedIntegerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
             const decimalPart = parts.length > 1 ? `.${parts[1]}` : '';
             return `${formattedIntegerPart}${decimalPart}`;
+            },
         },
-    },
+        async created() {
+//            console.log(this.invoice)
+            await this.initForm()
+            await this.fetchCompanyInfo();
+            await this.$http.get(`/${this.resource}/tables`)
+                .then(response => {
+                    this.all_customers = response.data.customers;
+                    this.customers = response.data.customers;
+                    this.taxes = response.data.taxes
+//                    console.log(this.customers)
+                    this.type_invoices = response.data.type_invoices;
+                    if (Array.isArray(response.data.type_documents)) {
+                            this.typeDocuments = response.data.type_documents;
+                        }
+                    this.currencies = response.data.currencies
+                    this.payment_methods = response.data.payment_methods
+                    this.payment_forms = response.data.payment_forms
+                    this.form.currency_id = (this.currencies.length > 0)?170:null;
+                    this.form.type_invoice_id = (this.type_invoices.length > 0)?this.type_invoices[0].id:null;
+                    //his.form.payment_form_id = (this.payment_forms.length > 0)?this.payment_forms[0].id:null;
+                    this.form.payment_method_id = 10;//(this.payment_methods.length > 0)?this.payment_methods[0].id:null;
+                    this.resolutions = response.data.resolutions
+                    //ordenar resolicones por cristian
+                    // Ordenar por 'id' de forma descendente
+                    this.resolutions.sort((a, b) => b.id - a.id);
+                    this.form.payment_form_id = 1
+                    // this.selectDocumentType()
+                    this.filterCustomers();
+                    // this.changeEstablishment()
+                    // this.changeDateOfIssue()
+                    // this.changeDocumentType()
+                    // this.changeCurrencyType()
+                    this.load_duplicate_invoice();
+                })
 
-    async created() {
-        //            console.log(this.invoice)
-        await this.initForm()
-        await this.fetchCompanyInfo();
-        await this.$http.get(`/${this.resource}/tables`)
-            .then(response => {
-                this.all_customers = response.data.customers;
-                this.customers = response.data.customers;
-                this.taxes = response.data.taxes
-                //                    console.log(this.customers)
-                this.type_invoices = response.data.type_invoices;
-                if (Array.isArray(response.data.type_documents)) {
-                    this.typeDocuments = response.data.type_documents;
-                }
-                this.currencies = response.data.currencies
-                this.payment_methods = response.data.payment_methods
-                this.payment_forms = response.data.payment_forms
-                this.form.currency_id = (this.currencies.length > 0) ? 170 : null;
-                if(this.is_contingency_3)
-                    this.form.type_invoice_id = (this.type_invoices.length > 0) ? this.type_invoices[2].id : null;
-                else
-                    this.form.type_invoice_id = (this.type_invoices.length > 0) ? this.type_invoices[0].id : null;
-                //his.form.payment_form_id = (this.payment_forms.length > 0)?this.payment_forms[0].id:null;
-                this.form.payment_method_id = 10;//(this.payment_methods.length > 0)?this.payment_methods[0].id:null;
-                if(this.is_contingency_3)
-                    this.resolutions = response.data.resolutions.filter(resolution => resolution.code === '3');
-                else
-                    this.resolutions = response.data.resolutions.filter(resolution => resolution.code === '1');
-                // Ordenar por 'id' de forma descendente
-                this.resolutions.sort((a, b) => b.id - a.id);
-                this.form.payment_form_id = 1
-                // this.selectDocumentType()
-                this.filterCustomers();
-                // this.changeEstablishment()
-                // this.changeDateOfIssue()
-                // this.changeDocumentType()
-                // this.changeCurrencyType()
-                this.load_duplicate_invoice();
+            this.loading_form = true
+            this.$eventHub.$on('reloadDataPersons', (customer_id) => {
+                this.reloadDataCustomers(customer_id)
             })
-        this.loading_form = true
-        this.$eventHub.$on('reloadDataPersons', (customer_id) => {
-            this.reloadDataCustomers(customer_id)
-        })
-        this.$eventHub.$on('initInputPerson', () => {
-            this.initInputPerson()
-        })
-        //            console.log(this.customers)
-        await this.generatedFromExternalDocument()
-    },
-
-    computed: {
-        generatedFromPos() {
-            const form_exceed_uvt = this.$getStorage('form_exceed_uvt')
-            if (form_exceed_uvt != undefined && form_exceed_uvt) return true
-            return false
+            this.$eventHub.$on('initInputPerson', () => {
+                this.initInputPerson()
+            })
+//            console.log(this.customers)
+            await this.generatedFromExternalDocument()
         },
-        //Detalles de resolucion Cristian
-        selectedResolutionDetails() {
-            const selectedDocument = this.typeDocuments.find(doc => doc.id === this.form.resolution_id);
-            if (selectedDocument) {
-                const remainingInvoices = selectedDocument.to - this.correlative_api;
-                return {
-                    dateEnd: selectedDocument.resolution_date_end,
-                    generatedCount: this.correlative_api,
-                    remainingInvoices: remainingInvoices >= 0 ? remainingInvoices : 0
-                };
-            } else {
-                return { dateEnd: '', generatedCount: 0, remainingInvoices: 0 };
+        computed: {
+            generatedFromPos()
+            {
+                const form_exceed_uvt = this.$getStorage('form_exceed_uvt')
+
+                if(form_exceed_uvt != undefined && form_exceed_uvt) return true
+
+                return false
+            },
+            //Detalles de resolucion Cristian
+            selectedResolutionDetails() {
+                const selectedDocument = this.typeDocuments.find(doc => doc.id === this.form.resolution_id);
+                if (selectedDocument) {
+                    const remainingInvoices = selectedDocument.to - this.correlative_api;
+                    return {
+                        dateEnd: selectedDocument.resolution_date_end,
+                        generatedCount: this.correlative_api,
+                        remainingInvoices: remainingInvoices >= 0 ? remainingInvoices : 0
+                    };
+                } else {
+                    return { dateEnd: '', generatedCount: 0, remainingInvoices: 0 };
+                }
             }
-        }
-    },
-    methods:
-    {
-        //Validacion de resolucion Cristian
-        validateResolution() {
-            const selectedDocument = this.typeDocuments.find(doc => doc.id === this.form.resolution_id);
-            if (selectedDocument) {
+        },
+        watch: {
+            selectedResolutionDetails(newValue) {
+            if (newValue && this.form.resolution_id !== this.lastResolutionId) {
+                this.lastResolutionId = this.form.resolution_id;
+                this.expirationAlertShown = false; // Reiniciar la alerta de vencimiento al cambiar la resolución
+                this.remainingInvoicesAlertShown = false; // Reiniciar la alerta de facturas restantes al cambiar la resolución
+                this.checkResolutionAlerts(newValue);
+            }
+            }
+        },
+        methods:
+        {
+            checkResolutionAlerts(resolutionDetails) {
+                if (!resolutionDetails || !this.form.resolution_id) return;
+
+                // Depuración para verificar los valores
+                //console.log('Detalles de resolución:', resolutionDetails);
+
+                // Alertar si faltan menos de 20 días para que la resolución expire
+                const remainingDays = moment(resolutionDetails.dateEnd).diff(moment(), 'days');
+                if (remainingDays > 0 && remainingDays <= 20 && !this.expirationAlertShown) {
+                    this.$message({
+                        type: 'error', // Cambiamos el tipo de alerta a "error" para que sea de color rojo
+                        message: `¡Advertencia! A la resolución de facturación le quedan ${remainingDays} días antes de vencerse.`,
+                        duration: 0, // Establecemos la duración en 0 para que la alerta no desaparezca automáticamente
+                        showClose: true, // Añadir un botón de cierre manual
+                        offset: 50 // Espaciado desde la parte superior de la ventana
+                    });
+                    this.expirationAlertShown = true; // Marcar la alerta como mostrada
+                }
+
+                // Verificar `remainingInvoices` correctamente
+                if (resolutionDetails.remainingInvoices != null && !this.remainingInvoicesAlertShown) {
+                    if (resolutionDetails.remainingInvoices > 0 && resolutionDetails.remainingInvoices <= 20) {
+                        this.$message({
+                            type: 'error', // Cambiamos el tipo de alerta a "error" para que sea de color rojo
+                            message: `¡Advertencia! Solo quedan ${resolutionDetails.remainingInvoices} facturas disponibles.`,
+                            duration: 0, // Establecemos la duración en 0 para que la alerta no desaparezca automáticamente
+                            showClose: true, // Añadir un botón de cierre manual
+                            offset: 100 // Espaciado desde la parte superior para evitar superposición con otra alerta
+                        });
+                        this.remainingInvoicesAlertShown = true; // Marcar la alerta como mostrada
+                    } else if (resolutionDetails.remainingInvoices === 0) {
+                        // Si no quedan facturas disponibles
+                        this.$message({
+                            type: 'error', // Alerta de error
+                            message: `¡Advertencia! No quedan facturas disponibles en esta resolución.`,
+                            duration: 0, // Alerta que se mantiene
+                            showClose: true,
+                            offset: 150 // Mayor espacio desde la parte superior
+                        });
+                        this.remainingInvoicesAlertShown = true; // Marcar la alerta como mostrada
+                    }
+                }
+            },           
+            //Validacion de resolucion Cristian
+            validateResolution() {
+                const selectedDocument = this.typeDocuments.find(doc => doc.id === this.form.resolution_id);
+                if (selectedDocument) {
                 const currentDate = new Date();
                 const resolutionDateEnd = new Date(selectedDocument.resolution_date_end);
                 // Comprobar si la resolución se ha vencido
@@ -718,22 +769,28 @@ export default {
                     }
                 }
             },
-            changeResolution()
-            {
+            async changeResolution() {
                 if (typeof this.invoice !== 'undefined') {
                     this.form.type_document_id = this.invoice.type_document_id;
                     this.form.resolution_id = this.invoice.type_document_id;
                 }
                 const resol = this.resolutions.find(x => x.id == this.form.resolution_id);
-//                console.log(this.form.resolution_id)
-//                console.log(resol)
-                if(resol)
-                {
+                if (resol) {
                     this.form.resolution_number = resol.resolution_number;
                     this.form.prefix = resol.prefix;
                     this.form.type_document_id = resol.id;
                     this.currentPrefix = resol.prefix; // Actualizar el prefijo en data
-                    this.fetchCorrelative(); // Llama al método para obtener el correlativo
+                    await this.fetchCorrelative(); // Llama al método para obtener el correlativo
+
+                    // Limpiar mensajes de advertencia previos
+                    this.$message.closeAll();
+
+                    // Reiniciar las alertas de advertencia
+                    this.expirationAlertShown = false;
+                    this.remainingInvoicesAlertShown = false;
+
+                    // Llamar a checkResolutionAlerts después de obtener los detalles
+                    this.checkResolutionAlerts(this.selectedResolutionDetails);
                 }
             },
 
