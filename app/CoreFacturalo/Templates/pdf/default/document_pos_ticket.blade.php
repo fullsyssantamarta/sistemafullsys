@@ -37,7 +37,7 @@
         $data_qr = $document->qr;
         $codigoQR = new QrCode($data_qr);
         $output = new Output\Png();
-        $imagenCodigoQR = $output->output($codigoQR, 140);
+        $imagenCodigoQR = $output->output($codigoQR, 180);
     }
 @endphp
 <html>
