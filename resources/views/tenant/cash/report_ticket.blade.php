@@ -266,7 +266,7 @@
                         <tr>
                             <th>#</th>
                             <th>Medio de Pago</th>
-                            <th>Valor Transacción</th>
+                            {{-- <th>Valor Transacción</th> --}}
                             <th>Valor Escrito</th>
                         </tr>
                     </thead>
@@ -281,15 +281,10 @@
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $item->name }}</td>
-                                <td>${{ number_format($item->sum, 2, '.', ',') }}</td>
+                                {{-- <td>${{ number_format($item->sum, 2, '.', ',') }}</td> --}}
                                 <td></td>
                             </tr>
                         @endforeach
-                        <tr>
-                            <td colspan="2"><strong>Total:</strong></td>
-                            <td><strong>${{ number_format($totalSum, 2, '.', ',') }}</strong></td>
-                            <td></td>
-                        </tr>
                     </tbody>
                 </table>
             </div>
