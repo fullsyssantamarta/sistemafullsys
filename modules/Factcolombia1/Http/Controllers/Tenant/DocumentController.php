@@ -704,11 +704,12 @@ class DocumentController extends Controller
                 'Accept: application/json',
                 "Authorization: Bearer {$company->api_token}"
             ));
-//            $response = curl_exec($ch);
-            \Log::debug($response);
+            $response = curl_exec($ch);
+            if(config('tenant.show_log')) {
+                \Log::debug('DocumentController:707: '.$response);
+            }
             curl_close($ch);
             $response_model = json_decode($response);
-            // dd($response_model);
             $zip_key = null;
             $invoice_status_api = null;
 
