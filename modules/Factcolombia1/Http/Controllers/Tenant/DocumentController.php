@@ -704,8 +704,8 @@ class DocumentController extends Controller
                 'Accept: application/json',
                 "Authorization: Bearer {$company->api_token}"
             ));
-            $response = curl_exec($ch);
-//            \Log::debug($response);
+//            $response = curl_exec($ch);
+            \Log::debug($response);
             curl_close($ch);
             $response_model = json_decode($response);
             // dd($response_model);
