@@ -9,6 +9,15 @@
       </div>
     </header>
     <div class="row">
+      <div class="col-12" v-if="resolutions.length > 0">
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+          <p class="mb-0"><strong>Las siguientes Resoluciones estan por vencer:</strong></p>
+          <p class="mb-0" v-for="resolution in resolutions" :key="resolution.id">{{ resolution.prefix }} - {{ resolution.resolution_number }} - Fecha: {{ resolution.resolution_date_end }}</p>
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+      </div>
       <div class="col-xl-6">
         <section class="card card-featured-left card-featured-secondary">
           <div class="card-body">
@@ -760,6 +769,7 @@ export default {
       all_items: [],
       items:[],
       currencies:[],
+      resolutions: [],
     };
   },
   async created() {
@@ -771,7 +781,8 @@ export default {
         this.establishments.length > 0 ? this.establishments[0].id : null;
     });
     await this.loadAll();
-    await this.filterItems()
+    await this.filterItems();
+    await this.getResolutions();
 
     // this.$eventHub.$on("reloadDataUnpaid", () => {
     //   this.loadAll();
@@ -924,6 +935,26 @@ export default {
         .then(response => {
           this.utilities = response.data.data.utilities;
         });
+    },
+    getResolutions() {
+      axios.get(`/co-configuration-all`).then(response => {
+        this.resolutions = this.expiringResolutions(response.data.typeDocuments);
+      }).catch(error => {
+        console.error(error)
+      }).then(() => {});
+    },
+    expiringResolutions(resolutions) {
+      const today = new Date();
+      const limitDate = new Date();
+      limitDate.setDate(today.getDate() + 15);
+
+      return resolutions.filter((resolution) => {
+        if (resolution.resolution_date_end) {
+          const resolutionEndDate = new Date(resolution.resolution_date_end);
+          return resolutionEndDate >= today && resolutionEndDate <= limitDate;
+        }
+        return false;
+      });
     }
   }
 };
