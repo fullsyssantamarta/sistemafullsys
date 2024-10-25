@@ -9,20 +9,22 @@
                                 Producto/Servicio
                                 <a href="#" @click.prevent="showDialogNewItem = true">[+ Nuevo]</a>
                             </label>
-                            
+
                             <template  id="select-append">
                                 <el-input id="custom-input">
                                     <el-select
-                                            v-model="form.item_id" @change="changeItem"
-                                            filterable
-                                            placeholder="Buscar"
-                                            popper-class="el-select-items"
-                                            ref="select_item"
-                                            @focus="focusSelectItem"
-                                            slot="prepend"
-                                            id="select-width"> 
-                                            
-                                            <el-option v-for="option in items" :key="option.id" :value="option.id" :label="option.full_description"></el-option>
+                                        v-model="form.item_id" @change="changeItem"
+                                        filterable
+                                        placeholder="Buscar"
+                                        popper-class="el-select-items"
+                                        ref="select_item"
+                                        @focus="focusSelectItem"
+                                        slot="prepend"
+                                        id="select-width"
+                                        remote
+                                        :remote-method="searchRemoteItems"
+                                        :loading="loading_search">
+                                        <el-option v-for="option in items" :key="option.id" :value="option.id" :label="option.full_description"></el-option>
                                     </el-select>
                                     <el-tooltip slot="append" class="item" effect="dark" content="Ver Stock del Producto" placement="bottom" >
                                         <el-button @click.prevent="clickWarehouseDetail()"><i class="fa fa-search"></i></el-button>
@@ -33,7 +35,7 @@
                             <small class="form-control-feedback" v-if="errors.item_id" v-text="errors.item_id[0]"></small>
                         </div>
                     </div>
-                    
+
                     <div class="col-md-5">
                         <div class="form-group" :class="{'has-danger': errors.tax_id}">
                             <label class="control-label">Impuesto</label>
@@ -62,7 +64,7 @@
                             <small class="form-control-feedback" v-if="errors.unit_price" v-text="errors.unit_price[0]"></small>
                         </div>
                     </div>
-                    
+
                     <div class="col-md-3 col-sm-6">
                         <div class="form-group"  :class="{'has-danger': errors.discount}">
                             <label class="control-label">Descuento</label>
@@ -108,7 +110,7 @@
                                 </tbody>
                             </table>
                         </div>
-                    </div> 
+                    </div>
                 </div>
             </div>
             <div class="form-actions text-right pt-2">
@@ -119,7 +121,7 @@
         <item-form :showDialog.sync="showDialogNewItem"
                    :external="true"></item-form>
 
-                   
+
         <warehouses-detail
                 :showDialog.sync="showWarehousesDetail"
                 :warehouses="warehousesDetail">
@@ -127,7 +129,7 @@
     </el-dialog>
 </template>
 <style>
-.el-select-dropdown { 
+.el-select-dropdown {
     max-width: 80% !important;
     margin-right: 5% !important;
 }
@@ -163,7 +165,8 @@
                 warehousesDetail:[],
                 item_unit_types: [],
                 taxes:[],
-                item_unit_type: {}
+                item_unit_type: {},
+                loading_search:false
             }
         },
         computed: {
@@ -174,8 +177,8 @@
         created() {
             this.initForm()
             this.$http.get(`/${this.resource}/item/tables`).then(response => {
-                
-                this.items = response.data.items  
+
+                this.items = response.data.items
                 this.taxes = response.data.taxes;
 
             })
@@ -185,7 +188,7 @@
             })
         },
         methods: {
-            
+
             clickWarehouseDetail(){
 
                 if(!this.form.item_id){
@@ -202,7 +205,7 @@
             },
             initForm() {
                 this.errors = {};
-                
+
                 this.form = {
                     item_id: null,
                     item: {},
@@ -211,7 +214,7 @@
                     item_unit_type_id: null,
                     item_unit_types: [],
                     is_set: false,
-                    
+
                     subtotal: null,
                     tax: {},
                     tax_id: null,
@@ -222,7 +225,7 @@
                     unit_type_id: null,
 
                 };
-                
+
                 this.total_item = 0;
                 this.item_unit_type = {};
                 this.has_list_prices = false;
@@ -247,18 +250,18 @@
 
                 this.form.quantity = 1;
                 this.item_unit_types = this.form.item.item_unit_types;
-                
+
                 this.form.unit_type_id = this.form.item.unit_type_id
                 this.form.tax_id = (this.taxes.length > 0) ? this.form.item.tax_id: null
 
                 (this.item_unit_types.length > 0) ? this.has_list_prices = true : this.has_list_prices = false;
-                
+
             },
             changePresentation() {
                 let price = 0;
-                
+
                 this.item_unit_type = _.find(this.form.item.item_unit_types, {'id': this.form.item_unit_type_id});
-                
+
                 switch (this.item_unit_type.price_default) {
                     case 1: price = this.item_unit_type.price1
                         break;
@@ -267,7 +270,7 @@
                     case 3: price = this.item_unit_type.price3
                         break;
                 }
-                
+
                 this.form.unit_price = price;
                 this.form.item.unit_type_id = this.item_unit_type.unit_type_id;
             },
@@ -288,24 +291,24 @@
 
                 }
 
-               
+
                 this.item_unit_type = row
                 this.form.unit_price = valor
                 this.form.item.unit_type_id = row.unit_type_id
                 this.form.item_unit_type_id = row.id
             },
             clickAddItem() {
-                
+
                 let unit_price = this.form.unit_price;
 
                 this.form.unit_price = unit_price;
                 this.form.item.unit_price = unit_price;
-                
+
                 this.form.item.presentation = this.item_unit_type;
-                
+
                 this.form.tax = _.find(this.taxes, {'id': this.form.tax_id})
                 this.form.unit_type = this.form.item.unit_type
-                
+
                 // this.initializeFields()
                 this.$emit('add', this.form);
                 this.initForm();
@@ -321,9 +324,9 @@
             },
             cleanTotalItem(){
                 this.total_item = null;
-            },  
+            },
             calculateQuantity() {
-                if(this.form.item.calculate_quantity) { 
+                if(this.form.item.calculate_quantity) {
                     this.form.quantity = _.round((this.total_item / this.form.unit_price), 4)
                 }
             },
@@ -334,15 +337,15 @@
             },
             validateTotalItem(){
 
-                this.errors = {} 
+                this.errors = {}
 
                 if(this.form.item.calculate_quantity){
                     if(this.total_item < 0.01)
                         this.$set(this.errors, 'total_item', ['total venta producto debe ser mayor a 0']);
-                } 
+                }
 
-                return this.errors 
-            }, 
+                return this.errors
+            },
             reloadDataItems(item_id) {
                 this.$http.get(`/${this.resource}/table/items`).then((response) => {
                     this.items = response.data
@@ -351,6 +354,22 @@
                     // this.filterItems()
 
                 })
+            },
+            async searchRemoteItems(input) {
+                if (input.length > 2) {
+                    this.loading_search = true
+                    let parameters = `input=${input}`
+                    await this.$http.get(`/${this.resource}/search/items/?${parameters}`)
+                        .then(response => {
+                            this.items = response.data.items
+                            this.loading_search = false
+                            if(this.items.length == 0){
+                                this.getItems()
+                            }
+                        })
+                } else {
+                    await this.getItems()
+                }
             },
         }
     }

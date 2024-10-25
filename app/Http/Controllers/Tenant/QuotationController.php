@@ -50,12 +50,13 @@ use Modules\Factcolombia1\Models\Tenant\{
 };
 use App\Models\Tenant\Document;
 use Carbon\Carbon;
+use Modules\Document\Traits\SearchTrait;
 
 
 class QuotationController extends Controller
 {
 
-    use StorageDocument, FinanceTrait;
+    use StorageDocument, FinanceTrait, SearchTrait;
 
     protected $quotation;
     protected $company;
@@ -123,6 +124,60 @@ class QuotationController extends Controller
         }
 
         return $records;
+    }
+
+    public function searchItems(Request $request)
+    {
+        $warehouse = Warehouse::where('establishment_id', auth()->user()->establishment_id)->first();
+        $items_not_services = $this->getItemsNotServices($request);
+        $items_services = $this->getItemsServices($request);
+        $all_items = $items_not_services->merge($items_services);
+
+        $items = collect($all_items)->transform(function($row) use($warehouse){
+
+            $full_description = $this->getFullDescription($row);
+            return [
+                'id' => $row->id,
+                'name' => $row->name,
+                'description' => $full_description,
+                'full_description' => $full_description,
+                'internal_id' => $row->internal_id,
+                'currency_id' => $row->currency_id,
+                'currency_type_symbol' => $row->currency_type->symbol,
+                'sale_unit_price' => $row->sale_unit_price,
+                'purchase_unit_price' => $row->purchase_unit_price,
+                'unit_type_id' => $row->unit_type_id,
+                'tax_id' => $row->tax_id,
+                'is_set' => (bool) $row->is_set,
+                'has_igv' => (bool) $row->has_igv,
+                'calculate_quantity' => (bool) $row->calculate_quantity,
+                'item_unit_types' => collect($row->item_unit_types)->transform(function($row) {
+                    return [
+                        'id' => $row->id,
+                        'description' => "{$row->description}",
+                        'item_id' => $row->item_id,
+                        'unit_type_id' => $row->unit_type_id,
+                        'unit_type' => $row->unit_type,
+                        'quantity_unit' => $row->quantity_unit,
+                        'price1' => $row->price1,
+                        'price2' => $row->price2,
+                        'price3' => $row->price3,
+                        'price_default' => $row->price_default,
+                    ];
+                }),
+                'warehouses' => collect($row->warehouses)->transform(function($row) {
+                    return [
+                        'warehouse_id' => $row->warehouse->id,
+                        'warehouse_description' => $row->warehouse->description,
+                        'stock' => $row->stock,
+                    ];
+                }),
+                'unit_type' => $row->unit_type,
+                'tax' => $row->tax,
+            ];
+        });
+
+        return compact('items');
     }
 
     public function searchCustomers(Request $request)
