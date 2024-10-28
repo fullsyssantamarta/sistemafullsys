@@ -77,7 +77,7 @@ trait InventoryTrait
         $records = Item::whereHas('warehouses', function($query) use ($warehouse_id){
             $query->where('warehouse_id', $warehouse_id);
         })
-        ->where([['item_type_id', '01'], ['unit_type_id', '!=','ZZ']])->whereNotIsSet()->get();
+        ->where([['item_type_id', '01'], ['unit_type_id', '!=','ZZ'], ['active', 1]])->whereNotIsSet()->get();
 
         return collect($records)->transform(function($row) use ($warehouse_id) {
             return  [
@@ -101,7 +101,7 @@ trait InventoryTrait
 
 
     public function optionsItemFull() {
-        $records = Item::where([['item_type_id', '01'], ['unit_type_id', '!=','ZZ']])->whereNotIsSet()->get();
+        $records = Item::where([['item_type_id', '01'], ['unit_type_id', '!=','ZZ'], ['active', 1]])->whereNotIsSet()->get();
 
         return collect($records)->transform(function($row) {
             return  [
