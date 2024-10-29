@@ -39,6 +39,8 @@
         $output = new Output\Png();
         $imagenCodigoQR = $output->output($codigoQR, 180);
     }
+    $total_payment = $document->payments->sum('payment');
+    $balance = ($document->total - $total_payment) - $document->payments->sum('change');
 @endphp
 <html>
 <head>
@@ -203,6 +205,7 @@
                     @endphp
                 @endforeach
             </ul>
+            <span>VUELTO: {{ $document->currency_type->symbol }} {{ number_format(abs($balance),2, ".", "") }}</span><br>
             <span>SALDO: {{ $document->currency_type->symbol }} {{ number_format($document->total - $payment, 2) }}</span>
             @if($resolution)
                 <br>

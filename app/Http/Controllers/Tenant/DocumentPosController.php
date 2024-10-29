@@ -354,6 +354,9 @@ class DocumentPosController extends Controller
                 // \Log::debug($company->api_token);
                 // \Log::debug($data_document);
                 //\Log::debug($response);
+                if(config('tenant.show_log')) {
+                    \Log::debug('DocumentPosController:1186: '.$response);
+                }
                 $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
                 curl_close($ch);
                 $response_model = json_decode($response);
