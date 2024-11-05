@@ -1,7 +1,7 @@
 <template >
     <div class="row col-lg-12 m-0 p-0" v-loading="loading_submit">
         <div class="col-lg-4 col-md-6 bg-white m-0 p-0" style="height: calc(100vh - 110px)">
-            <div class="h-75 bg-light" style="overflow-y: auto">
+            <div class="h-50 bg-light" style="overflow-y: auto">
 
                 <div class="row pl-3 py-2 border-bottom m-0 p-0 bg-white">
                     <div class="col-12 px-0 py-3">
@@ -29,7 +29,7 @@
 
 
             </div>
-            <div class="h-25 bg-info" style="overflow-y: auto">
+            <div class="h-50 bg-info" style="overflow-y: auto">
                 <div class="row m-0 p-0 bg-white h-10 d-flex align-items-center">
                     <div class="col-sm-6 py-1">
                         <p class="font-weight-semibold mb-0">TOTAL VENTA</p>
@@ -38,12 +38,12 @@
                         <p class="font-weight-semibold mb-0">{{currencyTypeActive.symbol}} {{ getFormatDecimal(form.sale) }}</p>
                     </div>
                 </div>
-                <div class="row m-0 p-0 bg-white h-10 d-flex align-items-center" v-if="form.total_discount > 0">
+                <div class="row m-0 p-0 bg-white h-10 d-flex align-items-center" v-if="discount_amount > 0">
                     <div class="col-sm-6 py-1 ">
                         <p class="font-weight-semibold mb-0">TOTAL DESCUENTO (-)</p>
                     </div>
                     <div class="col-sm-6 py-1 text-right">
-                        <p class="font-weight-semibold mb-0">{{currencyTypeActive.symbol}} {{getFormatDecimal(form.total_discount)}}</p>
+                        <p class="font-weight-semibold mb-0">{{currencyTypeActive.symbol}} {{getFormatDecimal(discount_amount)}}</p>
                     </div>
                 </div>
 
@@ -209,6 +209,43 @@
                                             <template slot="prepend">{{currencyTypeActive.symbol}}</template>
                                         </el-input> -->
                                         <h4 class="control-label font-weight-semibold m-0 text-center m-b-0">{{currencyTypeActive.symbol}} {{ getFormatDecimal(difference)}}</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-8">
+                    <div class="card card-default">
+                        <div class="card-body text-center">
+                            <div class="row col-lg-12">
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <h2>
+                                            <el-switch v-model="enabled_discount"
+                                                active-text="Aplicar descuento"
+                                                class="control-label font-weight-semibold m-0 text-center m-b-0"
+                                                @change="changeEnabledDiscount"></el-switch>
+                                        </h2>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="form-group">
+                                        <label class="control-label">
+                                            <template>Monto descuento</template>
+                                            <el-tooltip class="item"
+                                                content="Descuento Global"
+                                                effect="dark"
+                                                placement="top">
+                                                <i class="fa fa-info-circle"></i>
+                                            </el-tooltip>
+                                        </label>
+                                        <el-input v-model="discount_amount"
+                                            :disabled="!enabled_discount"
+                                            @change="inputDiscountAmount()">
+                                            <template slot="prepend">{{ currencyTypeActive.symbol }}</template>
+                                        </el-input>
                                     </div>
                                 </div>
                             </div>
@@ -433,11 +470,32 @@
         mounted(){
         },
         methods: {
-            changeEnabledDiscount(){
-
+            changeEnabledDiscount() {
+                if (!this.form.hasOwnProperty('total_without_discount')) {
+                    this.form.total_without_discount = parseFloat(this.form.total)
+                }
+                if (!this.enabled_discount) {
+                    this.discount_amount = 0
+                    this.form.total = parseFloat(this.form.total_without_discount)
+                    this.enterAmount()
+                    this.initFormPayment()
+                }
             },
-            inputDiscountAmount(){
-
+            async inputDiscountAmount(){
+                if(this.discount_amount === 0 && this.form.total_without_discount != null) {
+                    this.form.total = parseFloat(this.form.total_without_discount)
+                }
+                if (this.discount_amount && !isNaN(this.discount_amount) && parseFloat(this.discount_amount) > 0) {
+                    if (parseFloat(this.discount_amount) >= this.form.total) {
+                        return this.$message.error("El monto de descuento debe ser menor al total de venta")
+                    }
+                    this.form.allowance_charges = []
+                    this.form.allowance_charges = await this.createAllowanceCharge(this.discount_amount, this.form.total_without_discount);
+                    this.form.total = parseFloat(this.form.total_without_discount - this.discount_amount)
+                    this.enter_amount = parseFloat(this.form.total)
+                    this.enterAmount()
+                    this.initFormPayment()
+                }
             },
             back()
             {
