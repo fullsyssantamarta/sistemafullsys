@@ -1,7 +1,7 @@
 <template >
     <div class="row col-lg-12 m-0 p-0" v-loading="loading_submit">
         <div class="col-lg-4 col-md-6 bg-white m-0 p-0" style="height: calc(100vh - 110px)">
-            <div class="h-50 bg-light" style="overflow-y: auto">
+            <div class="h-75 bg-light" style="overflow-y: auto">
 
                 <div class="row pl-3 py-2 border-bottom m-0 p-0 bg-white">
                     <div class="col-12 px-0 py-3">
@@ -29,7 +29,7 @@
 
 
             </div>
-            <div class="h-50 bg-info" style="overflow-y: auto">
+            <div class="h-25 bg-info" style="overflow-y: auto">
                 <div class="row m-0 p-0 bg-white h-10 d-flex align-items-center">
                     <div class="col-sm-6 py-1">
                         <p class="font-weight-semibold mb-0">TOTAL VENTA</p>
