@@ -65,7 +65,7 @@ class DocumentItem extends ModelTenant
         'tax' => 'object'
     ];
 
-    
+
     public function unit_type()
     {
         return $this->belongsTo(TypeUnit::class, 'unit_type_id');
@@ -106,19 +106,19 @@ class DocumentItem extends ModelTenant
     {
         return $this->belongsTo(Document::class);
     }
-    
+
     public function relation_item()
     {
         return $this->belongsTo(Item::class, 'item_id');
     }
-    
+
 
 
     public function scopeWhereDefaultDocumentType($query, $params)
     {
 
         $db_raw = DB::raw("document_items.id as id, documents.series as series, documents.number as number,
-                            document_items.item as item, document_items.quantity as quantity,  
+                            document_items.item as item, document_items.quantity as quantity,
                             documents.date_of_issue as date_of_issue");
 
         if($params['person_id']){
@@ -131,10 +131,10 @@ class DocumentItem extends ModelTenant
                         ->join('documents', 'document_items.document_id', '=', 'documents.id')
                         ->select($db_raw)
                         ->latest('id');
-                        
+
         }
 
-        
+
         return $query->whereHas('document', function($q) use($params){
                     $q->whereBetween($params['date_range_type_id'], [$params['date_start'], $params['date_end']])
                         ->where('user_id', $params['seller_id'])
@@ -146,7 +146,7 @@ class DocumentItem extends ModelTenant
 
     }
 
-    
+
     /**
      * Valor neto sin impuestos
      *
@@ -157,9 +157,9 @@ class DocumentItem extends ModelTenant
         return $this->generalApplyNumberFormat($this->quantity * $this->unit_price);
     }
 
-        
+
     /**
-     * 
+     *
      * Datos para pdf reporte articulos vendidos
      *
      * @return array
@@ -175,15 +175,16 @@ class DocumentItem extends ModelTenant
             'quantity' => (float) $this->quantity,
             'cost' => $cost,
             'net_value' => $this->net_value,
+            'discount' => $this->discount,
             'utility' => $this->generalApplyNumberFormat($this->net_value - $cost),
             'total_tax' => $this->total_tax,
             'total' => $this->total,
         ];
     }
 
-    
+
     /**
-     * 
+     *
      * Filtros para reporte articulos vendidos
      *
      * @param  Builder $query
@@ -216,11 +217,11 @@ class DocumentItem extends ModelTenant
                 ->latest('id');
     }
 
-    
+
     /**
-     * 
+     *
      * Filtrar por producto
-     * 
+     *
      * @param  Builder $query
      * @param  int $item_id
      * @return Builder
@@ -234,9 +235,9 @@ class DocumentItem extends ModelTenant
 
 
     /**
-     * 
+     *
      * Filtrar por marca
-     * 
+     *
      * @param  Builder $query
      * @param  int $brand_id
      * @return Builder
@@ -255,7 +256,7 @@ class DocumentItem extends ModelTenant
 
 
     /**
-     * 
+     *
      * Filtros para reporte articulos vendidos en el documento
      *
      * @param  Builder $query

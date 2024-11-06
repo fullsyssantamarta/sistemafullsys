@@ -32,6 +32,7 @@
                                 <th>Neto</th>
                                 <th>Utilidad</th>
                                 <th>Impuesto</th>
+                                <th>Descuento</th>
                                 <th>Total</th>
                             </tr>
                         </thead>
@@ -43,6 +44,7 @@
                                 $total_quantity = 0;
                                 $total_net_value = 0;
                                 $total_cost = 0;
+                                $total_discount = 0;
                             @endphp
                             @foreach($records as $value)
                                 @php
@@ -53,6 +55,7 @@
                                     $total_quantity = $total_quantity + $row['quantity'];
                                     $total_net_value = $total_net_value + $row['net_value'];
                                     $total_cost = $total_cost + $row['cost'];
+                                    $total_discount = $total_discount + $row['discount'];
                                 @endphp
                                 <tr>
                                     <td class="celda">{{ $row['type_name'] }}</td>
@@ -63,6 +66,7 @@
                                     <td class="celda">{{ $row['net_value'] }}</td>
                                     <td class="celda">{{ $row['utility'] }}</td>
                                     <td class="celda">{{ $row['total_tax'] }}</td>
+                                    <td class="celda">{{ $row['discount'] }}</td>
                                     <td class="celda">{{ $row['total'] }}</td>
                                 </tr>
                             @endforEach
@@ -73,6 +77,7 @@
                                 <td class="celda">{{ number_format($total_net_value, 2) }}</td>
                                 <td class="celda">{{ number_format($total_utility, 2) }}</td>
                                 <td class="celda">{{ number_format($total_tax, 2) }}</td>
+                                <td class="celda">{{ number_format($total_discount, 2) }}</td>
                                 <td class="celda">{{ number_format($total, 2) }}</td>
                             </tr>
                         </tbody>
