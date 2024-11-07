@@ -318,9 +318,10 @@ class DocumentPosController extends Controller
                     'payable_amount' => $data['total'],
                 ],
                 'tax_totals' => $tax_totals,
+                'allowance_charges' => $data['allowance_charges'],
                 'invoice_lines' => $invoice_lines,
             ];
-//            \Log::debug(json_encode($data_invoice_pos));
+            // \Log::debug(json_encode($data_invoice_pos));
 //            return [
 //                'success' => false,
 //                'message' => "Abortando...",
@@ -627,6 +628,11 @@ class DocumentPosController extends Controller
         else
             $number = ($document) ? (int)$document->number + 1 : 1;
 //\Log::debug($config);
+        $allowanceCharges = $inputs->input('allowance_charges', []);
+        $total_discount = collect($allowanceCharges)->sum(function ($charge) {
+            return $charge['charge_indicator'] === false ? (float) $charge['amount'] : 0;
+        });
+
         $values = [
             //'automatic_date_of_issue' => $automatic_date_of_issue,
             'user_id' => auth()->id(),
@@ -642,6 +648,7 @@ class DocumentPosController extends Controller
             'number' => $number,
             'prefix' => $config->prefix,
             'electronic' => (bool)$config->electronic,
+            'total_discount' => $total_discount,
         ];
         unset($inputs['series_id']);
         $inputs->merge($values);
