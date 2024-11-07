@@ -318,7 +318,7 @@ class DocumentPosController extends Controller
                     'payable_amount' => $data['total'],
                 ],
                 'tax_totals' => $tax_totals,
-                'allowance_charges' => $data['allowance_charges'],
+                'allowance_charges' => $data['allowance_charges'] ?? [],
                 'invoice_lines' => $invoice_lines,
             ];
             // \Log::debug(json_encode($data_invoice_pos));
@@ -628,9 +628,9 @@ class DocumentPosController extends Controller
         else
             $number = ($document) ? (int)$document->number + 1 : 1;
 //\Log::debug($config);
-        $allowanceCharges = $inputs->input('allowance_charges', []);
+        $allowanceCharges = $inputs['allowance_charges'] ?? [];
         $total_discount = collect($allowanceCharges)->sum(function ($charge) {
-            return $charge['charge_indicator'] === false ? (float) $charge['amount'] : 0;
+            return isset($charge['amount']) ? (float) $charge['amount'] : 0;
         });
 
         $values = [
