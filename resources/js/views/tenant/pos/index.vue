@@ -68,9 +68,11 @@
                         <div v-bind:class="classObjectCol" :key="index">
                             <section class="card ">
                                 <div class="card-body pointer px-2 pt-2" @click="clickAddItem(item,index)">
-                                    <p class="font-weight-semibold mb-0" v-if="item.name.length > 50" data-toggle="tooltip" data-placement="top" :title="item.name">
-                                        {{item.name.substring(0,50)}}
-                                    </p>
+                                    <el-tooltip v-if="item.name.length > 50" class="item" effect="dark" :content="item.name" placement="bottom-end">
+                                        <p class="font-weight-semibold mb-0" v-if="item.name.length > 50">
+                                            {{item.name.substring(0,50)}}
+                                        </p>
+                                    </el-tooltip>
                                     <p class="font-weight-semibold mb-0" v-if="item.name.length < 50">{{item.name}}</p>
                                     <img :src="item.image_url" class="img-thumbail img-custom" />
                                     <p class="text-muted font-weight-lighter mb-0">
