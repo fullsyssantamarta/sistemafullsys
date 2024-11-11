@@ -25,7 +25,7 @@ class InventoryKardexServiceProvider extends ServiceProvider
         //
     }
 
-    public function boot() 
+    public function boot()
     {
         $this->purchase();
         $this->sale();
@@ -62,7 +62,7 @@ class InventoryKardexServiceProvider extends ServiceProvider
                 $presentationQuantity = (!empty($document_item->item->presentation)) ? $document_item->item->presentation->quantity_unit : 1;
 
                 $document = $document_item->document;
-                $factor = ($document->document_type_id === '07') ? 1 : -1;
+                $factor = ($document->document_type_id === 3) ? 1 : -1;
 
                 $warehouse = ($document_item->warehouse_id) ? $this->findWarehouse($this->findWarehouseById($document_item->warehouse_id)->establishment_id) : $this->findWarehouse();
 
@@ -325,14 +325,14 @@ class InventoryKardexServiceProvider extends ServiceProvider
         });
     }
 
-    
+
     /**
-     * 
+     *
      * Registro de inventario para remisiones
      *
      * @return void
      */
-    private function remission_item() 
+    private function remission_item()
     {
         RemissionItem::created(function($remission_item){
 
@@ -353,7 +353,7 @@ class InventoryKardexServiceProvider extends ServiceProvider
             // {
             //     $item = Item::findOrFail($remission_item->item_id);
 
-            //     foreach ($item->sets as $it) 
+            //     foreach ($item->sets as $it)
             //     {
             //         $ind_item  = $it->individual_item;
             //         $this->createInventoryKardex($remission, $ind_item->id, -$remission_item->quantity, $warehouse->id);
