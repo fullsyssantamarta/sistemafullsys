@@ -201,7 +201,7 @@ class RemissionController extends Controller
         $remission = Remission::where('external_id', $external_id)->first();
         if (!$remission) throw new Exception("El código {$external_id} es inválido, no se encontro el registro relacionado");
 
-        // $this->createPdf($remission, $format, $remission->filename);
+        $this->createPdf($remission, $format, $remission->filename);
         $temp = tempnam(sys_get_temp_dir(), 'remission');
 
         file_put_contents($temp, $this->getStorage($remission->filename, 'remission'));

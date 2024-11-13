@@ -2,6 +2,7 @@
     $establishment = $document->establishment;
     $customer = $document->customer;
     $paymentForm = $document->payment_form;
+    $payments = $document->payments;
     $tittle = $document->prefix.'-'.str_pad($document->id, 8, '0', STR_PAD_LEFT);
 @endphp
 <html>
@@ -13,7 +14,7 @@
         <tr>
             <td style="width: 25%;" class="text-center vertical-align-top">
                 <div id="reference">
-                    <p style="font-weight: 700;"><strong>REMISIÓN No</strong></p>
+                    <p style="font-weight: 700;"><strong>REMISIÓN No.</strong></p>
                     <br>
                     <p style="color: red;
                         font-weight: bold;
@@ -43,9 +44,9 @@
                     <strong>{{$establishment->description}}</strong><br>
                 </div>
                 <div id="empresa-header1">
-                    
+
                     NIT: {{$company->identification_number}} - {{$company->type_regime->name}}
-                    
+
                     Tipo Documento ID: {{$company->type_identity_document->name}}<br>
 
                     TARIFA ICA: {{$company->ica_rate}}%
@@ -55,7 +56,7 @@
                     @else
                         <br>
                     @endif
-                    
+
                     {{$establishment->address != '-' ? $establishment->address : $company->address}} - {{$establishment->city->name ?? ''}} - {{$establishment->department->name ?? ''}} - {{$establishment->country->name ?? ''}}
 
                     Telefono - {{$establishment->telephone}}<br>
@@ -69,7 +70,7 @@
             </td>
         </tr>
     </table>
-    
+
 
     <table style="font-size: 10px; margin-top: 20px">
         <tr>
@@ -86,7 +87,7 @@
                     <tr>
                         <td>Regimen:</td>
                         <td>{{$customer->type_regime->name}}</td>
-                    </tr> 
+                    </tr>
                     <tr>
                         <td>Dirección:</td>
                         <td>{{$customer->address}}</td>
@@ -122,10 +123,10 @@
                     </tr>
                     @endif
                 </table>
-            </td> 
+            </td>
         </tr>
     </table>
-    <br> 
+    <br>
     <table class="table" style="width: 100%;">
         <thead>
             <tr>
@@ -144,7 +145,7 @@
         <tbody>
             @foreach($document->items as $row)
                 <tr>
-                    
+
                     <td>{{ $loop->iteration }}</td>
                     <td>{{$row->item->internal_id}}</td>
                     <td>
@@ -153,9 +154,9 @@
                     <td class="text-right">{{number_format($row->quantity, 2)}}</td>
 
                     <td class="text-right">{{ $row->item->unit_type->name }}</td>
-                    
+
                     <td class="text-right">{{number_format($row->unit_price, 2)}}</td>
-                    
+
                     <td class="text-right">{{number_format($row->total_tax / $row->quantity, 2)}}</td>
 
                     <td class="text-right">{{number_format($row->discount, 2)}}</td>
@@ -175,7 +176,7 @@
             </tr>
         </thead>
         <tbody>
-            <tr>  
+            <tr>
                 <td style="width: 30%;">
                     <table class="table" style="width: 100%">
                         <thead>
@@ -215,9 +216,25 @@
     <div class="summarys">
         <div class="text-word" id="note">
             <p><strong>OBSERVACIONES:</strong></p>
-            <br>
             <p>{{$document->observation }}</p>
         </div>
+        @if($payments->count())
+            <table class="full-width">
+                <tr>
+                <td>
+                <strong>PAGOS:</strong> </td></tr>
+                    @php
+                        $payment = 0;
+                    @endphp
+                    @foreach($payments as $row)
+                        <tr>
+                            <td>{{ $row->date_of_payment->format('d/m/Y') }} {{ $row->reference }} {{ $row->payment }}</td>
+                        </tr>
+                    @endforeach
+                </tr>
+
+            </table>
+        @endif
     </div>
 
     <div class="summary" >
@@ -226,6 +243,6 @@
             </p>
         </div>
     </div>
-    
+
 </body>
 </html>
