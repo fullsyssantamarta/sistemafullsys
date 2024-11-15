@@ -211,7 +211,6 @@ class DocumentPosController extends Controller
             $invoice_lines = [];
             $tax_exclusive_amount = 0;
             foreach($data['items'] as $row){
-                dd($row);
                 $invoice_lines[] = [
                     'unit_measure_id' => $row['item']['unit_type']['code'],
                     'invoiced_quantity' => $row['quantity'],
