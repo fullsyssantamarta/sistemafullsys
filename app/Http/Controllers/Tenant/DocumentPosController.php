@@ -216,7 +216,7 @@ class DocumentPosController extends Controller
                     'invoiced_quantity' => $row['quantity'],
                     'line_extension_amount' => (string)($row['total'] - $row['total_tax']),
                     'free_of_charge_indicator' => false,
-                    'description' => !empty($row['item']['description']) ? $row['item']['description'] : 'Sin descripción',
+                    'description' => !empty($row['item']['description']) ? $row['item']['description'] : (!empty($row['item']['name']) ? $row['item']['name'] : 'Sin descripción'),
                     'notes' => null,
                     'code' => $row['item']['internal_id'],
                     'type_item_identification_id' => 4,
