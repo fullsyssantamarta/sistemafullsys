@@ -254,6 +254,8 @@ class DocumentController extends Controller
                 curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($ch2, CURLOPT_CUSTOMREQUEST, "GET");
                 curl_setopt($ch2, CURLOPT_POSTFIELDS, "");
+                curl_setopt($ch2, CURLOPT_SSL_VERIFYHOST, 0);
+                curl_setopt($ch2, CURLOPT_SSL_VERIFYPEER, 0);
                 curl_setopt($ch2, CURLOPT_HTTPHEADER, array(
                     'Content-Type: application/json',
                     'Accept: application/json',
@@ -424,6 +426,8 @@ class DocumentController extends Controller
 
                 curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($ch2, CURLOPT_CUSTOMREQUEST, "POST");
+                curl_setopt($ch2, CURLOPT_SSL_VERIFYHOST, 0);
+                curl_setopt($ch2, CURLOPT_SSL_VERIFYPEER, 0);
 
                 if(file_exists(storage_path('sendmail.api')))
                     curl_setopt($ch2, CURLOPT_POSTFIELDS, json_encode(array("sendmail" => true, "is_payroll" => false, "is_eqdoc" => false)));
@@ -698,9 +702,9 @@ class DocumentController extends Controller
 //return "";
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+            curl_setopt($ch, CURLOPT_POSTFIELDS,($data_document));
             curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-            curl_setopt($ch, CURLOPT_POSTFIELDS,($data_document));
             curl_setopt($ch, CURLOPT_HTTPHEADER, array(
                 'Content-Type: application/json',
                 'Accept: application/json',
@@ -1071,6 +1075,8 @@ class DocumentController extends Controller
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
             curl_setopt($ch, CURLOPT_POSTFIELDS,($data_document));
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
             curl_setopt($ch, CURLOPT_HTTPHEADER, array(
                 'Content-Type: application/json',
                 'Accept: application/json',
@@ -1176,6 +1182,8 @@ class DocumentController extends Controller
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
             curl_setopt($ch, CURLOPT_POSTFIELDS,($data_document));
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
             curl_setopt($ch, CURLOPT_HTTPHEADER, array(
                 'Content-Type: application/json',
                 'Accept: application/json',
@@ -1433,6 +1441,8 @@ class DocumentController extends Controller
         curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch2, CURLOPT_CUSTOMREQUEST, "POST");
         curl_setopt($ch2, CURLOPT_POSTFIELDS,($data_send));
+        curl_setopt($ch2, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch2, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($ch2, CURLOPT_HTTPHEADER, array(
             'Content-Type: application/json',
             'Accept: application/json',
@@ -1486,6 +1496,8 @@ class DocumentController extends Controller
         curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch2, CURLOPT_CUSTOMREQUEST, "POST");
         curl_setopt($ch2, CURLOPT_POSTFIELDS,($data_send));
+        curl_setopt($ch2, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch2, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($ch2, CURLOPT_HTTPHEADER, array(
             'Content-Type: application/json',
             'Accept: application/json',
@@ -1579,6 +1591,8 @@ class DocumentController extends Controller
 
         curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch2, CURLOPT_CUSTOMREQUEST, "GET");
+        curl_setopt($ch2, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch2, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($ch2, CURLOPT_HTTPHEADER, array(
             'Content-Type: application/json',
             'Accept: application/json',
@@ -1659,6 +1673,8 @@ class DocumentController extends Controller
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
             'Content-Type: application/json',
             'Accept: application/json',
@@ -2047,6 +2063,8 @@ class DocumentController extends Controller
 
         curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch2, CURLOPT_CUSTOMREQUEST, "GET");
+        curl_setopt($ch2, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch2, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($ch2, CURLOPT_HTTPHEADER, array(
             'Content-Type: application/json',
             'Accept: application/json',
@@ -2281,6 +2299,8 @@ class DocumentController extends Controller
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
             curl_setopt($ch, CURLOPT_POSTFIELDS,($data_document));
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
             curl_setopt($ch, CURLOPT_HTTPHEADER, array(
                 'Content-Type: application/json',
                 'Accept: application/json',

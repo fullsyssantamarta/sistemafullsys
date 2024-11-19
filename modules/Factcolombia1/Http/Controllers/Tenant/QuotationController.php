@@ -39,7 +39,7 @@ use PDF;
 class QuotationController extends Controller
 {
     use DocumentTrait;
-    
+
     /**
      * Display a listing of the resource.
      *
@@ -48,11 +48,11 @@ class QuotationController extends Controller
     public function index() {
         return view('quotation.tenant.index');
     }
-    
+
     public function create() {
         return view('quotation.tenant.create');
     }
-    
+
     /**
      * All
      * @return \Illuminate\Http\Response
@@ -72,7 +72,7 @@ class QuotationController extends Controller
             'taxes' => Tax::all()
         ];
     }
-    
+
     /**
      * Store a newly created resource in storage.
      *
@@ -81,10 +81,10 @@ class QuotationController extends Controller
      */
     public function store(QuotationRequest $request) {
         DB::connection('tenant')->beginTransaction();
-        
+
         try {
             $company = Company::firstOrFail();
-            
+
             $quotation = Quotation::create([
                 'client_id' => $request->client_id,
                 'client' => Client::findOrFail($request->client_id),
@@ -99,7 +99,7 @@ class QuotationController extends Controller
                 'version_ubl_id' => $company->version_ubl_id,
                 'ambient_id' => $company->ambient_id
             ]);
-            
+
             foreach ($request->items as $item) {
                 DetailQuotation::create([
                     'quotation_id' => $quotation->id,
@@ -119,21 +119,21 @@ class QuotationController extends Controller
         }
         catch (\Exception $e) {
             DB::connection('tenant')->rollBack();
-            
+
             return [
                 'success' => false,
                 'message' => $e->getMessage()
             ];
         }
-        
+
         DB::connection('tenant')->commit();
-        
+
         return [
             'success' => true,
             'message' => "Se registro con éxito la cotización #{$quotation->id}."
         ];
     }
-    
+
     /**
      * Update the specified resource in storage.
      *
@@ -143,10 +143,10 @@ class QuotationController extends Controller
      */
     public function update(QuotationUpdateRequest $request, Quotation $quotation) {
         DB::connection('tenant')->beginTransaction();
-        
+
         try {
             $company = Company::firstOrFail();
-            
+
             $quotation->update([
                 'client_id' => $request->client_id,
                 'client' => Client::findOrFail($request->client_id),
@@ -160,9 +160,9 @@ class QuotationController extends Controller
                 'version_ubl_id' => $company->version_ubl_id,
                 'ambient_id' => $company->ambient_id
             ]);
-            
+
             $quotation->detail_quotations()->delete();
-            
+
             foreach ($request->items as $item) {
                 DetailQuotation::create([
                     'quotation_id' => $quotation->id,
@@ -182,35 +182,35 @@ class QuotationController extends Controller
         }
         catch (\Exception $e) {
             DB::connection('tenant')->rollBack();
-            
+
             return [
                 'success' => false,
                 'message' => $e->getMessage()
             ];
         }
-        
+
         DB::connection('tenant')->commit();
-        
+
         return [
             'success' => true,
             'message' => "Se actualizo con éxito la cotización #{$quotation->id}."
         ];
     }
-    
+
     /**
      * To bill
      * @param  \App\Models\Tenant\Quotation $quotation
      * @return \Illuminate\Http\Response
      */
     public function toBill(Quotation $quotation, Request $request) {
-        
 
-        
+
+
         try {
 
             $correlative_api = $this->getCorrelativeInvoice(1);
             // return $correlative_api;
- 
+
             if(!is_numeric($correlative_api)){
                  return [
                      'success' => false,
@@ -232,6 +232,8 @@ class QuotationController extends Controller
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
             curl_setopt($ch, CURLOPT_POSTFIELDS,($data_document));
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
             curl_setopt($ch, CURLOPT_HTTPHEADER, array(
                 'Content-Type: application/json',
                 'Accept: application/json',
@@ -240,7 +242,7 @@ class QuotationController extends Controller
             $response = curl_exec($ch);
             curl_close($ch);
 
-            
+
             $response_model = json_decode($response);
             $zip_key = null;
             $invoice_status_api = null;
@@ -251,7 +253,7 @@ class QuotationController extends Controller
                 {
                     $zip_key = $response_model->ResponseDian->Envelope->Body->SendTestSetAsyncResponse->SendTestSetAsyncResult->ZipKey;
                 }
-              
+
             }
 
             $response_status = null;
@@ -264,6 +266,8 @@ class QuotationController extends Controller
                 $ch2 = curl_init("{$base_url}ubl2.1/status/zip/{$zip_key}");
                 curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($ch2, CURLOPT_CUSTOMREQUEST, "POST");
+                curl_setopt($ch2, CURLOPT_SSL_VERIFYHOST, 0);
+                curl_setopt($ch2, CURLOPT_SSL_VERIFYPEER, 0);
                 curl_setopt($ch2, CURLOPT_HTTPHEADER, array(
                     'Content-Type: application/json',
                     'Accept: application/json',
@@ -271,19 +275,19 @@ class QuotationController extends Controller
                 ));
                 $response_status = curl_exec($ch2);
                 curl_close($ch2);
-                
+
             }
 
 
             DB::connection('tenant')->beginTransaction();
             $nextConsecutive = FacadeDocument::nextConsecutive(1);
-            
+
             $this->company = Company::query()
                 ->with('country', 'version_ubl', 'type_identity_document')
                 ->firstOrFail();
-            
+
             if (($this->company->limit_documents != 0) && (Document::count() >= $this->company->limit_documents)) throw new \Exception("Has excedido el límite de documentos de tu cuenta.");
-            
+
             $this->document = Document::create([
                 'type_document_id' => 1,
                 'prefix' => $nextConsecutive->prefix,
@@ -311,12 +315,12 @@ class QuotationController extends Controller
                 'response_api_status' => $response_status,
                 'correlative_api' => $correlative_api
             ]);
-            
+
             $this->document->update([
                 'xml' => $this->getFileName(),
                 'cufe' => $this->getCufe()
             ]);
-            
+
             foreach ($quotation->detail_quotations as $item) {
                 DetailDocument::create([
                     'document_id' => $this->document->id,
@@ -333,31 +337,31 @@ class QuotationController extends Controller
                     'total' => $item->total
                 ]);
             }
-            
+
            // $this->saveFileAndSignDocument();
             //$this->send();
-            
+
             $quotation->update([
                 'state_quote_id' => 2
             ]);
         }
         catch (\Exception $e) {
             DB::connection('tenant')->rollBack();
-            
+
             return [
                 'success' => false,
                 'message' => $e->getMessage()
             ];
         }
-        
+
         DB::connection('tenant')->commit();
-        
+
         return [
             'success' => true,
             'message' => "Se registro con éxito el documento #{$this->document->prefix}{$this->document->number}."
         ];
     }
-    
+
     /**
      * Download
      * @param  \App\Models\Tenant\Quotation $quotation
@@ -375,12 +379,14 @@ class QuotationController extends Controller
 
     public function getCorrelativeInvoice($type_service)
     {
-      
+
         $company = ServiceTenantCompany::firstOrFail();
         $base_url = env("SERVICE_FACT", "");
         $ch2 = curl_init("{$base_url}ubl2.1/invoice/current_number/{$type_service}");
         curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch2, CURLOPT_CUSTOMREQUEST, "GET");
+        curl_setopt($ch2, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch2, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($ch2, CURLOPT_HTTPHEADER, array(
             'Content-Type: application/json',
             'Accept: application/json',
