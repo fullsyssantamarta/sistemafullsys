@@ -118,6 +118,8 @@ class CompanyController extends Controller
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
                 curl_setopt($ch, CURLOPT_POSTFIELDS,($payload));
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
                 curl_setopt($ch, CURLOPT_HTTPHEADER, array(
                     'Content-Type: application/json',
                     'Accept: application/json',
