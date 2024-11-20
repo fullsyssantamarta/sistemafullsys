@@ -1,6 +1,6 @@
 # **Facturador PRO 2**
 
-### Instalación
+### Instalación de PRO2
 
 * Linux - Ubuntu 20 - Docker - SSL opcional<br>
 [ver pasos y script](https://gitlab.buho.la/facturalatam/co-facturadorpro2/-/snippets/2 "ver")
@@ -10,6 +10,11 @@
 [ver pasos](https://gitlab.buho.la/facturalatam/co-facturadorpro2/-/snippets/5#instalacion-de-entorno "ver")
 [Video Aquí](https://www.youtube.com/watch?v=kNaDz0BC4Qo "ver")
 
+
+### Instalación de PRO2 y APIDIAN
+
+* Linux - Ubuntu 20 - Docker - SSL opcional <br>
+[ver pasos y script](https://gitlab.buho.la/facturalatam/co-facturadorpro2/-/snippets/26)
 
 ### Configuración, Habilitación y producción
 
