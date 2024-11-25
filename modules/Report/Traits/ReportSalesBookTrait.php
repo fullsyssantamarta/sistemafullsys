@@ -13,11 +13,11 @@ use Modules\Factcolombia1\Models\Tenant\Tax;
 trait ReportSalesBookTrait
 {
 
-    
+
     /**
      *
      * Registros
-     * 
+     *
      * @param  Request $request
      * @return Collection
      */
@@ -36,19 +36,19 @@ trait ReportSalesBookTrait
             case 'documents':
                 $documents = $this->getDocuments($request);
                 $data['records'] = $documents;
-                $data['documents'] = $documents; 
+                $data['documents'] = $documents;
                 break;
-            
+
             case 'documents_pos':
                 $documents_pos = $this->getDocumentPos($request);
                 $data['records'] = $documents_pos;
-                $data['documents_pos'] = $documents_pos; 
+                $data['documents_pos'] = $documents_pos;
                 break;
 
             default:
                 $documents = $this->getDocuments($request);
                 $documents_pos = $this->getDocumentPos($request);
-                $data['records'] = $documents->concat($documents_pos);
+                $data['records'] = $documents->concat($documents_pos)->sortBy('date_of_issue');
                 $data['documents'] = $documents;
                 $data['documents_pos'] = $documents_pos;
                 break;
@@ -56,8 +56,8 @@ trait ReportSalesBookTrait
 
         return $data;
     }
-    
-    
+
+
     /**
      *
      * @param  Request $request
@@ -79,11 +79,11 @@ trait ReportSalesBookTrait
         return DocumentPos::filterReportSalesBook($request)->get();
     }
 
-    
+
     /**
      *
      * Obtener impuestos de todos los documentos filtrados
-     * 
+     *
      * @param  Collection $documents
      * @return Collection
      */
@@ -92,14 +92,14 @@ trait ReportSalesBookTrait
         $all_taxes_id = collect();
         $q = 0;
 
-        foreach ($documents as $document) 
+        foreach ($documents as $document)
         {
             $document_taxes = $document->items->pluck('tax_id')->toArray();
             $all_taxes_id = $all_taxes_id->merge($document_taxes);
 
             $q += count($document_taxes);
         }
-        
+
         return Tax::whereIn('id', $all_taxes_id->unique())
                     ->withOut(['type_tax'])
                     ->select(['id', 'name', 'code', 'rate', 'conversion', 'is_percentage', 'is_fixed_value', 'is_retention', 'in_base', 'in_tax', 'type_tax_id'])
@@ -107,9 +107,9 @@ trait ReportSalesBookTrait
                     ->get();
     }
 
-    
+
     /**
-     * 
+     *
      * Agregar registros agrupados
      *
      * @param  Collection $summary_records
@@ -119,8 +119,8 @@ trait ReportSalesBookTrait
     public function setOrderedData(&$summary_records, $records)
     {
         $group_prefix = $records->groupBy('prefix');
-        
-        foreach ($group_prefix as $prefix => $documents) 
+
+        foreach ($group_prefix as $prefix => $documents)
         {
             $ordered_documents = $documents->sortBy(function ($row) {
                 return (int) $row->number;
@@ -135,7 +135,7 @@ trait ReportSalesBookTrait
         }
     }
 
-    
+
     /**
      * Data para reporte resumido
      *
@@ -154,7 +154,7 @@ trait ReportSalesBookTrait
             case 'documents':
                 $this->setOrderedData($summary_records, $data['documents']);
                 break;
-            
+
             case 'documents_pos':
                 $this->setOrderedData($summary_records, $data['documents_pos']);
                 break;
