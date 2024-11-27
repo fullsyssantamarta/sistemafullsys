@@ -98,7 +98,7 @@
                             <button  data-toggle="tooltip" data-placement="top" title="Imprimir" v-if="row.state_type_id != '11'"  type="button" class="btn waves-effect waves-light btn-xs btn-info"
                                     @click.prevent="clickOptions(row.id)"><i class="fas fa-print"></i></button>
                             <button v-if="row.state_type_id != '11'" type="button" class="btn waves-effect waves-light btn-xs btn-danger m-1__2"
-                                    @click.prevent="clickVoided(row.id)"
+                                    @click.prevent="clickVoided(row.id, row.electronic)"
                                     >Anular</button>
                         </td>
                     </tr>
@@ -256,7 +256,7 @@
                 }).then(() => {
                 });
             },
-            clickVoided(id) {
+            clickVoided(id, electronic) {
                 this.$confirm('¿Estás seguro de que deseas anular este documento?', 'Confirmar Anulación', {
                     confirmButtonText: 'Sí',
                     cancelButtonText: 'No',
@@ -264,10 +264,14 @@
                 }).then(() => {
                     this.$http.get(`/${this.resource}/voided/resolutions`)
                         .then(response => {
-                            if (response.data.quantity > 0) {
+                            if(response.data.quantity){
                                 this.anular(id);
-                            } else {
-                                this.$message.error('No posee resoluciones para anular el documento');
+                            }
+                            else{
+                                if(electronic)
+                                    this.$message.error('No posee resoluciones para anular el documento');
+                                else
+                                    this.anular(id);
                             }
                         }).catch(error => {
                             console.log(error);
@@ -278,6 +282,7 @@
                     this.$message.info('Anulación cancelada');
                 });
             },
+
             anular(id) {
                 const loadingInstance = this.$loading({
                     lock: true,
@@ -306,10 +311,12 @@
                         }
                     });
             },
+
             clickRefund(id)
             {
                 location.href = `/${this.resource}/refund/${id}`
             },
+
             async clickSincronize() {
                 this.sincronizing = true
 
