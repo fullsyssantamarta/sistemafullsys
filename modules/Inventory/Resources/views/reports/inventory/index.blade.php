@@ -20,17 +20,15 @@
                             </div> --}}
                         </form>
                     </div>
-                    @if(!empty($reports) && $reports->count())
                     <div class="box">
                         <div class="box-body no-padding">
-
                             <div style="margin-bottom: 10px" class="row">
-
                                 <div style="padding-top: 0.5%" class="col-md-6">
                                     <form action="{{route('reports.inventory.index')}}" method="get">
                                         {{csrf_field()}}
                                         <div class="row">
-                                            <div class="col-md-8">
+                                            <div class="col-md-4">
+                                                <label for="">Establecimiento</label>
                                                 <select class="form-control" name="warehouse_id" id="">
                                                     <option {{ request()->warehouse_id == 'all' ?  'selected' : ''}} selected value="all">Todos</option>
                                                     @foreach($warehouses as $item)
@@ -38,30 +36,51 @@
                                                     @endforeach
                                                 </select>
                                             </div>
+                                            <div class="col-md-4">
+                                                <label for="filter">Filtro </label>
+                                                <select class="form-control" id="filter" name="filter">
+                                                    <option value="">--</option>
+                                                    @foreach ($filter as $group => $items)
+                                                        <optgroup label="@lang('app.'.$group)">
+                                                            @forelse ($items as $item)
+                                                                <option
+                                                                    {{ request()->filter ==  $group . '_' . $item['id'] ?  'selected' : ''}}
+                                                                    value="{{ $group . '_' . $item['id'] }}">
+                                                                    {{ $item['name'] }}
+                                                                </option>
+                                                            @empty
+                                                                <option disabled>No hay @lang('app.'.$group) disponibles</option>
+                                                            @endforelse
+                                                        </optgroup>
+                                                    @endforeach
+                                                </select>
+                                            </div>
                                             <div class="col-md-4"> <button class="btn btn-primary" type="submit"><i class="fa fa-search"></i> Buscar</button></div>
                                         </div>
                                     </form>
                                 </div>
-                                @if(isset($reports))
-                                    <div class="col-md-4">
-                                        <form action="{{route('reports.inventory.pdf')}}" class="d-inline" method="POST">
-                                            {{csrf_field()}}
-                                            <input type="hidden" name="warehouse_id" value="{{request()->warehouse_id ? request()->warehouse_id : 'all'}}">
-                                            <button class="btn btn-custom   mt-2 mr-2" type="submit"><i class="fa fa-file-pdf"></i> Exportar PDF</button>
-                                            {{-- <label class="pull-right">Se encontraron {{$reports->count()}} registros.</label> --}}
-                                        </form>
+                                @if(!empty($reports) && $reports->count())
+                                    @if(isset($reports))
+                                        <div class="col-md-4">
+                                            <form action="{{route('reports.inventory.pdf')}}" class="d-inline" method="POST">
+                                                {{csrf_field()}}
+                                                <input type="hidden" name="warehouse_id" value="{{request()->warehouse_id ? request()->warehouse_id : 'all'}}">
+                                                <input type="hidden" name="filter" value="{{request()->filter ? request()->filter : ''}}">
+                                                <button class="btn btn-custom   mt-2 mr-2" type="submit"><i class="fa fa-file-pdf"></i> Exportar PDF</button>
+                                                {{-- <label class="pull-right">Se encontraron {{$reports->count()}} registros.</label> --}}
+                                            </form>
 
-                                        <form action="{{route('reports.inventory.report_excel')}}" class="d-inline" method="POST">
-                                            {{csrf_field()}}
-                                            <input type="hidden" name="warehouse_id" value="{{request()->warehouse_id ? request()->warehouse_id : 'all'}}">
-                                            <button class="btn btn-custom   mt-2 mr-2" type="submit"><i class="fa fa-file-excel"></i> Exportar Excel</button>
-                                            {{-- <label class="pull-right">Se encontraron {{$reports->count()}} registros.</label> --}}
-                                        </form>
-                                    </div>
+                                            <form action="{{route('reports.inventory.report_excel')}}" class="d-inline" method="POST">
+                                                {{csrf_field()}}
+                                                <input type="hidden" name="warehouse_id" value="{{request()->warehouse_id ? request()->warehouse_id : 'all'}}">
+                                                <input type="hidden" name="filter" value="{{request()->filter ? request()->filter : ''}}">
+                                                <button class="btn btn-custom   mt-2 mr-2" type="submit"><i class="fa fa-file-excel"></i> Exportar Excel</button>
+                                                {{-- <label class="pull-right">Se encontraron {{$reports->count()}} registros.</label> --}}
+                                            </form>
+                                        </div>
 
+                                    @endif
                                 @endif
-
-
                             </div>
                             <table width="100%" class="table table-striped table-responsive-xl table-bordered table-hover">
                                 <thead class="">
@@ -89,35 +108,39 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    
+
                                     {{-- @php
                                         $total_global_sale_unit_price = 0;
                                         $total_global_purchase_unit_price = 0;
                                     @endphp --}}
+                                    @if(!empty($reports) && $reports->count())
+                                        @foreach($reports as $key => $value)
 
-                                    @foreach($reports as $key => $value)
+                                            @php
+                                                $global_sale_unit_price = $value->getGlobalSaleUnitPrice();
+                                                $global_purchase_unit_price = $value->getGlobalPurchaseUnitPrice();
 
-                                        @php
-                                            $global_sale_unit_price = $value->getGlobalSaleUnitPrice();
-                                            $global_purchase_unit_price = $value->getGlobalPurchaseUnitPrice();
-                                            
-                                            // $total_global_sale_unit_price += $global_sale_unit_price;
-                                            // $total_global_purchase_unit_price += $global_purchase_unit_price;
-                                        @endphp
+                                                // $total_global_sale_unit_price += $global_sale_unit_price;
+                                                // $total_global_purchase_unit_price += $global_purchase_unit_price;
+                                            @endphp
 
+                                            <tr>
+                                                <td class="celda">{{$loop->iteration}}</td>
+                                                <td class="celda">{{$value->item->internal_id ?? ''}} {{$value->item->internal_id ? '-':''}} {{$value->item->name ?? ''}}</td>
+                                                <td class="celda">{{$value->stock}}</td>
+                                                <td class="celda">{{$value->item->sale_unit_price}}</td>
+                                                <td class="celda">{{$value->item->purchase_unit_price}}</td>
+                                                <td class="celda">{{$value->warehouse->description}}</td>
+
+                                                <td class="celda text-right">{{$global_sale_unit_price}}</td>
+                                                <td class="celda text-right">{{$global_purchase_unit_price}}</td>
+                                            </tr>
+                                        @endforeach
+                                    @else
                                         <tr>
-                                            <td class="celda">{{$loop->iteration}}</td>
-                                            <td class="celda">{{$value->item->internal_id ?? ''}} {{$value->item->internal_id ? '-':''}} {{$value->item->name ?? ''}}</td>
-                                            <td class="celda">{{$value->stock}}</td>
-                                            <td class="celda">{{$value->item->sale_unit_price}}</td>
-                                            <td class="celda">{{$value->item->purchase_unit_price}}</td>
-                                            <td class="celda">{{$value->warehouse->description}}</td>
-
-                                            <td class="celda text-right">{{$global_sale_unit_price}}</td>
-                                            <td class="celda text-right">{{$global_purchase_unit_price}}</td>
+                                            <td colspan="8">No se encontraron registros</td>
                                         </tr>
-                                    @endforeach
-
+                                    @endif
                                     {{-- <tr>
                                         <td class="celda" colspan="5"></td>
                                         <td class="celda">Total</td>
@@ -133,11 +156,6 @@
                             </label>
                         </div>
                     </div>
-                    @else
-                    <div class="box box-body no-padding">
-                        <strong>No se encontraron registros</strong>
-                    </div>
-                    @endif
                 </div>
             </div>
         </div>

@@ -11,6 +11,10 @@ use App\Models\Tenant\Item;
 use Modules\Inventory\Models\ItemWarehouse;
 use Modules\Inventory\Exports\InventoryExport;
 use Modules\Inventory\Models\Warehouse;
+use Modules\Item\Models\Category;
+use Modules\Item\Models\Brand;
+use Modules\Item\Models\Color;
+use Modules\Item\Models\Size;
 
 
 
@@ -24,27 +28,40 @@ class ReportInventoryController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request) {
+        $categories = Category::select('id', 'name')->get();
+        $brands = Brand::select('id', 'name')->get();
+        $colors = Color::select('id', 'name')->get();
+        $sizes = Size::select('id', 'name')->get();
+        $filter = [
+            'category' => $categories,
+            'brand' => $brands,
+            'color' => $colors,
+            'size' => $sizes
+        ];
 
+        [$relation, $id] = explode('_', $request->filter) + [null, null];
 
-        if($request->warehouse_id && $request->warehouse_id != 'all')
-        {
-            $reports = ItemWarehouse::with(['item'])->where('warehouse_id', $request->warehouse_id)->whereHas('item',function($q){
-                $q->where([['item_type_id', '01'], ['unit_type_id', '!=','ZZ']]);
-                $q->whereNotIsSet();
-            })->latest()->paginate(config('tenant.items_per_page'));
+        if($request->warehouse_id && $request->warehouse_id != 'all') {
+            $reports = ItemWarehouse::with(['item'])
+                ->where('warehouse_id', $request->warehouse_id)
+                ->whereHas('item', function($q) use ($relation, $id) {
+                    $q->where([['item_type_id', '01'], ['unit_type_id', '!=','ZZ']]);
+                    $q->whereNotIsSet();
+                    $q->whereFilterByRelation($relation, $id);
+                })->latest()->paginate(config('tenant.items_per_page'));
         }
-        else{
-
-            $reports = ItemWarehouse::with(['item'])->whereHas('item',function($q){
+        else {
+            $reports = ItemWarehouse::with(['item'])->whereHas('item',function($q) use ($relation, $id){
                 $q->where([['item_type_id', '01'], ['unit_type_id', '!=','ZZ']]);
                 $q->whereNotIsSet();
+                $q->whereFilterByRelation($relation, $id);
             })->latest()->paginate(config('tenant.items_per_page'));
         }
 
 
         $warehouses = Warehouse::select('id', 'description')->get();
 
-        return view('inventory::reports.inventory.index', compact('reports', 'warehouses'));
+        return view('inventory::reports.inventory.index', compact('reports', 'warehouses', 'filter'));
     }
 
     /**
@@ -72,23 +89,24 @@ class ReportInventoryController extends Controller
         $company = Company::first();
         $establishment = Establishment::first();
         ini_set('max_execution_time', 0);
+        [$relation, $id] = explode('_', $request->filter) + [null, null];
 
         if($request->warehouse_id && $request->warehouse_id != 'all')
         {
-            $records = ItemWarehouse::with(['item'])->where('warehouse_id', $request->warehouse_id)->whereHas('item', function($q){
-                $q->where([['item_type_id', '01'], ['unit_type_id', '!=','ZZ']]);
-                $q->whereNotIsSet();
-            })->latest()->get();
+            $records = ItemWarehouse::with(['item'])->where('warehouse_id', $request->warehouse_id)
+                ->whereHas('item', function($q) use ($relation, $id) {
+                    $q->where([['item_type_id', '01'], ['unit_type_id', '!=','ZZ']]);
+                    $q->whereNotIsSet();
+                    $q->whereFilterByRelation($relation, $id);
+                })->latest()->get();
         }
         else{
-
-            $records = ItemWarehouse::with(['item'])->whereHas('item', function($q){
+            $records = ItemWarehouse::with(['item'])->whereHas('item', function($q) use ($relation, $id) {
                 $q->where([['item_type_id', '01'], ['unit_type_id', '!=','ZZ']]);
                 $q->whereNotIsSet();
+                $q->whereFilterByRelation($relation, $id);
             })->latest()->get();
         }
-
-
 
         $pdf = PDF::loadView('inventory::reports.inventory.report_pdf', compact("records", "company", "establishment"))->setPaper('a4', 'landscape');
         $filename = 'Reporte_Inventario'.date('YmdHis');
@@ -104,24 +122,26 @@ class ReportInventoryController extends Controller
     public function excel(Request $request) {
         $company = Company::first();
         $establishment = Establishment::first();
-
+        [$relation, $id] = explode('_', $request->filter) + [null, null];
 
         if($request->warehouse_id && $request->warehouse_id != 'all')
         {
-            $records = ItemWarehouse::with(['item'])->where('warehouse_id', $request->warehouse_id)->whereHas('item', function($q){
-                $q->where([['item_type_id', '01'], ['unit_type_id', '!=','ZZ']]);
-                $q->whereNotIsSet();
-            })->latest()->get();
-
+            $records = ItemWarehouse::with(['item'])
+                ->where('warehouse_id', $request->warehouse_id)
+                ->whereHas('item', function($q) use ($relation, $id) {
+                    $q->where([['item_type_id', '01'], ['unit_type_id', '!=','ZZ']]);
+                    $q->whereNotIsSet();
+                    $q->whereFilterByRelation($relation, $id);
+                })->latest()
+                ->get();
         }
-        else{
+        else {
             $records = ItemWarehouse::with(['item'])->whereHas('item', function($q){
                 $q->where([['item_type_id', '01'], ['unit_type_id', '!=','ZZ']]);
                 $q->whereNotIsSet();
+                $q->whereFilterByRelation($relation, $id);
             })->latest()->get();
-
         }
-
 
         return (new InventoryExport)
             ->records($records)
@@ -129,4 +149,5 @@ class ReportInventoryController extends Controller
             ->establishment($establishment)
             ->download('ReporteInv'.Carbon::now().'.xlsx');
     }
+
 }
