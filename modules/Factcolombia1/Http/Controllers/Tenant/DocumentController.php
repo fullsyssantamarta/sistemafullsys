@@ -711,13 +711,43 @@ class DocumentController extends Controller
                 "Authorization: Bearer {$company->api_token}"
             ));
             $response = curl_exec($ch);
-            if(config('tenant.show_log')) {
-                \Log::debug('DocumentController:707: '.$response);
-            }
+//\Log::debug($response);
             curl_close($ch);
             $response_model = json_decode($response);
             $zip_key = null;
             $invoice_status_api = null;
+
+            if(isset($response_model->success) && ($response_model->success === false) && ($response_model->message == "Este documento ya fue enviado anteriormente, se registra en la base de datos.")){
+                if($response_model->customer == $service_invoice['customer']['identification_number'] && round($response_model->sale, 5) == round($service_invoice['legal_monetary_totals']['payable_amount'], 5)){
+                    try{
+                        $d = Document::where('prefix', $service_invoice['prefix'])->where('number', $service_invoice['number'])->firstOrFail();
+                        $response_api = json_decode($d->response_api, true);
+                        $response_api['cufe'] = $response_model->cufe;
+                        $d->response_api = json_encode($response_api);
+                        $d->state_document_id = self::ACCEPTED;
+                        $d->cufe = $response_model->cufe;
+                        $d->save();
+                        DB::connection('tenant')->commit();
+                        return [
+                            'success' => true,
+                            'validation_errors' => false,
+                            'message' => "El estado de la Factura Nro: #{$service_invoice['prefix']}{$service_invoice['number']}., fue actualizado satisfactoriamente.",
+                            'data' => [
+                                'id' => $d->id
+                            ]
+                        ];
+                    }catch(\Exception $e){
+                        return [
+                            'success' => false,
+                            'validation_errors' => true,
+                            'message' => "No se pudo actualizar el estado de la Factura Nro: #{$service_invoice['prefix']}{$service_invoice['number']}. ".$e->getMessage(),
+                            'data' => [
+                                'id' => $d->id
+                            ]
+                        ];
+                    }
+                }
+            }
 
             if($company->type_environment_id == 2 && $company->test_id != 'no_test_set_id'){
                 if(array_key_exists('urlinvoicepdf', $response_model) && array_key_exists('urlinvoicexml', $response_model))

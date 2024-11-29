@@ -471,6 +471,18 @@ class Item extends ModelTenant
                         ->whereNotItemsAiu();
     }
 
+    // Scope para filtrar por relación
+    public function scopeWhereFilterByRelation($query, $relation, $value)
+    {
+        if (!in_array($relation, ['brand', 'category', 'color', 'size'])) {
+            return $query; // Si la relación no es válida, no aplica ningún filtro
+        }
+
+        return $query->whereHas($relation, function ($q) use ($value) {
+            $q->where('id', $value); // Filtrar por el ID relacionado
+        });
+    }
+
 
     /**
      *

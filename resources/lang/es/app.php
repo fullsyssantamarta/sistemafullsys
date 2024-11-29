@@ -191,4 +191,9 @@ return [
     'logs.document.send_xml' => 'Se envió el xml firmado',
     'logs.document.cdr' => 'Se recibió el cdr',
 
+    'category' => 'Categoría',
+    'brand' => 'Marca',
+    'color' => 'Color',
+    'size' => 'Talla',
+
 ];

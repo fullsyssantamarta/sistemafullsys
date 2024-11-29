@@ -17,11 +17,21 @@ use Modules\Factcolombia1\Http\Requests\Tenant\DocumentRequest;
 use Modules\Factcolombia1\Models\Tenant\PaymentForm;
 use Modules\Factcolombia1\Models\Tenant\PaymentMethod;
 use Exception;
+use Modules\Factcolombia1\Models\SystemService\Municipality;
+use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
-class CoDocumentsImport implements ToCollection
+class CoDocumentsImport implements ToCollection, WithMultipleSheets
 {
     use Importable;
     protected $data;
+
+    public function sheets(): array
+    {
+        // Procesar solo la primera hoja
+        return [
+            0 => $this, // La hoja 0 (primera)
+        ];
+    }
 
     public function throwException($message)
     {
@@ -43,36 +53,49 @@ class CoDocumentsImport implements ToCollection
     }
 
     public function validate(Collection $rows){
-        unset($rows[0]);
+        // unset($rows[0]);
+        // dd($rows);
+        $filteredRows = $rows->filter(function ($value, $key) {
+            return $key > 0; // Omite la primera fila
+        });
+        // dd($filteredRows);
         $row_number = 1;
-        foreach ($rows as $row){
+        foreach ($filteredRows as $row){
+            \Log::info($row);
             $document = Document::where('prefix', $row[4])->where('number', $row[0])->get();
             if(count($document) > 0)
-                $this->throwException('Registro ... '.$row_number.', Error en el campo prefix + number, El documento '.$row[4].'-'.$row[0].' ya fue registrado en la base de datos...');
+                $this->throwException('Registro nro.: '.$row_number.', El documento '.$row[4].'-'.$row[0].' ya fue registrado en la base de datos...');
             $person = Person::where('number', $row[10])->get();
             if(count($person) == 0)
-                $this->throwException('Registro ... '.$row_number.', Error en el campo customer, No existe el documento '.$row[10].' en la base de datos...');
+                $this->throwException('Registro nro.: '.$row_number.', Error en el campo idetificacion_cliente, No existe el documento '.$row[10].' en la base de datos...');
             $item = Item::where('internal_id', $row[23])->get();
             if(count($item) == 0)
-                $this->throwException('Registro ... '.$row_number.', Error en el campo code, No existe el item '.$row[23].' en la base de datos...');
+                $this->throwException('Registro nro.: '.$row_number.', Error en el campo codigo_linea, No existe el item '.$row[23].' en la base de datos...');
+            $municipality = Municipality::where('code', $row[8])->get();
+            if(count($municipality) > 0)
+                $this->throwException('Registro nro.: '.$row_number.', Error en el campo municipio_establecimiento, No existe el item '.$row[8].' en la base de datos...');
             $actual_date = new DateTime(Carbon::now()->format('Y-m-d'));
             $document_date = new DateTime(Carbon::parse(str_replace("/", "-", $this->ExcelDateToPHP($row[1])))->format('Y-m-d'));
             $interval = $actual_date->diff($document_date);
             if($interval->days >= 10)
-                $this->throwException('Registro ... '.$row_number.', Error en el campo fecha, No puede ser mayor o igual a 10 dias antes de la fecha actual...');
+                $this->throwException('Registro nro.: '.$row_number.', Error en el campo fecha, No puede ser mayor o igual a 10 dias antes de la fecha actual...');
             $row_number++;
         }
     }
 
     public function collection(Collection $rows){
-        $total = count($rows);
+        \Log::debug('repite');
+        // unset($rows[0]);
+        $filteredRows = $rows->filter(function ($value, $key) {
+            return $key > 0; // Omite la primera fila
+        });
+        $total = count($filteredRows);
         $registered = 0;
         $send = new DocumentController();
         $request = new DocumentRequest();
-        unset($rows[0]);
         $previos_prefix_number = "";
-        $this->validate($rows);
-        foreach ($rows as $row){
+        $this->validate($filteredRows);
+        foreach ($filteredRows as $row){
             if($row[4].$row[0] != $previos_prefix_number){
                 if($previos_prefix_number != ""){
 //                    \Log::debug(json_encode($json));
@@ -217,6 +240,7 @@ class CoDocumentsImport implements ToCollection
         \Log::debug(json_encode($json));
         $send->store($request, json_encode($json));
         $this->data = compact('total', 'registered');
+        return;
     }
 
     public function getData()

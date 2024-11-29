@@ -16,6 +16,9 @@ use Modules\Report\Exports\TaxExport;
 use Modules\Report\Exports\TaxPurchasesExport;
 use App\Models\Tenant\Purchase;
 
+
+
+
 class ReportTaxController extends Controller
 {
 
