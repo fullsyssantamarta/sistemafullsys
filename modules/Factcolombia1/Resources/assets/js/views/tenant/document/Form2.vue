@@ -1094,7 +1094,7 @@
                     if(item.discount > 0 && item.discount < (item.price * item.quantity)) {
                         total_discount = item.discount;
                         if(item.discount_type === 'percentage') {
-                            total_discount = (item.price * item.discount) / 100;
+                            total_discount = ((item.price * item.discount) / 100) * item.quantity;
                         }
                     }
                     this.$set( item, "discount", Number(total_discount).toFixed(2));
