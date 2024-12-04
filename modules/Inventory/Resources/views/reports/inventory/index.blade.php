@@ -70,6 +70,7 @@
                                                 {{csrf_field()}}
                                                 <input type="hidden" name="warehouse_id" value="{{request()->warehouse_id ? request()->warehouse_id : 'all'}}">
                                                 <input type="hidden" name="filter" value="{{request()->filter ? request()->filter : ''}}">
+                                                <input type="hidden" name="date" value="{{request()->date ? request()->date : ''}}">
                                                 <button class="btn btn-custom   mt-2 mr-2" type="submit"><i class="fa fa-file-pdf"></i> Exportar PDF</button>
                                                 {{-- <label class="pull-right">Se encontraron {{$reports->count()}} registros.</label> --}}
                                             </form>
@@ -78,6 +79,7 @@
                                                 {{csrf_field()}}
                                                 <input type="hidden" name="warehouse_id" value="{{request()->warehouse_id ? request()->warehouse_id : 'all'}}">
                                                 <input type="hidden" name="filter" value="{{request()->filter ? request()->filter : ''}}">
+                                                <input type="hidden" name="date" value="{{request()->date ? request()->date : ''}}">
                                                 <button class="btn btn-custom   mt-2 mr-2" type="submit"><i class="fa fa-file-excel"></i> Exportar Excel</button>
                                                 {{-- <label class="pull-right">Se encontraron {{$reports->count()}} registros.</label> --}}
                                             </form>
