@@ -11,6 +11,7 @@
         'tenant.co-documents.create',
         'tenant.purchases.create',
         'tenant.purchase-orders.create',
+        'reports.inventory.index',
     ];
     $is_form = in_array($currentRouteName, $paths) ? 'newinvoice' : '';
 @endphp
@@ -169,7 +170,8 @@
     {{--<script src="{{ asset('porto-light/vendor/moment/moment.js') }}"></script>--}}
 
     <!-- DatePicker -->
-    {{--<script src="{{asset('porto-light/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js')}}"></script>--}}
+    <script src="{{asset('porto-light/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js')}}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/locales/bootstrap-datepicker.es.min.js"></script>
 
     <!-- Date range Plugin JavaScript -->
     {{--<script src="{{ asset('porto-light/vendor/bootstrap-timepicker/bootstrap-timepicker.js') }}"></script>--}}
