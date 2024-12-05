@@ -178,43 +178,6 @@ class PersonController extends Controller
     }
 
 
-    //==========================================================================================================================
-    //    Modificar en el archivo: vendor\maatwebsite\excel\src\Reader.php para que la funcion: read quede de la siguiente manera:
-
-    //        public function read($import, $filePath, string $readerType = null, string $disk = null)
-    //        {
-    //            $this->reader = $this->getReader($import, $filePath, $readerType, $disk);
-
-    //            if ($import instanceof WithChunkReading) {
-    //                return (new ChunkReader)->read($import, $this, $this->currentFile);
-    //            }
-
-    //            try {
-    //                $this->loadSpreadsheet($import, $this->reader);
-
-    //                ($this->transaction)(function () use ($import) {
-    //                    foreach ($this->sheetImports as $index => $sheetImport) {
-    //                        if($index == 0){
-    //                            if ($sheet = $this->getSheet($import, $sheetImport, $index)) {
-    //                                $sheet->import($sheetImport, $sheet->getStartRow($sheetImport));
-    //                                $sheet->disconnect();
-    //                            }
-    //                        }
-    //                    }
-    //                });
-
-    //                $this->afterImport($import);
-    //            } catch (Throwable $e) {
-    //                $this->raise(new ImportFailed($e));
-    //                throw $e;
-    //            }
-
-    //            return $this;
-    //        }
-
-    //    Lo anterior con el fin de que solo se importe la primera hoja de cada archivo de excel.
-    //==========================================================================================================================
-
     public function import(Request $request)
     {
         if ($request->hasFile('file')) {
@@ -229,9 +192,10 @@ class PersonController extends Controller
                     'data' => $data
                 ];
             } catch (Exception $e) {
+                \Log::error($e);
                 return [
                     'success' => false,
-                    'message' =>  $e->getMessage()." Modificar en el archivo: vendor\maatwebsite\excel\src\Reader.php funcion: read, verificar procedimiento en el archivo: app\Http\Controllers\Tenant\PersonController.php funcion: import"
+                    'message' =>  $e->getMessage(),
                 ];
             }
         }
