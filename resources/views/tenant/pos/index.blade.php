@@ -17,5 +17,10 @@
 @endsection
 
 @push('scripts')
-    <script></script>
+<script src="{{ asset('js/qz-tray/sha-256.min.js') }}"></script>
+<script src="{{ asset('js/qz-tray/qz-tray.js') }}"></script>
+<script src="{{ asset('js/qz-tray/rsvp-3.1.0.min.js') }}"></script>
+<script src="{{ asset('js/qz-tray/jsrsasign-all-min.js') }}"></script>
+<script src="{{ asset('js/qz-tray/sign-message.js') }}"></script>
+<script src="{{ asset('js/qz-tray/function-qztray.js') }}"></script>
 @endpush

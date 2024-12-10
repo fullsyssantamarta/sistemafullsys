@@ -443,6 +443,7 @@
                     }
                 ],
                 service_dian_enable: false,
+                // enable_qz_tray: false,
             }
         },
         async created() {
@@ -465,11 +466,57 @@
             })
 
             await this.getFormPosLocalStorage()
+
+            // await this.getConfigPrint()
+
             // console.log(this.form.payments, this.payments)
         },
         mounted(){
         },
         methods: {
+            // async getConfigPrint() {
+            //     console.info('iniciando qztray');
+            //     // resources\js\views\tenant\documents\invoice_generate.vue 4315 autoPrintDocument
+            //     await this.$http
+            //         .get(`/certificates-qztray/record`)
+            //         .then(response => {
+            //             this.enable_qz_tray = response.data.enable_qz_tray;
+            //         })
+            //     if(this.enable_qz_tray) {
+            //         startConnection()
+            //     }
+            // },
+            // autoPrintDocument() {
+            //     console.log('impresion qztray')
+            //     if (this.enable_qz_tray) {
+            //         this.$http.get(`/certificates-qztray/html/document/${this.form_cash_document.document_pos_id}`)
+            //             .then(response => {
+            //                 this.printTicket(response.data)
+            //             })
+            //             .catch(error => {
+            //                 console.log(error)
+            //             })
+            //     }
+            // },
+            // printTicket(html_pdf) {
+            //     if (html_pdf.length > 0) {
+            //         const opts = getUpdatedConfig()
+            //         const printData = [
+            //             {
+            //                 type: 'html',
+            //                 format: 'plain',
+            //                 data: html_pdf,
+            //                 options: opts
+            //             }
+            //         ]
+            //         qz.print(opts, printData)
+            //             .then(() => {
+            //                 this.$message.success('Impresión en proceso...')
+
+            //             })
+            //             .catch(displayError)
+            //     }
+            // },
             changeEnabledDiscount() {
                 if (!this.form.hasOwnProperty('total_without_discount')) {
                     this.form.total_without_discount = parseFloat(this.form.total)

@@ -150,6 +150,11 @@
                                 </div>
                             </el-tab-pane>
 
+                            <el-tab-pane class="mb-3" name="qztray">
+                                <span slot="label">Impresión</span>
+                                <certificates-qztray></certificates-qztray>
+                            </el-tab-pane>
+
                         </el-tabs>
                     </form>
                 </template>
@@ -191,9 +196,10 @@
 </template>
 
 <script>
-
+import CertificatesQztray from './certificates_qztray.vue'
 
 export default {
+    components: {CertificatesQztray},
     data() {
         return {
             loading_submit: false,

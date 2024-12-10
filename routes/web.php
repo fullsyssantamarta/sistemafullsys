@@ -535,6 +535,13 @@ if ($hostname) {
            //formats PDF
            Route::get('templates', 'Tenant\FormatTemplateController@records');
 
+           //Certificates Qz Tray
+           Route::get('certificates-qztray/record', 'Tenant\CertificateQzTrayController@record');
+           Route::post('certificates-qztray/uploads', 'Tenant\CertificateQzTrayController@uploadFileQzTray');
+           Route::delete('certificates-qztray', 'Tenant\CertificateQzTrayController@destroy');
+           Route::post('certificates-qztray/change-status', 'Tenant\CertificateQzTrayController@changeStatus');
+        //    Route::get('certificates-qztray/html/document/{id}', 'Tenant\CertificateQzTrayController@getHtmlDocument');
+
         });
     });
 } else {

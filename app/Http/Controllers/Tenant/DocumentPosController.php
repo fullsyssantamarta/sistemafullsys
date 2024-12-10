@@ -501,14 +501,14 @@ class DocumentPosController extends Controller
                             else
                                 $mensajeerror = $response_model->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->ErrorMessage->string;
                             if($response_model->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->IsValid == 'false'){
-                                if($invoice_json == NULL)
-                                    return [
-                                        'success' => false,
-                                        'message' => "Error al Validar Factura Nro: {$data['series']}{$data['number']} Errores: ".$mensajeerror,
-                                        'data' => [
-                                            'id' => null,
-                                        ],
-                                    ];
+                                // if($invoice_json == NULL) // no existe $invoice_json en este archivo
+                                return [
+                                    'success' => false,
+                                    'message' => "Error al Validar Factura Nro: {$data['series']}{$data['number']} Errores: ".$mensajeerror,
+                                    'data' => [
+                                        'id' => null,
+                                    ],
+                                ];
                             }
                         }
                     }
@@ -679,7 +679,11 @@ class DocumentPosController extends Controller
 
         if (!$sale_note) throw new Exception("El código {$external_id} es inválido, no se encontro la nota de venta relacionada");
 
-        $this->reloadPDF($sale_note, $format, $sale_note->filename);
+        $view = $this->reloadPDF($sale_note, $format, $sale_note->filename);
+
+        if($format == 'html') {
+            return $view;
+        }
         $temp = tempnam(sys_get_temp_dir(), 'sale_note');
 
         file_put_contents($temp, $this->getStorage($sale_note->filename, 'sale_note'));
@@ -688,7 +692,7 @@ class DocumentPosController extends Controller
     }
 
     private function reloadPDF($sale_note, $format, $filename) {
-        $this->createPdf($sale_note, $format, $filename);
+        return $this->createPdf($sale_note, $format, $filename);
     }
 
     public function createPdf($sale_note = null, $format_pdf = null, $filename = null) {
@@ -703,6 +707,22 @@ class DocumentPosController extends Controller
         $this->configuration = Configuration::first();
         $configuration = $this->configuration->formats;
         $base_template = $configuration;
+
+        $path_css = app_path('CoreFacturalo'.DIRECTORY_SEPARATOR.'Templates'.
+                                             DIRECTORY_SEPARATOR.'pdf'.
+                                             DIRECTORY_SEPARATOR.$base_template.
+                                             DIRECTORY_SEPARATOR.'style.css');
+        $stylesheet = file_get_contents($path_css);
+
+        if($format_pdf == 'html') {
+            $html = $template->pdf($base_template, "document_pos", $this->company, $this->document, 'ticket');
+            $html = str_replace(
+                '</head>', // Buscar el cierre de la cabecera
+                '<style>'.$stylesheet.'</style></head>', // Incrustar el CSS antes del cierre
+                $html
+            );
+            return $html;
+        }
 
         $html = $template->pdf($base_template, "document_pos", $this->company, $this->document, $format_pdf);
 
@@ -850,13 +870,6 @@ class DocumentPosController extends Controller
             }
 
         }
-
-        $path_css = app_path('CoreFacturalo'.DIRECTORY_SEPARATOR.'Templates'.
-                                             DIRECTORY_SEPARATOR.'pdf'.
-                                             DIRECTORY_SEPARATOR.$base_template.
-                                             DIRECTORY_SEPARATOR.'style.css');
-
-        $stylesheet = file_get_contents($path_css);
 
         $pdf->WriteHTML($stylesheet, HTMLParserMode::HEADER_CSS);
         $pdf->WriteHTML($html, HTMLParserMode::HTML_BODY);
