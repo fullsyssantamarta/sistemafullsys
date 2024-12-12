@@ -74,6 +74,10 @@ Restauración de Mysql|Docker: [Guía](https://docs.google.com/document/d/1Aze-O
 #### Laragon
 Acceso red local - laragon: [Guía](https://docs.google.com/document/d/13kOE5N5LJtCJIr3hswrfNgBYxi9wx07YwUCrAfgyCoQ/edit "Clic")<br>
 
+### Impresión directa con QzTray
+
+Ver los pasos en la [wiki](https://gitlab.buho.la/facturalatam/co-facturadorpro2/-/wikis/qztray-instalacion) <br>
+
 ### APP Android
 
 * descargar en [link](https://facturalatam.com/pro2/app_pro2.apk "url")
