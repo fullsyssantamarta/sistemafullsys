@@ -1,10 +1,12 @@
 @php
     $currentRouteName = request()->route()->getName();
     $sidebar_collapse = $vc_compact_sidebar->compact_sidebar == true ? 'sidebar-left-collapsed' : '';
+    if($currentRouteName === 'tenant.pos.index') {
+        $sidebar_collapse = 'sidebar-left-collapsed';
+    }
     $is_dark_header = $visual->header == 'dark' ? 'header-dark' : '';
     $is_dark_sidebar = ($visual->sidebars == 'dark' || $visual->bg == 'dark') ? 'sidebar-dark' : 'sidebar-white sidebar-light';
     $is_dark_theme = $visual->bg == 'dark' ? 'dark' : '';
-
     $paths = [
         'tenant.co-documents-aiu.create',
         'tenant.co-documents-health.create',

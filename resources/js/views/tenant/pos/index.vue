@@ -64,136 +64,134 @@
                 </div>
 
                 <div v-if="place == 'prod' || place == 'cat2'" class="row pos-items">
-                    <template v-for="(item,index) in items">
-                        <div v-bind:class="classObjectCol" :key="index">
-                            <section class="card ">
-                                <div class="card-body pointer px-2 pt-2" @click="clickAddItem(item,index)">
-                                    <el-tooltip v-if="item.name.length > 50" class="item" effect="dark" :content="item.name" placement="bottom-end">
-                                        <p class="font-weight-semibold mb-0" v-if="item.name.length > 50">
-                                            {{item.name.substring(0,50)}}
-                                        </p>
-                                    </el-tooltip>
-                                    <p class="font-weight-semibold mb-0" v-if="item.name.length < 50">{{item.name}}</p>
-                                    <img :src="item.image_url" class="img-thumbail img-custom" />
-                                    <p class="text-muted font-weight-lighter mb-0">
-                                        <small>{{item.internal_id}}</small>
-                                        <template v-if="item.sets.length  > 0">
-                                            <br>
-                                            <small> {{ item.sets.join('-') }} </small>
-                                        </template>
+                    <div v-for="(item,index) in items" v-bind:class="classObjectCol" :key="index">
+                        <section class="card ">
+                            <div class="card-body pointer px-2 pt-2" @click="clickAddItem(item,index)">
+                                <el-tooltip class="item" effect="dark" :content="item.name" placement="bottom-end">
+                                    <p class="font-weight-semibold mb-0 truncate-text">
+                                        {{item.name}}
                                     </p>
-                                </div>
-                                <div class="card-footer pointer text-center bg-primary">
-                                    <template v-if="!item.edit_unit_price">
-                                        <h5 class="font-weight-semibold text-right text-white">
-                                            <button
-                                                type="button"
-                                                class="btn btn-xs btn-primary-pos"
-                                                @click="clickOpenInputEditUP(index)">
-                                                <span style="font-size:16px;">&#9998;</span>
-                                            </button>
-                                            {{currency.symbol}} {{ getFormatDecimal(item.sale_unit_price_with_tax) }}
-                                        </h5>
+                                </el-tooltip>
+                                <!-- <p class="font-weight-semibold mb-0" v-if="item.name.length < 50">{{item.name}}</p> -->
+                                <img :src="item.image_url" class="img-thumbail img-custom" />
+                                <p class="text-muted font-weight-lighter mb-0">
+                                    <small>{{item.internal_id}}</small>
+                                    <template v-if="item.sets.length  > 0">
+                                        <br>
+                                        <small> {{ item.sets.join('-') }} </small>
                                     </template>
-                                    <template v-else>
-                                        <el-input min="0" v-model="item.edit_sale_unit_price" class="mt-3 mb-3" size="mini">
-                                            <el-button slot="append" icon="el-icon-check" type="primary" @click="clickEditUnitPriceItem(index)"></el-button>
-                                            <el-button slot="append" icon="el-icon-close" type="danger" @click="clickCancelUnitPriceItem(index)"></el-button>
-                                        </el-input>
-                                    </template>
-                                </div>
-
-                                <div v-if="configuration.options_pos" class=" card-footer  bg-primary btn-group flex-wrap" style="width:100% !important; padding:0 !important; ">
-                                    <el-row style="width:100%">
-                                        <el-col :span="6">
-                                            <el-tooltip class="item" effect="dark" content="Visualizar stock" placement="bottom-end">
-                                                <button type="button" style="width:100% !important;" class="btn btn-xs btn-primary-pos" @click="clickWarehouseDetail(item)">
-                                                    <i class="fa fa-search"></i>
-                                                </button>
-                                            </el-tooltip>
-                                        </el-col>
-                                        <el-col :span="6">
-                                            <el-tooltip class="item" effect="dark" content="Visualizar historial de ventas del producto (precio venta) y cliente" placement="bottom-end">
-                                                <button type="button" style="width:100% !important;" class="btn btn-xs btn-primary-pos" @click="clickHistorySales(item.item_id)"><i class="fa fa-list"></i></button>
-                                            </el-tooltip>
-                                        </el-col>
-                                        <el-col :span="6">
-                                            <el-tooltip class="item" effect="dark" content="Visualizar historial de compras del producto (precio compra)" placement="bottom-end">
-                                                <button type="button" style="width:100% !important;" class="btn btn-xs btn-primary-pos" @click="clickHistoryPurchases(item.item_id)"><i class="fas fa-cart-plus"></i></button>
-                                            </el-tooltip>
-                                        </el-col>
-                                        <el-col :span="6">
-                                            <el-tooltip class="item" effect="dark" content="Visualizar lista de precios disponibles" placement="bottom-end">
-                                                <el-popover placement="top" title="Precios" width="400" trigger="click">
-                                                    <el-table v-if="item.item_unit_types" :data="item.item_unit_types">
-                                                        <el-table-column width="140" label="Descripción" property="description"></el-table-column>
-                                                        <el-table-column width="80" label="Unidad" property="unit_type_name"></el-table-column>
-                                                        <el-table-column width="80" label="Precio">
-                                                            <template slot-scope="{row}">
-                                                                <span v-if="row.price_default == 1">{{ row.price1 }}</span>
-                                                                <span v-else-if="row.price_default == 2">{{ row.price2 }}</span>
-                                                                <span v-else-if="row.price_default == 3">{{ row.price3 }}</span>
-                                                            </template>
-                                                        </el-table-column>
-                                                        <el-table-column width="70" label="">
-                                                            <template slot-scope="{row}">
-                                                                <button @click="setListPriceItem(row,index)" type="button" class="btn btn-custom btn-xs">
-                                                                    <i class="fas fa-check"></i>
-                                                                </button>
-                                                            </template>
-                                                        </el-table-column>
-                                                    </el-table>
-                                                    <button type="button" slot="reference" style="width:100% !important;" class="btn btn-xs btn-primary-pos"><i class="fas fa-money-bill-alt"></i></button>
-                                                </el-popover>
-                                            </el-tooltip>
-                                        </el-col>
-                                    </el-row>
-                                </div>
-
-                                <!-- <div v-if="configuration.options_pos" class=" card-footer  bg-primary btn-group flex-wrap" style="width:100% !important; padding:0 !important; ">
-
-                                    <el-tooltip class="item" effect="dark" content="Visualizar stock" placement="bottom-end">
-                                        <button type="button" style="width:25% !important;" class="btn btn-xs btn-primary-pos" @click="clickWarehouseDetail(item)">
-                                            <i class="fa fa-search"></i>
+                                </p>
+                            </div>
+                            <div class="card-footer pointer text-center bg-primary">
+                                <template v-if="!item.edit_unit_price">
+                                    <h5 class="font-weight-semibold text-right text-white">
+                                        <button
+                                            type="button"
+                                            class="btn btn-xs btn-primary-pos"
+                                            @click="clickOpenInputEditUP(index)">
+                                            <span style="font-size:16px;">&#9998;</span>
                                         </button>
-                                    </el-tooltip>
+                                        {{currency.symbol}} {{ getFormatDecimal(item.sale_unit_price_with_tax) }}
+                                    </h5>
+                                </template>
+                                <template v-else>
+                                    <el-input min="0" v-model="item.edit_sale_unit_price" class="mt-3 mb-3" size="mini">
+                                        <el-button slot="append" icon="el-icon-check" type="primary" @click="clickEditUnitPriceItem(index)"></el-button>
+                                        <el-button slot="append" icon="el-icon-close" type="danger" @click="clickCancelUnitPriceItem(index)"></el-button>
+                                    </el-input>
+                                </template>
+                            </div>
 
-                                    <el-tooltip class="item" effect="dark" content="Visualizar historial de ventas del producto (precio venta) y cliente" placement="bottom-end">
-                                        <button type="button" style="width:25% !important;" class="btn btn-xs btn-primary-pos" @click="clickHistorySales(item.item_id)"><i class="fa fa-list"></i></button>
-                                    </el-tooltip>
+                            <div v-if="configuration.options_pos" class=" card-footer  bg-primary btn-group flex-wrap" style="width:100% !important; padding:0 !important; ">
+                                <el-row style="width:100%">
+                                    <el-col :span="6">
+                                        <el-tooltip class="item" effect="dark" content="Visualizar stock" placement="bottom-end">
+                                            <button type="button" style="width:100% !important;" class="btn btn-xs btn-primary-pos" @click="clickWarehouseDetail(item)">
+                                                <i class="fa fa-search"></i>
+                                            </button>
+                                        </el-tooltip>
+                                    </el-col>
+                                    <el-col :span="6">
+                                        <el-tooltip class="item" effect="dark" content="Visualizar historial de ventas del producto (precio venta) y cliente" placement="bottom-end">
+                                            <button type="button" style="width:100% !important;" class="btn btn-xs btn-primary-pos" @click="clickHistorySales(item.item_id)"><i class="fa fa-list"></i></button>
+                                        </el-tooltip>
+                                    </el-col>
+                                    <el-col :span="6">
+                                        <el-tooltip class="item" effect="dark" content="Visualizar historial de compras del producto (precio compra)" placement="bottom-end">
+                                            <button type="button" style="width:100% !important;" class="btn btn-xs btn-primary-pos" @click="clickHistoryPurchases(item.item_id)"><i class="fas fa-cart-plus"></i></button>
+                                        </el-tooltip>
+                                    </el-col>
+                                    <el-col :span="6">
+                                        <el-tooltip class="item" effect="dark" content="Visualizar lista de precios disponibles" placement="bottom-end">
+                                            <el-popover placement="top" title="Precios" width="400" trigger="click">
+                                                <el-table v-if="item.item_unit_types" :data="item.item_unit_types">
+                                                    <el-table-column width="140" label="Descripción" property="description"></el-table-column>
+                                                    <el-table-column width="80" label="Unidad" property="unit_type_name"></el-table-column>
+                                                    <el-table-column width="80" label="Precio">
+                                                        <template slot-scope="{row}">
+                                                            <span v-if="row.price_default == 1">{{ row.price1 }}</span>
+                                                            <span v-else-if="row.price_default == 2">{{ row.price2 }}</span>
+                                                            <span v-else-if="row.price_default == 3">{{ row.price3 }}</span>
+                                                        </template>
+                                                    </el-table-column>
+                                                    <el-table-column width="70" label="">
+                                                        <template slot-scope="{row}">
+                                                            <button @click="setListPriceItem(row,index)" type="button" class="btn btn-custom btn-xs">
+                                                                <i class="fas fa-check"></i>
+                                                            </button>
+                                                        </template>
+                                                    </el-table-column>
+                                                </el-table>
+                                                <button type="button" slot="reference" style="width:100% !important;" class="btn btn-xs btn-primary-pos"><i class="fas fa-money-bill-alt"></i></button>
+                                            </el-popover>
+                                        </el-tooltip>
+                                    </el-col>
+                                </el-row>
+                            </div>
 
-                                    <el-tooltip class="item" effect="dark" content="Visualizar historial de compras del producto (precio compra)" placement="bottom-end">
-                                        <button type="button" style="width:25% !important;" class="btn btn-xs btn-primary-pos" @click="clickHistoryPurchases(item.item_id)"><i class="fas fa-cart-plus"></i></button>
-                                    </el-tooltip>
+                            <!-- <div v-if="configuration.options_pos" class=" card-footer  bg-primary btn-group flex-wrap" style="width:100% !important; padding:0 !important; ">
 
-                                    <el-tooltip class="item" effect="dark" content="Visualizar lista de precios disponibles" placement="bottom-end">
-                                        <el-popover placement="top" title="Precios" width="370" trigger="click">
-                                            <el-table v-if="item.item_unit_types" :data="item.item_unit_types">
-                                                <el-table-column width="90" label="Precio">
-                                                    <template slot-scope="{row}">
-                                                        <span v-if="row.price_default == 1">{{row.price1}}</span>
-                                                        <span v-else-if="row.price_default == 2">{{row.price2}}</span>
-                                                        <span v-else-if="row.price_default == 3">{{row.price3}}</span>
-                                                    </template>
-                                                </el-table-column>
-                                                <el-table-column width="80" label="Unidad" property="unit_type_id"></el-table-column>
-                                                <el-table-column width="120" label="Descripción" property="description"></el-table-column>
+                                <el-tooltip class="item" effect="dark" content="Visualizar stock" placement="bottom-end">
+                                    <button type="button" style="width:25% !important;" class="btn btn-xs btn-primary-pos" @click="clickWarehouseDetail(item)">
+                                        <i class="fa fa-search"></i>
+                                    </button>
+                                </el-tooltip>
 
-                                                <el-table-column width="80" label="">
-                                                    <template slot-scope="{row}">
-                                                        <button @click="setListPriceItem(row,index)" type="button" class="btn btn-custom btn-xs">
-                                                            <i class="fas fa-check"></i>
-                                                        </button>
-                                                    </template>
-                                                </el-table-column>
-                                            </el-table>
-                                            <button type="button" slot="reference" style="width:100% !important;" class="btn btn-xs btn-primary-pos"><i class="fas fa-money-bill-alt"></i></button>
-                                        </el-popover>
-                                    </el-tooltip>
-                                </div> -->
-                            </section>
-                        </div>
-                    </template>
+                                <el-tooltip class="item" effect="dark" content="Visualizar historial de ventas del producto (precio venta) y cliente" placement="bottom-end">
+                                    <button type="button" style="width:25% !important;" class="btn btn-xs btn-primary-pos" @click="clickHistorySales(item.item_id)"><i class="fa fa-list"></i></button>
+                                </el-tooltip>
+
+                                <el-tooltip class="item" effect="dark" content="Visualizar historial de compras del producto (precio compra)" placement="bottom-end">
+                                    <button type="button" style="width:25% !important;" class="btn btn-xs btn-primary-pos" @click="clickHistoryPurchases(item.item_id)"><i class="fas fa-cart-plus"></i></button>
+                                </el-tooltip>
+
+                                <el-tooltip class="item" effect="dark" content="Visualizar lista de precios disponibles" placement="bottom-end">
+                                    <el-popover placement="top" title="Precios" width="370" trigger="click">
+                                        <el-table v-if="item.item_unit_types" :data="item.item_unit_types">
+                                            <el-table-column width="90" label="Precio">
+                                                <template slot-scope="{row}">
+                                                    <span v-if="row.price_default == 1">{{row.price1}}</span>
+                                                    <span v-else-if="row.price_default == 2">{{row.price2}}</span>
+                                                    <span v-else-if="row.price_default == 3">{{row.price3}}</span>
+                                                </template>
+                                            </el-table-column>
+                                            <el-table-column width="80" label="Unidad" property="unit_type_id"></el-table-column>
+                                            <el-table-column width="120" label="Descripción" property="description"></el-table-column>
+
+                                            <el-table-column width="80" label="">
+                                                <template slot-scope="{row}">
+                                                    <button @click="setListPriceItem(row,index)" type="button" class="btn btn-custom btn-xs">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                </template>
+                                            </el-table-column>
+                                        </el-table>
+                                        <button type="button" slot="reference" style="width:100% !important;" class="btn btn-xs btn-primary-pos"><i class="fas fa-money-bill-alt"></i></button>
+                                    </el-popover>
+                                </el-tooltip>
+                            </div> -->
+                        </section>
+                    </div>
                 </div>
                 <div v-if="place == 'prod' || place == 'cat2'" class="row">
                     <div class="col-md-12 text-center">
@@ -440,6 +438,12 @@
 .input-text-right {
     text-align: right;
 }
+
+.truncate-text {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
 </style>
 
 <script>
@@ -523,9 +527,9 @@ export default {
             await this.getFormPosLocalStorage()
             // await this.initCurrencyType()
             this.customer = await this.getLocalStorageIndex('customer')
-            if (document.querySelector('.sidebar-toggle')) {
-                document.querySelector('.sidebar-toggle').click()
-            }
+            // if (document.querySelector('.sidebar-toggle')) {
+            //     document.querySelector('.sidebar-toggle').click()
+            // }
         }
         else
             this.plate_number_valid = false
