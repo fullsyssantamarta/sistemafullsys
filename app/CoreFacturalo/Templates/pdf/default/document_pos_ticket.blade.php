@@ -7,7 +7,7 @@
     $customer = $document->customer;
     $invoice = $document->invoice;
     //$path_style = app_path('CoreFacturalo'.DIRECTORY_SEPARATOR.'Templates'.DIRECTORY_SEPARATOR.'pdf'.DIRECTORY_SEPARATOR.'style.css');
-    $tittle = $document->series.'-'.str_pad($document->number, 8, '0', STR_PAD_LEFT);
+    $tittle = $document->series.'-'.$document->number;
     $payments = $document->payments;
     $is_epos = $document->electronic === 1 ? true : false;
 
