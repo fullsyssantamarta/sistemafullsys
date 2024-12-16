@@ -84,7 +84,7 @@ class CoDocumentsImport implements ToCollection, WithMultipleSheets
     }
 
     public function collection(Collection $rows){
-        \Log::debug('repite');
+        // \Log::debug('repite');
         // unset($rows[0]);
         $filteredRows = $rows->filter(function ($value, $key) {
             return $key > 0; // Omite la primera fila

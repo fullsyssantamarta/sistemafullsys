@@ -37,7 +37,7 @@
                                                 </select>
                                             </div>
                                             <div class="col-md-4">
-                                                <label for="filter">Filtro </label>
+                                                <label for="filter">Características</label>
                                                 <select class="form-control" id="filter" name="filter">
                                                     <option value="">--</option>
                                                     @foreach ($filter as $group => $items)
@@ -55,6 +55,10 @@
                                                     @endforeach
                                                 </select>
                                             </div>
+                                            <div class="col-md-4">
+                                                <label for="filter">Fecha</label>
+                                                <input name="date" value="{{ request()->date ? request()->date : ''}}" type="text" data-plugin-datepicker class="form-control">
+                                            </div>
                                             <div class="col-md-4"> <button class="btn btn-primary" type="submit"><i class="fa fa-search"></i> Buscar</button></div>
                                         </div>
                                     </form>
@@ -66,6 +70,7 @@
                                                 {{csrf_field()}}
                                                 <input type="hidden" name="warehouse_id" value="{{request()->warehouse_id ? request()->warehouse_id : 'all'}}">
                                                 <input type="hidden" name="filter" value="{{request()->filter ? request()->filter : ''}}">
+                                                <input type="hidden" name="date" value="{{request()->date ? request()->date : ''}}">
                                                 <button class="btn btn-custom   mt-2 mr-2" type="submit"><i class="fa fa-file-pdf"></i> Exportar PDF</button>
                                                 {{-- <label class="pull-right">Se encontraron {{$reports->count()}} registros.</label> --}}
                                             </form>
@@ -74,6 +79,7 @@
                                                 {{csrf_field()}}
                                                 <input type="hidden" name="warehouse_id" value="{{request()->warehouse_id ? request()->warehouse_id : 'all'}}">
                                                 <input type="hidden" name="filter" value="{{request()->filter ? request()->filter : ''}}">
+                                                <input type="hidden" name="date" value="{{request()->date ? request()->date : ''}}">
                                                 <button class="btn btn-custom   mt-2 mr-2" type="submit"><i class="fa fa-file-excel"></i> Exportar Excel</button>
                                                 {{-- <label class="pull-right">Se encontraron {{$reports->count()}} registros.</label> --}}
                                             </form>
@@ -163,5 +169,39 @@
 @endsection
 
 @push('scripts')
-    <script></script>
+    <script>
+        // Datepicker
+        (function($) {
+
+        'use strict';
+
+        $(document).ready(function () {
+            // Inicializar Bootstrap Datepicker
+            $('[data-plugin-datepicker]').datepicker({
+                format: 'yyyy-mm-dd',
+                autoclose: true,
+                todayHighlight: true,
+                language: 'es'
+            });
+        });
+
+        // if ( $.isFunction($.fn[ 'bootstrapDP' ]) ) {
+
+        //     $(function() {
+        //         $('[data-plugin-datepicker]').each(function() {
+        //             var $this = $( this ),
+        //                 opts = {};
+
+        //             var pluginOptions = $this.data('plugin-options');
+        //             if (pluginOptions)
+        //                 opts = pluginOptions;
+
+        //             $this.themePluginDatePicker(opts);
+        //         });
+        //     });
+
+        // }
+
+        }).apply(this, [jQuery]);
+    </script>
 @endpush

@@ -65,7 +65,6 @@ class RemissionController extends Controller
 
     public function records(Request $request)
     {
-
         $records = Remission::where($request->column, 'like', "%{$request->value}%")
                                 ->latest();
 

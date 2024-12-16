@@ -1,16 +1,19 @@
 @php
     $currentRouteName = request()->route()->getName();
     $sidebar_collapse = $vc_compact_sidebar->compact_sidebar == true ? 'sidebar-left-collapsed' : '';
+    if($currentRouteName === 'tenant.pos.index') {
+        $sidebar_collapse = 'sidebar-left-collapsed';
+    }
     $is_dark_header = $visual->header == 'dark' ? 'header-dark' : '';
     $is_dark_sidebar = ($visual->sidebars == 'dark' || $visual->bg == 'dark') ? 'sidebar-dark' : 'sidebar-white sidebar-light';
     $is_dark_theme = $visual->bg == 'dark' ? 'dark' : '';
-
     $paths = [
         'tenant.co-documents-aiu.create',
         'tenant.co-documents-health.create',
         'tenant.co-documents.create',
         'tenant.purchases.create',
         'tenant.purchase-orders.create',
+        'reports.inventory.index',
     ];
     $is_form = in_array($currentRouteName, $paths) ? 'newinvoice' : '';
 @endphp
@@ -169,7 +172,8 @@
     {{--<script src="{{ asset('porto-light/vendor/moment/moment.js') }}"></script>--}}
 
     <!-- DatePicker -->
-    {{--<script src="{{asset('porto-light/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js')}}"></script>--}}
+    <script src="{{asset('porto-light/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js')}}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/locales/bootstrap-datepicker.es.min.js"></script>
 
     <!-- Date range Plugin JavaScript -->
     {{--<script src="{{ asset('porto-light/vendor/bootstrap-timepicker/bootstrap-timepicker.js') }}"></script>--}}

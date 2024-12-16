@@ -3,7 +3,7 @@
 
         <el-tabs v-model="activeName">
             <el-tab-pane label="Horas extras diurnas (25%)" name="heds">
-                    
+
                 <div class="row mt-2">
                     <div class="col-md-12">
                         <table>
@@ -20,20 +20,20 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(row, index) in form.accrued.heds" :key="index"> 
+                                <tr v-for="(row, index) in form.accrued.heds" :key="index">
                                     <td>
                                         <div class="form-group mb-2 mr-2"  >
-                                            <el-date-picker 
-                                                v-model="row.start_end_date" 
+                                            <el-date-picker
+                                                v-model="row.start_end_date"
                                                 type="date"
-                                                value-format="yyyy-MM-dd" 
+                                                value-format="yyyy-MM-dd"
                                                 :clearable="false"
                                                 @change="changeStartEndDate(form.accrued.heds, index)"
                                             ></el-date-picker>
                                         </div>
                                     </td>
                                     <td>
-                                        
+
                                         <template v-if="errors[`accrued.heds.${index}.start_time`]">
                                             <div class="form-group" :class="{'has-danger': errors[`accrued.heds.${index}.start_time`]}">
                                                 <small class="form-control-feedback" v-text="errors[`accrued.heds.${index}.start_time`][0]"></small>
@@ -46,7 +46,7 @@
                                         </template>
 
                                         <div class="form-group mb-2 mr-2"  >
-                                            
+
                                             <el-time-picker
                                                 is-range
                                                 v-model="row.start_end_time"
@@ -58,9 +58,9 @@
                                                 >
                                             </el-time-picker>
                                         </div>
-                                    </td> 
+                                    </td>
                                     <td>
-                                        
+
                                         <template v-if="errors[`accrued.heds.${index}.quantity`]">
                                             <div class="form-group" :class="{'has-danger': errors[`accrued.heds.${index}.quantity`]}">
                                                 <small class="form-control-feedback" v-text="errors[`accrued.heds.${index}.quantity`][0]"></small>
@@ -77,7 +77,7 @@
                                         </div>
                                     </td> -->
                                     <td>
-                                        
+
                                         <template v-if="errors[`accrued.heds.${index}.payment`]">
                                             <div class="form-group" :class="{'has-danger': errors[`accrued.heds.${index}.payment`]}">
                                                 <small class="form-control-feedback" v-text="errors[`accrued.heds.${index}.payment`][0]"></small>
@@ -90,7 +90,7 @@
                                     </td>
 
                                     <td class="series-table-actions text-center">
-                                        
+
                                         <!-- validacion porcentaje -->
                                         <template v-if="errors[`accrued.heds.${index}.percentage`]">
                                             <div class="form-group" :class="{'has-danger': errors[`accrued.heds.${index}.percentage`]}">
@@ -111,7 +111,7 @@
             </el-tab-pane>
 
             <el-tab-pane label="Horas extras nocturnas (75%)" name="hens">
-                    
+
                 <div class="row mt-2">
                     <div class="col-md-12">
                         <table>
@@ -127,20 +127,20 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(row, index) in form.accrued.hens" :key="index"> 
+                                <tr v-for="(row, index) in form.accrued.hens" :key="index">
                                     <td>
                                         <div class="form-group mb-2 mr-2"  >
-                                            <el-date-picker 
-                                                v-model="row.start_end_date" 
+                                            <el-date-picker
+                                                v-model="row.start_end_date"
                                                 type="date"
-                                                value-format="yyyy-MM-dd" 
+                                                value-format="yyyy-MM-dd"
                                                 :clearable="false"
                                                 @change="changeStartEndDate(form.accrued.hens, index)"
                                             ></el-date-picker>
                                         </div>
                                     </td>
                                     <td>
-                                        
+
                                         <template v-if="errors[`accrued.hens.${index}.start_time`]">
                                             <div class="form-group" :class="{'has-danger': errors[`accrued.hens.${index}.start_time`]}">
                                                 <small class="form-control-feedback" v-text="errors[`accrued.hens.${index}.start_time`][0]"></small>
@@ -153,7 +153,7 @@
                                         </template>
 
                                         <div class="form-group mb-2 mr-2"  >
-                                            
+
                                             <el-time-picker
                                                 is-range
                                                 v-model="row.start_end_time"
@@ -165,9 +165,9 @@
                                                 >
                                             </el-time-picker>
                                         </div>
-                                    </td> 
+                                    </td>
                                     <td>
-                                        
+
                                         <template v-if="errors[`accrued.hens.${index}.quantity`]">
                                             <div class="form-group" :class="{'has-danger': errors[`accrued.hens.${index}.quantity`]}">
                                                 <small class="form-control-feedback" v-text="errors[`accrued.hens.${index}.quantity`][0]"></small>
@@ -177,9 +177,9 @@
                                         <div class="form-group mb-2 mr-2"  >
                                             <el-input-number v-model="row.quantity" disabled :min="0" controls-position="right"></el-input-number>
                                         </div>
-                                    </td> 
+                                    </td>
                                     <td>
-                                        
+
                                         <template v-if="errors[`accrued.hens.${index}.payment`]">
                                             <div class="form-group" :class="{'has-danger': errors[`accrued.hens.${index}.payment`]}">
                                                 <small class="form-control-feedback" v-text="errors[`accrued.hens.${index}.payment`][0]"></small>
@@ -192,7 +192,7 @@
                                     </td>
 
                                     <td class="series-table-actions text-center">
-                                        
+
                                         <!-- validacion porcentaje -->
                                         <template v-if="errors[`accrued.hens.${index}.percentage`]">
                                             <div class="form-group" :class="{'has-danger': errors[`accrued.hens.${index}.percentage`]}">
@@ -213,7 +213,7 @@
             </el-tab-pane>
 
             <el-tab-pane label="Horas Recargo Nocturno (35%)" name="hrns">
-                    
+
                 <div class="row mt-2">
                     <div class="col-md-12">
                         <table>
@@ -229,20 +229,20 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(row, index) in form.accrued.hrns" :key="index"> 
+                                <tr v-for="(row, index) in form.accrued.hrns" :key="index">
                                     <td>
                                         <div class="form-group mb-2 mr-2"  >
-                                            <el-date-picker 
-                                                v-model="row.start_end_date" 
+                                            <el-date-picker
+                                                v-model="row.start_end_date"
                                                 type="date"
-                                                value-format="yyyy-MM-dd" 
+                                                value-format="yyyy-MM-dd"
                                                 :clearable="false"
                                                 @change="changeStartEndDate(form.accrued.hrns, index)"
                                             ></el-date-picker>
                                         </div>
                                     </td>
                                     <td>
-                                        
+
                                         <template v-if="errors[`accrued.hrns.${index}.start_time`]">
                                             <div class="form-group" :class="{'has-danger': errors[`accrued.hrns.${index}.start_time`]}">
                                                 <small class="form-control-feedback" v-text="errors[`accrued.hrns.${index}.start_time`][0]"></small>
@@ -255,7 +255,7 @@
                                         </template>
 
                                         <div class="form-group mb-2 mr-2"  >
-                                            
+
                                             <el-time-picker
                                                 is-range
                                                 v-model="row.start_end_time"
@@ -267,9 +267,9 @@
                                                 >
                                             </el-time-picker>
                                         </div>
-                                    </td> 
+                                    </td>
                                     <td>
-                                        
+
                                         <template v-if="errors[`accrued.hrns.${index}.quantity`]">
                                             <div class="form-group" :class="{'has-danger': errors[`accrued.hrns.${index}.quantity`]}">
                                                 <small class="form-control-feedback" v-text="errors[`accrued.hrns.${index}.quantity`][0]"></small>
@@ -279,9 +279,9 @@
                                         <div class="form-group mb-2 mr-2"  >
                                             <el-input-number v-model="row.quantity" disabled :min="0" controls-position="right"></el-input-number>
                                         </div>
-                                    </td> 
+                                    </td>
                                     <td>
-                                        
+
                                         <template v-if="errors[`accrued.hrns.${index}.payment`]">
                                             <div class="form-group" :class="{'has-danger': errors[`accrued.hrns.${index}.payment`]}">
                                                 <small class="form-control-feedback" v-text="errors[`accrued.hrns.${index}.payment`][0]"></small>
@@ -294,7 +294,7 @@
                                     </td>
 
                                     <td class="series-table-actions text-center">
-                                        
+
                                         <!-- validacion porcentaje -->
                                         <template v-if="errors[`accrued.hrns.${index}.percentage`]">
                                             <div class="form-group" :class="{'has-danger': errors[`accrued.hrns.${index}.percentage`]}">
@@ -315,7 +315,7 @@
             </el-tab-pane>
 
             <el-tab-pane label="Horas Extras Diurnas Dominical y Festivos (100%)" name="heddfs">
-                    
+
                 <div class="row mt-2">
                     <div class="col-md-12">
                         <table>
@@ -331,20 +331,20 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(row, index) in form.accrued.heddfs" :key="index"> 
+                                <tr v-for="(row, index) in form.accrued.heddfs" :key="index">
                                     <td>
                                         <div class="form-group mb-2 mr-2"  >
-                                            <el-date-picker 
-                                                v-model="row.start_end_date" 
+                                            <el-date-picker
+                                                v-model="row.start_end_date"
                                                 type="date"
-                                                value-format="yyyy-MM-dd" 
+                                                value-format="yyyy-MM-dd"
                                                 :clearable="false"
                                                 @change="changeStartEndDate(form.accrued.heddfs, index)"
                                             ></el-date-picker>
                                         </div>
                                     </td>
                                     <td>
-                                        
+
                                         <template v-if="errors[`accrued.heddfs.${index}.start_time`]">
                                             <div class="form-group" :class="{'has-danger': errors[`accrued.heddfs.${index}.start_time`]}">
                                                 <small class="form-control-feedback" v-text="errors[`accrued.heddfs.${index}.start_time`][0]"></small>
@@ -357,7 +357,7 @@
                                         </template>
 
                                         <div class="form-group mb-2 mr-2"  >
-                                            
+
                                             <el-time-picker
                                                 is-range
                                                 v-model="row.start_end_time"
@@ -369,9 +369,9 @@
                                                 >
                                             </el-time-picker>
                                         </div>
-                                    </td> 
+                                    </td>
                                     <td>
-                                        
+
                                         <template v-if="errors[`accrued.heddfs.${index}.quantity`]">
                                             <div class="form-group" :class="{'has-danger': errors[`accrued.heddfs.${index}.quantity`]}">
                                                 <small class="form-control-feedback" v-text="errors[`accrued.heddfs.${index}.quantity`][0]"></small>
@@ -381,9 +381,9 @@
                                         <div class="form-group mb-2 mr-2"  >
                                             <el-input-number v-model="row.quantity" disabled :min="0" controls-position="right"></el-input-number>
                                         </div>
-                                    </td> 
+                                    </td>
                                     <td>
-                                        
+
                                         <template v-if="errors[`accrued.heddfs.${index}.payment`]">
                                             <div class="form-group" :class="{'has-danger': errors[`accrued.heddfs.${index}.payment`]}">
                                                 <small class="form-control-feedback" v-text="errors[`accrued.heddfs.${index}.payment`][0]"></small>
@@ -396,7 +396,7 @@
                                     </td>
 
                                     <td class="series-table-actions text-center">
-                                        
+
                                         <!-- validacion porcentaje -->
                                         <template v-if="errors[`accrued.heddfs.${index}.percentage`]">
                                             <div class="form-group" :class="{'has-danger': errors[`accrued.heddfs.${index}.percentage`]}">
@@ -415,9 +415,9 @@
                     </div>
                 </div>
             </el-tab-pane>
-            
+
             <el-tab-pane label="Horas Recargo Diurno Dominical y Festivos (75%)" name="hrddfs">
-                    
+
                 <div class="row mt-2">
                     <div class="col-md-12">
                         <table>
@@ -433,20 +433,20 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(row, index) in form.accrued.hrddfs" :key="index"> 
+                                <tr v-for="(row, index) in form.accrued.hrddfs" :key="index">
                                     <td>
                                         <div class="form-group mb-2 mr-2"  >
-                                            <el-date-picker 
-                                                v-model="row.start_end_date" 
+                                            <el-date-picker
+                                                v-model="row.start_end_date"
                                                 type="date"
-                                                value-format="yyyy-MM-dd" 
+                                                value-format="yyyy-MM-dd"
                                                 :clearable="false"
                                                 @change="changeStartEndDate(form.accrued.hrddfs, index)"
                                             ></el-date-picker>
                                         </div>
                                     </td>
                                     <td>
-                                        
+
                                         <template v-if="errors[`accrued.hrddfs.${index}.start_time`]">
                                             <div class="form-group" :class="{'has-danger': errors[`accrued.hrddfs.${index}.start_time`]}">
                                                 <small class="form-control-feedback" v-text="errors[`accrued.hrddfs.${index}.start_time`][0]"></small>
@@ -459,7 +459,7 @@
                                         </template>
 
                                         <div class="form-group mb-2 mr-2"  >
-                                            
+
                                             <el-time-picker
                                                 is-range
                                                 v-model="row.start_end_time"
@@ -471,9 +471,9 @@
                                                 >
                                             </el-time-picker>
                                         </div>
-                                    </td> 
+                                    </td>
                                     <td>
-                                        
+
                                         <template v-if="errors[`accrued.hrddfs.${index}.quantity`]">
                                             <div class="form-group" :class="{'has-danger': errors[`accrued.hrddfs.${index}.quantity`]}">
                                                 <small class="form-control-feedback" v-text="errors[`accrued.hrddfs.${index}.quantity`][0]"></small>
@@ -483,9 +483,9 @@
                                         <div class="form-group mb-2 mr-2"  >
                                             <el-input-number v-model="row.quantity" disabled :min="0" controls-position="right"></el-input-number>
                                         </div>
-                                    </td> 
+                                    </td>
                                     <td>
-                                        
+
                                         <template v-if="errors[`accrued.hrddfs.${index}.payment`]">
                                             <div class="form-group" :class="{'has-danger': errors[`accrued.hrddfs.${index}.payment`]}">
                                                 <small class="form-control-feedback" v-text="errors[`accrued.hrddfs.${index}.payment`][0]"></small>
@@ -498,7 +498,7 @@
                                     </td>
 
                                     <td class="series-table-actions text-center">
-                                        
+
                                         <!-- validacion porcentaje -->
                                         <template v-if="errors[`accrued.hrddfs.${index}.percentage`]">
                                             <div class="form-group" :class="{'has-danger': errors[`accrued.hrddfs.${index}.percentage`]}">
@@ -519,7 +519,7 @@
             </el-tab-pane>
 
             <el-tab-pane label="Horas Extras Nocturnas Dominical y Festivos (150%)" name="hendfs">
-                    
+
                 <div class="row mt-2">
                     <div class="col-md-12">
                         <table>
@@ -535,20 +535,20 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(row, index) in form.accrued.hendfs" :key="index"> 
+                                <tr v-for="(row, index) in form.accrued.hendfs" :key="index">
                                     <td>
                                         <div class="form-group mb-2 mr-2"  >
-                                            <el-date-picker 
-                                                v-model="row.start_end_date" 
+                                            <el-date-picker
+                                                v-model="row.start_end_date"
                                                 type="date"
-                                                value-format="yyyy-MM-dd" 
+                                                value-format="yyyy-MM-dd"
                                                 :clearable="false"
                                                 @change="changeStartEndDate(form.accrued.hendfs, index)"
                                             ></el-date-picker>
                                         </div>
                                     </td>
                                     <td>
-                                        
+
                                         <template v-if="errors[`accrued.hendfs.${index}.start_time`]">
                                             <div class="form-group" :class="{'has-danger': errors[`accrued.hendfs.${index}.start_time`]}">
                                                 <small class="form-control-feedback" v-text="errors[`accrued.hendfs.${index}.start_time`][0]"></small>
@@ -561,7 +561,7 @@
                                         </template>
 
                                         <div class="form-group mb-2 mr-2"  >
-                                            
+
                                             <el-time-picker
                                                 is-range
                                                 v-model="row.start_end_time"
@@ -573,9 +573,9 @@
                                                 >
                                             </el-time-picker>
                                         </div>
-                                    </td> 
+                                    </td>
                                     <td>
-                                        
+
                                         <template v-if="errors[`accrued.hendfs.${index}.quantity`]">
                                             <div class="form-group" :class="{'has-danger': errors[`accrued.hendfs.${index}.quantity`]}">
                                                 <small class="form-control-feedback" v-text="errors[`accrued.hendfs.${index}.quantity`][0]"></small>
@@ -585,9 +585,9 @@
                                         <div class="form-group mb-2 mr-2"  >
                                             <el-input-number v-model="row.quantity" disabled :min="0" controls-position="right"></el-input-number>
                                         </div>
-                                    </td> 
+                                    </td>
                                     <td>
-                                        
+
                                         <template v-if="errors[`accrued.hendfs.${index}.payment`]">
                                             <div class="form-group" :class="{'has-danger': errors[`accrued.hendfs.${index}.payment`]}">
                                                 <small class="form-control-feedback" v-text="errors[`accrued.hendfs.${index}.payment`][0]"></small>
@@ -600,7 +600,7 @@
                                     </td>
 
                                     <td class="series-table-actions text-center">
-                                        
+
                                         <!-- validacion porcentaje -->
                                         <template v-if="errors[`accrued.hendfs.${index}.percentage`]">
                                             <div class="form-group" :class="{'has-danger': errors[`accrued.hendfs.${index}.percentage`]}">
@@ -621,7 +621,7 @@
             </el-tab-pane>
 
             <el-tab-pane label="Horas Recargo Nocturno Dominical y Festivos (110%)" name="hrndfs">
-                    
+
                 <div class="row mt-2">
                     <div class="col-md-12">
                         <table>
@@ -637,20 +637,20 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(row, index) in form.accrued.hrndfs" :key="index"> 
+                                <tr v-for="(row, index) in form.accrued.hrndfs" :key="index">
                                     <td>
                                         <div class="form-group mb-2 mr-2"  >
-                                            <el-date-picker 
-                                                v-model="row.start_end_date" 
+                                            <el-date-picker
+                                                v-model="row.start_end_date"
                                                 type="date"
-                                                value-format="yyyy-MM-dd" 
+                                                value-format="yyyy-MM-dd"
                                                 :clearable="false"
                                                 @change="changeStartEndDate(form.accrued.hrndfs, index)"
                                             ></el-date-picker>
                                         </div>
                                     </td>
                                     <td>
-                                        
+
                                         <template v-if="errors[`accrued.hrndfs.${index}.start_time`]">
                                             <div class="form-group" :class="{'has-danger': errors[`accrued.hrndfs.${index}.start_time`]}">
                                                 <small class="form-control-feedback" v-text="errors[`accrued.hrndfs.${index}.start_time`][0]"></small>
@@ -663,7 +663,7 @@
                                         </template>
 
                                         <div class="form-group mb-2 mr-2"  >
-                                            
+
                                             <el-time-picker
                                                 is-range
                                                 v-model="row.start_end_time"
@@ -675,9 +675,9 @@
                                                 >
                                             </el-time-picker>
                                         </div>
-                                    </td> 
+                                    </td>
                                     <td>
-                                        
+
                                         <template v-if="errors[`accrued.hrndfs.${index}.quantity`]">
                                             <div class="form-group" :class="{'has-danger': errors[`accrued.hrndfs.${index}.quantity`]}">
                                                 <small class="form-control-feedback" v-text="errors[`accrued.hrndfs.${index}.quantity`][0]"></small>
@@ -687,9 +687,9 @@
                                         <div class="form-group mb-2 mr-2"  >
                                             <el-input-number v-model="row.quantity" disabled :min="0" controls-position="right"></el-input-number>
                                         </div>
-                                    </td> 
+                                    </td>
                                     <td>
-                                        
+
                                         <template v-if="errors[`accrued.hrndfs.${index}.payment`]">
                                             <div class="form-group" :class="{'has-danger': errors[`accrued.hrndfs.${index}.payment`]}">
                                                 <small class="form-control-feedback" v-text="errors[`accrued.hrndfs.${index}.payment`][0]"></small>
@@ -702,7 +702,7 @@
                                     </td>
 
                                     <td class="series-table-actions text-center">
-                                        
+
                                         <!-- validacion porcentaje -->
                                         <template v-if="errors[`accrued.hrndfs.${index}.percentage`]">
                                             <div class="form-group" :class="{'has-danger': errors[`accrued.hrndfs.${index}.percentage`]}">
@@ -777,7 +777,7 @@ import moment from 'moment'
                 const start_end_time = array_hours[index].start_end_time
                 let start_time = start_end_time[0]
                 let end_time = start_end_time[1]
-                
+
                 let quantity = _.round(moment(end_time, "HH:mm:ss").diff(moment(start_time, "HH:mm:ss"), 'hours', true), 2)
 
                 let type_overtime_surcharge = this.getTypeOvertimeSurcharge(type)
@@ -793,7 +793,7 @@ import moment from 'moment'
             recalculateDataExtraHours(){
 
                 // usado cuando se modifica el salario base, ya que el campo pagos de las horas extras varian en base al mismo
-                
+
                 this.form.accrued.heds.forEach((item, index) => {
                     this.calculateValuesExtraHours(this.form.accrued.heds, index, 'heds')
                 })
@@ -801,23 +801,23 @@ import moment from 'moment'
                 this.form.accrued.hens.forEach((item, index) => {
                     this.calculateValuesExtraHours(this.form.accrued.hens, index, 'hens')
                 })
-                
+
                 this.form.accrued.hrns.forEach((item, index) => {
                     this.calculateValuesExtraHours(this.form.accrued.hrns, index, 'hrns')
                 })
-                
+
                 this.form.accrued.heddfs.forEach((item, index) => {
                     this.calculateValuesExtraHours(this.form.accrued.heddfs, index, 'heddfs')
                 })
-                
+
                 this.form.accrued.hrddfs.forEach((item, index) => {
                     this.calculateValuesExtraHours(this.form.accrued.hrddfs, index, 'hrddfs')
                 })
-                
+
                 this.form.accrued.hendfs.forEach((item, index) => {
                     this.calculateValuesExtraHours(this.form.accrued.hendfs, index, 'hendfs')
                 })
-                
+
                 this.form.accrued.hrndfs.forEach((item, index) => {
                     this.calculateValuesExtraHours(this.form.accrued.hrndfs, index, 'hrndfs')
                 })
@@ -869,8 +869,8 @@ import moment from 'moment'
 
             },
             getPricePerExtraHour(percentage){
-                // obtener el precio por hora, incluido el % agregado al ser hora extra --- 30d * 8h = 240
-                return (parseFloat(this.form.accrued.total_base_salary) / 240) * (1 + percentage / 100)
+                // obtener el precio por hora, incluido el % agregado al ser hora extra --- 30d * 7.8333333 = 235
+                return (parseFloat(this.form.accrued.total_base_salary) / 235) * (1 + percentage / 100)
             },
             getTypeOvertimeSurcharge(type)
             {
@@ -924,11 +924,11 @@ import moment from 'moment'
             clickCancelExtraHour(array_hours, index){
                 array_hours.splice(index, 1)
             },
-            create() { 
+            create() {
 
-            }, 
+            },
             clickClose() {
-                
+
                 // sumar todos los pagos de las horas extras
                 this.sumTotalsExtraHours()
                 // emitir evento para que se sumen al total devengados en el form principal
@@ -945,7 +945,7 @@ import moment from 'moment'
             //         case 'heds':
             //             id = 1
             //             break;
-                
+
             //         case 'hens':
             //             id = 2
             //             break;

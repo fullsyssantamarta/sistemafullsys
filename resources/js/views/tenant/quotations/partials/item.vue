@@ -43,6 +43,7 @@
                                 <el-option v-for="option in itemTaxes" :key="option.id" :value="option.id" :label="option.name"></el-option>
                             </el-select>
                             <!-- <el-checkbox :disabled="recordItem != null" v-model="change_tax_id">Editar</el-checkbox> -->
+                            <el-checkbox v-model="tax_included_in_price" @change="change_price_tax_included">Impuesto incluido en el precio.</el-checkbox><br>
                             <small class="form-control-feedback" v-if="errors.tax_id" v-text="errors.tax_id[0]"></small>
                         </div>
                     </div>
@@ -159,6 +160,7 @@
                 charge_types: [],
                 attribute_types: [],
                 use_price: 1,
+                tax_included_in_price: false,
                 change_affectation_igv_type_id: false,
                 total_item: 0,
                 has_list_prices: false,
@@ -223,14 +225,13 @@
                     unit_type: {},
                     discount: 0,
                     unit_type_id: null,
-
                 };
 
                 this.total_item = 0;
                 this.item_unit_type = {};
                 this.has_list_prices = false;
-
-                this.item_unit_types = []
+                this.item_unit_types = [];
+                this.tax_included_in_price = true;
             },
             // initializeFields() {
             //     this.form.affectation_igv_type_id = this.affectation_igv_types[0].id
@@ -354,6 +355,24 @@
                     // this.filterItems()
 
                 })
+            },
+            change_price_tax_included()
+            {
+                if(parseFloat(this.form.unit_price) == 0){
+                    if(this.tax_included_in_price)
+                        this.form.unit_price = this.form.item.sale_unit_price * (1 + (this.RateSelectedTax(this.form.tax_id) / 100))
+                    else
+                        this.form.unit_price = this.form.item.sale_unit_price
+                }
+                else{
+                    if(parseFloat(this.form.unit_price) > 0){
+
+                        if(this.tax_included_in_price)
+                            this.form.unit_price = this.form.unit_price * (1 + (this.RateSelectedTax(this.form.tax_id) / 100))
+                        else
+                            this.form.unit_price = this.form.unit_price / (1 + (this.RateSelectedTax(this.form.tax_id) / 100))
+                    }
+                }
             },
             async searchRemoteItems(input) {
                 if (input.length > 2) {

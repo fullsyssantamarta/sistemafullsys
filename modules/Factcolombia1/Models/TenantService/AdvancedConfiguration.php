@@ -30,12 +30,15 @@ class AdvancedConfiguration extends Model
         'radian_imap_user',
         'uvt',
         'item_tax_included',
+        'digital_certificate_qztray',
+        'private_certificate_qztray',
+        'enable_qz_tray',
     ];
-
 
     protected $casts = [
         'uvt' => 'float',
         'item_tax_included' => 'bool',
+        'enable_qz_tray' => 'bool',
     ];
 
 
@@ -103,4 +106,13 @@ class AdvancedConfiguration extends Model
         return $this->uvt * self::QUANTITY_UVT_LIMIT;
     }
 
+    /**
+     * Obtener unicamente los noombre del archivos de Qz Tray
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeSelectCertificateQzTray($query)
+    {
+        return $query->select('enable_qz_tray', 'digital_certificate_qztray', 'private_certificate_qztray');
+    }
 }

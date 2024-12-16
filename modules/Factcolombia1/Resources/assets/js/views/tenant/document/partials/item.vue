@@ -447,6 +447,7 @@
                     item_unit_types: [],
                     IdLoteSelected: null,
                     discount_type: 'amount',
+                    discount_percentage: 0,
                 };
 
                 this.activePanel = 0;
@@ -470,7 +471,12 @@
                     this.form.quantity = this.recordItem.quantity
                     this.form.notes = this.recordItem.notes
                     this.form.price = this.recordItem.price
-                    this.form.discount = this.recordItem.discount
+                    if(this.recordItem.discount_type === 'percentage') {
+                        this.form.discount_type = this.recordItem.discount_type
+                        this.form.discount = this.recordItem.discount_percentage
+                    } else {
+                        this.form.discount = this.recordItem.discount
+                    }
 
                     this.form.warehouse_id = this.recordItem.warehouse_id
                     this.isUpdateWarehouseId = this.recordItem.warehouse_id
@@ -626,6 +632,11 @@
                         return this.$message.error('La cantidad de series seleccionadas son diferentes a la cantidad a vender');
                 }
                 this.form.IdLoteSelected = IdLoteSelected
+
+                // defino el monto fijo del porcentaje de descuento
+                if(this.form.discount_type === 'percentage') {
+                    this.form.discount_percentage = this.form.discount;
+                }
 
 //                console.log(this.form)
                 this.$emit('add', this.form);

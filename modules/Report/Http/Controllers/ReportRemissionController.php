@@ -39,12 +39,15 @@ class ReportRemissionController extends Controller
 
     public function records(Request $request)
     {
+        \Log::debug("A");
         $records = $this->getRecords($request->all(), Remission::class);
 
         return new RemissionCollection($records->paginate(config('tenant.items_per_page')));
     }
 
-
+    public function prueba(){
+        \Log::debug("XXXXX");
+    }
 
     public function pdf(Request $request) {
 

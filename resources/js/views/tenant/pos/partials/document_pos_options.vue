@@ -70,12 +70,53 @@
                 showDialogOptions: false,
                 documentNewId: null,
                 activeName: 'third',
+                enable_qz_tray: false,
             }
         },
-        created() {
+        async created() {
             this.initForm()
+            await this.getConfigPrint()
         },
         methods: {
+            async getConfigPrint() {
+                console.info('iniciando qztray');
+                await this.$http
+                    .get(`/certificates-qztray/record`)
+                    .then(response => {
+                        this.enable_qz_tray = response.data.enable_qz_tray;
+                    })
+                if(this.enable_qz_tray) {
+                    startConnection()
+                }
+            },
+            async printTicket() {
+                let html_content = null
+                await this.$http.get(this.form.print_html)
+                    .then(response => {
+                        html_content = response.data
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
+                if (html_content) {
+                    console.log('imprimir')
+                    const opts = getUpdatedConfig()
+                    const printData = [
+                        {
+                            type: 'html',
+                            format: 'plain',
+                            data: html_content,
+                            options: opts
+                        }
+                    ]
+                    qz.print(opts, printData)
+                        .then(() => {
+                            console.log('Impresión en proceso...')
+                            this.$message.success('Impresión en proceso...')
+                        })
+                        .catch(displayError)
+                }
+            },
             initForm() {
                 this.errors = {}
                 this.form = {
@@ -86,10 +127,9 @@
                     print_ticket: null,
                     print_a4: null,
                     print_a5: null,
+                    print_html: null,
                     series:null,
                     number:null,
-
-
                 }
             },
             create() {
@@ -97,6 +137,7 @@
                     .then(response => {
                         this.form = response.data.data
                         this.titleDialog = `Documento POS registrado:  ${this.form.serie}-${this.form.number}`
+                        this.printTicket()
                     })
             },
             clickFinalize() {

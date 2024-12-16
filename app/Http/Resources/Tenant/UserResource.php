@@ -16,13 +16,12 @@ class UserResource extends JsonResource
     public function toArray($request)
     {
         $all_modules = Module::whereIn('id', auth()->user()->getAllowedModulesForSystem())
-        // $all_modules = Module::whereIn('id', [1,2,4,5,6,7,8,10,12])
-                                ->with(['levels' => function($query){
-                                    $query->whereIn('id', [1,2,5,7,8,9]);
-                                }])
-                                ->orderBy('description')
-                                ->get();
-                                
+            ->with(['levels' => function($query){
+                $query->whereIn('id', [1,2,5,7,8,9,10]);
+            }])
+            ->orderBy('description')
+            ->get();
+
         $modules_in_user = $this->modules->pluck('id')->toArray();
         $levels_in_user = $this->levels->pluck('id')->toArray();
         $modules = [];
@@ -37,7 +36,7 @@ class UserResource extends JsonResource
             ];
 
             if(in_array($module->id, $modules_in_user)){
-                
+
                 foreach ($module->levels as $level) {
                     $levels[] = [
                         'id' => $level->id,

@@ -222,6 +222,7 @@ class DocumentController extends Controller
 
     public function sincronize()
     {
+        set_time_limit(0);
         try {
             $advanced_configuration = AdvancedConfiguration::where('lastsync', '!=', 0)->get();
             if(count($advanced_configuration) > 0){
@@ -345,7 +346,7 @@ class DocumentController extends Controller
                     $request->customer_id = $p[0]->id;
 
                 $request->currency_id = 170;
-                $request->date_expiration = $service_invoice['payment_form']['payment_due_date'];
+                $request->date_expiration = isset($service_invoice['payment_form']['payment_due_date']) ? $service_invoice['payment_form']['payment_due_date'] : $service_invoice['date'];
                 $request->date_issue = $service_invoice['date'];
                 $request->observation = (key_exists('notes', $service_invoice)) ? $service_invoice['notes'] : "";
                 $request->sale = $service_invoice['legal_monetary_totals']['payable_amount'];
@@ -359,7 +360,7 @@ class DocumentController extends Controller
                 $request->subtotal = $service_invoice['legal_monetary_totals']['line_extension_amount'];
                 $request->payment_form_id = $service_invoice['payment_form']['payment_form_id'];
                 $request->payment_method_id = $service_invoice['payment_form']['payment_method_id'];
-                $request->time_days_credit = $service_invoice['payment_form']['duration_measure'];
+                $request->time_days_credit = isset($service_invoice['payment_form']['duration_measure']) ? $service_invoice['payment_form']['duration_measure'] : 0;
                 $request->xml = $document_invoice->xml;
                 $request->cufe = $document_invoice->cufe;
                 $request->order_reference = [];
@@ -518,7 +519,7 @@ class DocumentController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(DocumentRequest $request, $invoice_json = NULL){
-//        \Log::debug($invoice_json);
+        // \Log::debug($invoice_json);
         // dd($request->all());
         DB::connection('tenant')->beginTransaction();
         try {
@@ -566,7 +567,7 @@ class DocumentController extends Controller
             else
                 $correlative_api = $this->getCorrelativeInvoice(1, $request->prefix, $ignore_state_document_id);
 
-//            \Log::debug($correlative_api);
+            // \Log::debug($correlative_api);
             if(isset($request->number))
                 $correlative_api = $request->number;
 
@@ -576,7 +577,7 @@ class DocumentController extends Controller
                     'message' => 'Error al obtener correlativo Api.'
                 ];
             }
-//            \Log::debug($invoice_json_decoded);
+            // \Log::debug($invoice_json_decoded);
 
             if($invoice_json !== NULL)
                 $service_invoice = $invoice_json_decoded;
@@ -591,9 +592,9 @@ class DocumentController extends Controller
                     $service_invoice['foot_note'] = "Modo de operación: Software Propio - by ".env('APP_NAME', 'FACTURALATAM')." La presente Factura Electrónica de Venta, es un título valor de acuerdo con lo establecido en el Código de Comercio y en especial en los artículos 621,772 y 774. El Decreto 2242 del 24 de noviembre de 2015 y el Decreto Único 1074 de mayo de 2015. El presente título valor se asimila en todos sus efectos a una letra de cambio Art. 779 del Código de Comercio. Con esta el Comprador declara haber recibido real y materialmente las mercancías o prestación de servicios descritos en este título valor.";
                 }
             }
-//\Log::debug(json_encode($service_invoice));
+            //\Log::debug(json_encode($service_invoice));
             $service_invoice['web_site'] = env('APP_NAME', 'FACTURALATAM');
-//\Log::debug(json_encode($service_invoice));
+            //\Log::debug(json_encode($service_invoice));
             if(!is_null($this->company['jpg_firma_facturas']))
               if(file_exists(public_path('storage/uploads/logos/'.$this->company['jpg_firma_facturas']))){
                   $firma_facturacion = base64_encode(file_get_contents(public_path('storage/uploads/logos/'.$this->company['jpg_firma_facturas'])));
@@ -681,25 +682,25 @@ class DocumentController extends Controller
                 $service_invoice['payment_form']['duration_measure'] = $request->time_days_credit;
             }
             $service_invoice['customer']['dv'] = $this->validarDigVerifDIAN($service_invoice['customer']['identification_number']);
-//            $service_invoice['legal_monetary_totals']['line_extension_amount'] = "2350000.00";
+            // $service_invoice['legal_monetary_totals']['line_extension_amount'] = "2350000.00";
 
             $id_test = $company->test_id;
             $base_url = config('tenant.service_fact');
 
             if($company->type_environment_id == 2 && $company->test_id != 'no_test_set_id'){
-//                \Log::debug("Alexander");
+            //     \Log::debug("Alexander");
                 $ch = curl_init("{$base_url}ubl2.1/invoice/{$id_test}");
             }
             else
                 $ch = curl_init("{$base_url}ubl2.1/invoice");
 
             $data_document = json_encode($service_invoice);
-//\Log::debug("{$base_url}ubl2.1/invoice");
-//\Log::debug($company->api_token);
-//\Log::debug($correlative_api);
-//\Log::debug($data_document);
-//            return $data_document;
-//return "";
+            //\Log::debug("{$base_url}ubl2.1/invoice");
+            //\Log::debug($company->api_token);
+            //\Log::debug($correlative_api);
+            //\Log::debug($data_document);
+            //            return $data_document;
+            //return "";
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
             curl_setopt($ch, CURLOPT_POSTFIELDS,($data_document));
@@ -711,7 +712,9 @@ class DocumentController extends Controller
                 "Authorization: Bearer {$company->api_token}"
             ));
             $response = curl_exec($ch);
-//\Log::debug($response);
+            if(config('tenant.show_log')) {
+                \Log::debug('DocumentController:715: '.$response);
+            }
             curl_close($ch);
             $response_model = json_decode($response);
             $zip_key = null;
@@ -747,6 +750,14 @@ class DocumentController extends Controller
                         ];
                     }
                 }
+            }
+
+            if(isset($response_model->success) && !$response_model->success) {
+                return [
+                    'success' => false,
+                    'validation_errors' => true,
+                    'message' =>  $response_model->message,
+                ];
             }
 
             if($company->type_environment_id == 2 && $company->test_id != 'no_test_set_id'){
@@ -846,11 +857,11 @@ class DocumentController extends Controller
                     else
                         $mensajeerror = $response_model->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->ErrorMessage->string;
                     if($response_model->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->IsValid == 'false'){
-//                        if($invoice_json == NULL)
-//                            return [
-//                                'success' => false,
-//                                'message' => "Error al Validar Factura Nro: {$correlative_api} Errores: ".$mensajeerror
-//                           ];
+                    // if($invoice_json == NULL)
+                    //     return [
+                    //         'success' => false,
+                    //         'message' => "Error al Validar Factura Nro: {$correlative_api} Errores: ".$mensajeerror
+                    //    ];
                     }
                 }
             }
@@ -905,7 +916,7 @@ class DocumentController extends Controller
             // Inicializar el mensaje de error
             $userFriendlyMessage = 'Ocurrió un error inesperado.';
             // Verificar si hay un mensaje de error específico en la respuesta de la API
-            if (isset($response_model->message)) {
+            if (is_object($response_model) && isset($response_model->message)) {
                 $userFriendlyMessage = $response_model->message;  // Mensaje general de la API
                 // Verificar si hay detalles de errores específicos
                 if (isset($response_model->errors) && is_object($response_model->errors)) {
@@ -931,12 +942,13 @@ class DocumentController extends Controller
                 $errorMessage = '';
             }
             // Devolver la respuesta con un mensaje de error más detallado
+            \Log::error($e->getTrace());
             return [
                 'success' => false,
                 'validation_errors' => true,
                 'message' =>  $errorMessage . ' ' . $userFriendlyMessage,
                 'line' => $e->getLine(),
-                'trace' => $e->getTrace(),
+                // 'trace' => $e->getTrace(),
             ];
         }
 

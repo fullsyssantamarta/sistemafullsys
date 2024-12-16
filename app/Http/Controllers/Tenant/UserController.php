@@ -28,12 +28,11 @@ class UserController extends Controller
     {
 
         $modules = Module::whereIn('id', auth()->user()->getAllowedModulesForSystem())
-        // $modules = Module::whereIn('id', [1,2,4,5,6,7,8,10,12])
-                            ->with(['levels' => function($query){
-                                $query->whereIn('id', [1,2,5,7,8,9]);
-                            }])
-                            ->orderBy('description')
-                            ->get();
+            ->with(['levels' => function($query){
+                $query->whereIn('id', [1,2,5,7,8,9,10]);
+            }])
+            ->orderBy('description')
+            ->get();
 
         $establishments = Establishment::orderBy('description')->get();
         $types = [['type' => 'admin', 'description'=>'Administrador'], ['type' => 'seller', 'description'=>'Vendedor']];
@@ -77,7 +76,7 @@ class UserController extends Controller
         $modules = collect($request->input('modules'))->where('checked', true)->pluck('id')->toArray();
         $user->modules()->sync($modules);
 
-        
+
         $levels = collect($request->input('levels'))->where('checked', true)->pluck('id')->toArray();
         $user->levels()->sync($levels);
 
@@ -86,7 +85,7 @@ class UserController extends Controller
         //         'id' => $row->id,
         //         'privot_id' => $row->pivot,
         //         'privot_user' => $row->pivot->user_id,
-        //         'privot_module' => $row->pivot->module_id, 
+        //         'privot_module' => $row->pivot->module_id,
 
         //     ];
         // }));
@@ -117,7 +116,7 @@ class UserController extends Controller
 
 
     /**
-     * 
+     *
      * Data para componente filtros
      *
      * @return array

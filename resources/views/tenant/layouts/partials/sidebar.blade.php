@@ -4,7 +4,6 @@
     $path[2] = (array_key_exists(2, $path)> 0)?$path[2]:'';
     $path[0] = ($path[0] === '')?'documents':$path[0];
 @endphp
-
 <aside id="sidebar-left" class="sidebar-left">
     <div class="sidebar-header">
         <a href="{{route('tenant.dashboard.index')}}"
@@ -255,12 +254,13 @@
                                     </li>
                                 @endif
 
-
+                                @if(in_array('remissions', $vc_module_levels))
                                 <li class="{{ ($path[0] === 'co-remissions')?'nav-active':'' }}">
                                     <a class="nav-link" href="{{route('tenant.co-remissions.index')}}">
                                         Remisiones
                                     </a>
                                 </li>
+                                @endif
 
                                 {{-- <li class="nav-parent
                                     {{ ($path[0] === 'contracts')?'nav-active nav-expanded':'' }}
