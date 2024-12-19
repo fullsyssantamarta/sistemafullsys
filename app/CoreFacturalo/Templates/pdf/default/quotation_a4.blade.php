@@ -148,11 +148,11 @@
                     @endforeach
                 @endif
 
-                @if($row->item->is_set == 1)
+                {{-- @if($row->item->is_set == 1)
                  <br>
                 @inject('itemSet', 'App\Services\ItemSetService')
                     {{join( "-", $itemSet->getItemsSet($row->item_id) )}}
-                @endif
+                @endif --}}
 
             </td>
             <td class="text-right align-top">{{ number_format($row->unit_price, 2) }}</td>
