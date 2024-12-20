@@ -2015,6 +2015,7 @@ class DocumentController extends Controller
                     'series_enabled' => (bool) $row->series_enabled,
                     'unit_type' => $row->unit_type,
                     'tax' => $row->tax,
+                    'is_set' => (bool) $row->is_set,
                 ];
             });
 
