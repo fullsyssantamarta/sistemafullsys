@@ -20,6 +20,13 @@
     <link href="{{ $path_style }}" rel="stylesheet" />
 </head>
 <body>
+@if($document->total_canceled)
+    <div class="company_logo_box" style="position: absolute; text-align: center; top:25%">
+        <img
+            src="data:{{mime_content_type(public_path("status_images".DIRECTORY_SEPARATOR."pagado.png"))}};base64, {{base64_encode(file_get_contents(public_path("status_images".DIRECTORY_SEPARATOR."pagado.png")))}}"
+            alt="anulado" class="" style="opacity: 0.2;width: 100%;">
+    </div>
+@endif
 <table class="full-width">
     <tr>
         @if($filename_logo != "")
