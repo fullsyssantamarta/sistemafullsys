@@ -307,13 +307,6 @@
         },
         created() {
             this.initForm()
-            this.$http.get(`/${this.resource}/item/tables`).then(response => {
-               // console.log('tablas new edit')
-                this.taxes = response.data.taxes;
-                this.all_items = response.data.items
-                this.items_aiu = response.data.items_aiu
-                this.filterItems()
-            })
             this.$eventHub.$on('reloadDataItems', (item_id) => {
                 this.reloadDataItems(item_id)
             })
@@ -323,6 +316,15 @@
             })
         },
         methods: {
+            async getTables() {
+                await this.$http.get(`/${this.resource}/item/tables`).then(response => {
+                // console.log('tablas new edit')
+                    this.taxes = response.data.taxes;
+                    this.all_items = response.data.items
+                    this.items_aiu = response.data.items_aiu
+                    this.filterItems()
+                })
+            },
             async searchRemoteItems(input) {
                 if (input.length > 2 || this.search_item_by_barcode) {
                     console.log(input);
@@ -413,6 +415,7 @@
                 this.tax_included_in_price = true;
             },
             async create() {
+                this.getTables()
                 this.titleDialog = (this.recordItem) ? ' Editar Producto o Servicio' : ' Agregar Producto o Servicio';
                 this.titleAction = (this.recordItem) ? ' Editar' : ' Agregar';
                 // let operation_type = await _.find(this.operation_types, {id: this.operationTypeId})
