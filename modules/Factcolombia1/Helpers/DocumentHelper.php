@@ -315,7 +315,7 @@ class DocumentHelper
                 'unit_type_id' => $item['item']['unit_type_id'],
                 'presentation' => (key_exists('item', $item)) ? (isset($item['item']['presentation']) ? $item['item']['presentation']:[]):[],
 
-                'is_set' => $item['item']['is_set'],
+                'is_set' => (isset($item['item']['is_set'])) ? $item['item']['is_set']:[],
                 'lots' => (isset($item['item']['lots'])) ? $item['item']['lots']:[],
                 'IdLoteSelected' => ( isset($item['IdLoteSelected']) ? $item['IdLoteSelected'] : null )
             ];
