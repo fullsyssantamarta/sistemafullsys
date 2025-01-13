@@ -717,6 +717,7 @@ class Document extends ModelTenant
                         ->filterByRangeDateOfIssue($start_date, $end_date)
                         ->filterByCustomer($customer_id)
                         ->selectColumnsForCalculate()
+                        ->where('establishment_id', $request->establishment_id)
                         ->latest();
     }
 

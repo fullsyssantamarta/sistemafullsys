@@ -43,6 +43,14 @@
                         </document-pos-types>
                     </div>
 
+                    <div class="col-md-3 pb-1">
+                        <search-establishments
+                            @changeEstablishment="changeEstablishment"
+                            ref="search_establishment"
+                        >
+                        </search-establishments>
+                    </div>
+
                     <div class="col-md-3 pb-1 center-el-checkbox">
                         <div class="form-group">
                             <el-checkbox v-model="form.summary_sales_book" class="mt-1">Libro de ventas resumido</el-checkbox>
@@ -66,11 +74,13 @@
     import queryString from 'query-string'
     import SearchCustomers from '@components/filters/SearchCustomers.vue'
     import DocumentPosTypes from '@components/filters/DocumentPosTypes.vue'
+    import SearchEstablishments from '@components/filters/SearchEstablishments.vue'
 
     export default {
         components: {
             SearchCustomers,
             DocumentPosTypes,
+            SearchEstablishments,
         },
         data() {
             return {
@@ -102,6 +112,10 @@
             {
                 this.form.customer_id = customer_id
             },
+            changeEstablishment(establishment_id)
+            {
+                this.form.establishment_id = establishment_id
+            },
             getQueryParameters()
             {
                 return queryString.stringify({
@@ -124,6 +138,7 @@
                 this.form = {
                     document_type_id: 'all',
                     customer_id: null,
+                    establishment_id: null,
                     start_date: moment().startOf('month').format('YYYY-MM-DD'),
                     end_date: moment().endOf('month').format('YYYY-MM-DD'),
                     summary_sales_book: false,

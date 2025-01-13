@@ -34,7 +34,8 @@ class ReportSalesBookController extends Controller
     {
         $request['summary_sales_book'] = $request->summary_sales_book === 'true';
         $company = Company::first();
-        $establishment = auth()->user()->establishment;
+        $establishment = $request->establishment_id != '' ? Establishment::find($request->establishment_id) : auth()->user()->establishment;
+        $request->merge(['establishment_id' => $establishment->id]);
         $filters = $request;
         $data = $this->getData($request);
         $records = $data['records'];
