@@ -4,12 +4,20 @@
     $paymentForm = $document->payment_form;
     $payments = $document->payments;
     $tittle = $document->prefix.'-'.str_pad($document->id, 8, '0', STR_PAD_LEFT);
+    $total_payments = $payments->sum('payment');
+    $is_paid = $total_payments == $document->total;
 @endphp
 <html>
 <head>
 </head>
 <body  margin-top:50px>
-
+    @if($is_paid)
+        <div class="company_logo_box" style="position: absolute; text-align: center; top:25%">
+            <img
+                src="data:{{mime_content_type(public_path("status_images".DIRECTORY_SEPARATOR."pagado.png"))}};base64, {{base64_encode(file_get_contents(public_path("status_images".DIRECTORY_SEPARATOR."pagado.png")))}}"
+                alt="anulado" class="" style="opacity: 0.2;width: 90%;">
+        </div>
+    @endif
     <table width="100%">
         <tr>
             <td style="width: 25%;" class="text-center vertical-align-top">

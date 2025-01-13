@@ -137,7 +137,7 @@ if($current_hostname) {
                     Route::get('pdf', 'ReportRemissionController@pdf');
                     Route::get('excel', 'ReportRemissionController@excel');
                     Route::get('filter', 'ReportRemissionController@filter');
-                    Route::get('records', 'ReportRemissionController@prueba');
+                    Route::get('records', 'ReportRemissionController@records');
                 });
 
 

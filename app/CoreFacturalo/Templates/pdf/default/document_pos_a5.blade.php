@@ -3,7 +3,7 @@
     $customer = $document->customer;
     //$path_style = app_path('CoreFacturalo'.DIRECTORY_SEPARATOR.'Templates'.DIRECTORY_SEPARATOR.'pdf'.DIRECTORY_SEPARATOR.'style.css');
     $accounts = \App\Models\Tenant\BankAccount::all();
-    $tittle = $document->series.'-'.str_pad($document->number, 8, '0', STR_PAD_LEFT);
+    $tittle = $document->series.'-'.$document->number;
     $sucursal = \App\Models\Tenant\Establishment::where('id', $document->establishment_id)->first();
     if(!is_null($sucursal->establishment_logo)){
         if(file_exists(public_path('storage/uploads/logos/'.$sucursal->id."_".$sucursal->establishment_logo)))
