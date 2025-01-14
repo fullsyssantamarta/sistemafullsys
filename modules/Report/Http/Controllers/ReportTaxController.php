@@ -30,6 +30,7 @@ class ReportTaxController extends Controller
 
     public function records(Request $request)
     {
+        $establishment_id = $request->establishment_id ?? null;
         $taxesAll = collect();
 
         $documents = Document::query()
@@ -38,6 +39,7 @@ class ReportTaxController extends Controller
                 Carbon::parse($request->date_start)->startOfDay()->format('Y-m-d H:m:s'),
                 Carbon::parse($request->date_end)->endOfDay()->format('Y-m-d H:m:s')
             ])
+            ->filterByEstablishment($establishment_id)
             ->get();
 
         $documents->pluck('taxes')->each(function($taxes) use($taxesAll) {
@@ -53,6 +55,7 @@ class ReportTaxController extends Controller
                 Carbon::parse($request->date_start)->startOfDay()->format('Y-m-d H:m:s'),
                 Carbon::parse($request->date_end)->endOfDay()->format('Y-m-d H:m:s')
             ])
+            ->filterByEstablishment($establishment_id)
             ->get();
 
         $purchases = Purchase::query()
@@ -60,6 +63,7 @@ class ReportTaxController extends Controller
                 Carbon::parse($request->date_start)->startOfDay()->format('Y-m-d'),
                 Carbon::parse($request->date_end)->endOfDay()->format('Y-m-d')
             ])
+            ->filterByEstablishment($establishment_id)
             ->get();
 
         $enhancedPurchases = $purchases->map(function($purchase) {
@@ -100,7 +104,8 @@ class ReportTaxController extends Controller
     public function excel(Request $request)
     {
         $company = Company::first();
-        $establishment = ($request->establishment_id) ? Establishment::findOrFail($request->establishment_id) : auth()->user()->establishment;
+        $establishment_id = $request->establishment_id ?? null;
+        $establishment = ($establishment_id) ? Establishment::findOrFail($request->establishment_id) : auth()->user()->establishment;
 
         $taxesAll = collect();
 
@@ -110,6 +115,7 @@ class ReportTaxController extends Controller
                 Carbon::parse($request->date_start)->startOfDay()->format('Y-m-d H:m:s'),
                 Carbon::parse($request->date_end)->endOfDay()->format('Y-m-d H:m:s')
             ])
+            ->filterByEstablishment($establishment_id)
             ->get();
 
 
@@ -124,6 +130,7 @@ class ReportTaxController extends Controller
                 Carbon::parse($request->date_start)->startOfDay()->format('Y-m-d H:m:s'),
                 Carbon::parse($request->date_end)->endOfDay()->format('Y-m-d H:m:s')
             ])
+            ->filterByEstablishment($establishment_id)
             ->get();
 
         $taxTitles = $taxesAll->unique('id')->values();
@@ -140,13 +147,15 @@ class ReportTaxController extends Controller
     public function excelPurchases(Request $request)
     {
         $company = Company::first();
-        $establishment = ($request->establishment_id) ? Establishment::findOrFail($request->establishment_id) : auth()->user()->establishment;
+        $establishment_id = $request->establishment_id ?? null;
+        $establishment = ($establishment_id) ? Establishment::findOrFail($request->establishment_id) : auth()->user()->establishment;
 
         $purchases = Purchase::query()
             ->whereBetween('date_of_issue', [
                 Carbon::parse($request->date_start)->startOfDay()->format('Y-m-d'),
                 Carbon::parse($request->date_end)->endOfDay()->format('Y-m-d')
             ])
+            ->filterByEstablishment($establishment_id)
             ->get();
         $taxesPurchases = collect();
         $purchases->pluck('taxes')->each(function($taxes) use($taxesPurchases) {
@@ -166,22 +175,6 @@ class ReportTaxController extends Controller
     }
 
 
-
-
-
-    /*public function pdf(Request $request) {
-
-        $company = Company::first();
-        $establishment = ($request->establishment_id) ? Establishment::findOrFail($request->establishment_id) : auth()->user()->establishment;
-        $records = $this->getRecordsOrderNotes($request->all(), OrderNoteItem::class)->get();
-        $params = $request->all();
-
-        $pdf = PDF::loadView('report::order_notes_consolidated.report_pdf', compact("records", "company", "establishment", "params"));
-
-        $filename = 'Reporte_Consolidado_Items_'.date('YmdHis');
-
-        return $pdf->download($filename.'.pdf');
-    }*/
     public function downloadDocumentPos(Request $request) {
 
         $company = Company::first();

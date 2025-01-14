@@ -299,4 +299,11 @@ class Purchase extends ModelTenant
     public function note_concepts() {
         return $this->belongsTo(NoteConcept::class, 'note_concept_id');
     }
+
+    public function scopeFilterByEstablishment($query, $establishment_id)
+    {
+        if($establishment_id) $query->where('establishment_id', $establishment_id);
+
+        return $query;
+    }
 }
