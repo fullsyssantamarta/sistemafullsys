@@ -271,14 +271,16 @@ class DocumentItem extends ModelTenant
         $end_date = $request->end_date ?? null;
         $start_time = $request->start_time ?? null;
         $end_time = $request->end_time ?? null;
+        $establishment_id = $request->establishment_id ?? null;
 
-        return $query->whereHas('document', function($document) use($customer_id, $user_id, $start_date, $end_date, $start_time, $end_time){
+        return $query->whereHas('document', function($document) use ($customer_id, $user_id, $start_date, $end_date, $start_time, $end_time, $establishment_id){
 
             return $document->filterByCustomer($customer_id)
                             ->filterByUser($user_id)
                             ->filterByRangeTimeOfIssue($start_time, $end_time)
                             ->filterByRangeDateOfIssue($start_date, $end_date)
-                            ->filterInvoiceDocument();
+                            ->filterInvoiceDocument()
+                            ->filterByEstablishment($establishment_id);
         });
     }
 

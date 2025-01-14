@@ -109,9 +109,9 @@ class DocumentPosItem extends ModelTenant
         return $this->generalApplyNumberFormat($this->quantity * $this->unit_price);
     }
 
-        
+
     /**
-     * 
+     *
      * Datos para pdf reporte articulos vendidos
      *
      * @return array
@@ -133,9 +133,9 @@ class DocumentPosItem extends ModelTenant
         ];
     }
 
-    
+
     /**
-     * 
+     *
      * Filtros para reporte articulos vendidos
      *
      * @param  Builder $query
@@ -168,11 +168,11 @@ class DocumentPosItem extends ModelTenant
                 ->latest('id');
     }
 
-    
+
     /**
-     * 
+     *
      * Filtrar por producto
-     * 
+     *
      * @param  Builder $query
      * @param  int $item_id
      * @return Builder
@@ -186,9 +186,9 @@ class DocumentPosItem extends ModelTenant
 
 
     /**
-     * 
+     *
      * Filtrar por marca
-     * 
+     *
      * @param  Builder $query
      * @param  int $brand_id
      * @return Builder
@@ -207,7 +207,7 @@ class DocumentPosItem extends ModelTenant
 
 
     /**
-     * 
+     *
      * Filtros para reporte articulos vendidos en el documento
      *
      * @param  Builder $query
@@ -222,13 +222,15 @@ class DocumentPosItem extends ModelTenant
         $end_date = $request->end_date ?? null;
         $start_time = $request->start_time ?? null;
         $end_time = $request->end_time ?? null;
+        $establishment_id = $request->establishment_id ?? null;
 
-        return $query->whereHas('document_pos', function($document) use($customer_id, $user_id, $start_date, $end_date, $start_time, $end_time){
+        return $query->whereHas('document_pos', function($document) use ($customer_id, $user_id, $start_date, $end_date, $start_time, $end_time, $establishment_id){
 
             return $document->filterByCustomer($customer_id)
                             ->filterByUser($user_id)
                             ->filterByRangeTimeOfIssue($start_time, $end_time)
-                            ->filterByRangeDateOfIssue($start_date, $end_date);
+                            ->filterByRangeDateOfIssue($start_date, $end_date)
+                            ->filterByEstablishment($establishment_id);
         });
     }
 

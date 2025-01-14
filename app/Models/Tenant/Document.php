@@ -814,5 +814,10 @@ class Document extends ModelTenant
                     ->sum('total');
     }
 
+    public function scopeFilterByEstablishment($query, $establishment_id)
+    {
+        if($establishment_id) $query->where('establishment_id', $establishment_id);
 
+        return $query;
+    }
 }

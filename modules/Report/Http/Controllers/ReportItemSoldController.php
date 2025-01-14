@@ -81,7 +81,7 @@ class ReportItemSoldController extends Controller
         $filters = $request;
 
         $company = Company::first();
-        $establishment = auth()->user()->establishment;
+        $establishment = $request->establishment_id != '' ? Establishment::find($request->establishment_id) : auth()->user()->establishment;
 
         $pdf = PDF::loadView('report::co-items-sold.report_pdf', compact('records', 'company', 'establishment', 'filters'))->setPaper('a4', 'landscape');
 
@@ -100,7 +100,7 @@ class ReportItemSoldController extends Controller
         $filters = $request;
 
         $company = Company::first();
-        $establishment = auth()->user()->establishment;
+        $establishment = $request->establishment_id != '' ? Establishment::find($request->establishment_id) : auth()->user()->establishment;
 
 
         return (new ItemSoldExport)

@@ -101,6 +101,14 @@
                         </search-items>
                     </div>
 
+                    <div class="col-md-3 pb-1">
+                        <search-establishments
+                            @changeEstablishment="changeEstablishment"
+                            ref="search_establishment"
+                        >
+                        </search-establishments>
+                    </div>
+
                     <div class="col-lg-12 col-md-12 col-md-12 col-sm-12" style="margin-top:29px">
                         <el-button class="submit" type="danger"  icon="el-icon-tickets" @click.prevent="clickDownload('pdf')" >Exportar PDF</el-button>
                         <el-button class="submit" type="info"  icon="el-icon-tickets" @click.prevent="clickDownload('excel')" >Exportar EXCEL</el-button>
@@ -121,6 +129,7 @@
     import SearchBrands from '@components/filters/SearchBrands.vue'
     import SearchItems from '@components/filters/SearchItems.vue'
     import DocumentPosTypes from '@components/filters/DocumentPosTypes.vue'
+    import SearchEstablishments from '@components/filters/SearchEstablishments.vue'
 
     export default {
         components: {
@@ -129,6 +138,7 @@
             DocumentPosTypes,
             SearchBrands,
             SearchItems,
+            SearchEstablishments,
         },
         data() {
             return {
@@ -210,7 +220,10 @@
                     end_time: null,
                 }
             },
-
+            changeEstablishment(establishment_id)
+            {
+                this.form.establishment_id = establishment_id
+            },
         }
     }
 </script>
