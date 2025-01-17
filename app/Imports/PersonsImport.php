@@ -95,11 +95,11 @@ class PersonsImport implements ToCollection, WithMultipleSheets
                 $code = $row[5];
                 $name = $row[6];
                 $country_id = 47;
-                $city_id = $row[7];
+                $city_id = $row[9];
                 $department_id = City::where('id', $city_id)->firstOrFail()->department_id; // debe validarse
-                $address = $row[8];
-                $telephone = $row[9];
-                $email = $row[10];
+                $address = $row[10];
+                $telephone = $row[11];
+                $email = $row[12];
 
                 Person::updateOrCreate(
                     [
