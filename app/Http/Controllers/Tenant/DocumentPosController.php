@@ -358,7 +358,7 @@ class DocumentPosController extends Controller
                 // \Log::debug($data_document);
                 //\Log::debug($response);
                 if(config('tenant.show_log')) {
-                    \Log::debug('DocumentPosController:1186: '.$response);
+                    \Log::debug('DocumentPosController:361: '.$response);
                 }
                 $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
                 curl_close($ch);
@@ -1214,7 +1214,7 @@ class DocumentPosController extends Controller
         curl_close($ch);
 
         if(config('tenant.show_log')) {
-            \Log::debug('DocumentPosController:1186: '.$response);
+            \Log::debug('DocumentPosController:1217: '.$response);
         }
 
         return json_decode($response);
