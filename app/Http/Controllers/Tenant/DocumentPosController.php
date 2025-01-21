@@ -96,8 +96,8 @@ class DocumentPosController extends Controller
     {
         return [
             'date_of_issue' => 'Fecha de emisión',
-            'number' => 'Número',
-            'customer' => 'Cliente',
+//            'number' => 'Número',
+//            'customer' => 'Cliente',
         ];
     }
 

@@ -109,9 +109,9 @@ class DocumentPosItem extends ModelTenant
         return $this->generalApplyNumberFormat($this->quantity * $this->unit_price);
     }
 
-        
+
     /**
-     * 
+     *
      * Datos para pdf reporte articulos vendidos
      *
      * @return array
@@ -133,9 +133,9 @@ class DocumentPosItem extends ModelTenant
         ];
     }
 
-    
+
     /**
-     * 
+     *
      * Filtros para reporte articulos vendidos
      *
      * @param  Builder $query
@@ -168,11 +168,10 @@ class DocumentPosItem extends ModelTenant
                 ->latest('id');
     }
 
-    
     /**
-     * 
+     *
      * Filtrar por producto
-     * 
+     *
      * @param  Builder $query
      * @param  int $item_id
      * @return Builder
@@ -186,9 +185,9 @@ class DocumentPosItem extends ModelTenant
 
 
     /**
-     * 
+     *
      * Filtrar por marca
-     * 
+     *
      * @param  Builder $query
      * @param  int $brand_id
      * @return Builder
@@ -207,7 +206,7 @@ class DocumentPosItem extends ModelTenant
 
 
     /**
-     * 
+     *
      * Filtros para reporte articulos vendidos en el documento
      *
      * @param  Builder $query

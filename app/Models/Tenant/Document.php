@@ -6,7 +6,7 @@ use App\Models\Tenant\Catalogs\CurrencyType;
 use App\Models\Tenant\Catalogs\DocumentType;
 use Modules\BusinessTurn\Models\DocumentHotel;
 use Modules\BusinessTurn\Models\DocumentTransport;
-
+use Illuminate\Support\Carbon;
 use \Staudenmeir\EloquentJsonRelations\HasJsonRelationships;
 use Modules\Factcolombia1\Models\Tenant\{
     TypeDocument,
@@ -234,7 +234,8 @@ class Document extends ModelTenant
 
     public function getPlazoAttribute()
     {
-        $ini = $this->created_at;
+        $ini = $this->created_at ?? new DateTime(Carbon::now()->format('Y-m-d H:i:s'));
+
         $fin  = new DateTime($this->date_expiration);
         $dif =  $ini->diff($fin);
         return $dif->days;

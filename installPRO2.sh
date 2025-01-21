@@ -2,7 +2,7 @@
 
 HOST=${1:-'dominio'}
 #parametros opcionales
-PROYECT=${2:-'https://gitlab.com/rash07/facturadorpro2-co.git'}
+PROYECT=${2:-'https://gitlab.torresoftware.com/TorreSoftware/facturadorpro2-2025.git'}
 SERVICE_NUMBER=${3:-'1'}
 PATH_INSTALL=$(echo $HOME)
 DIR=$(echo $PROYECT | rev | cut -d'/' -f1 | rev | cut -d '.' -f1)$SERVICE_NUMBER
@@ -128,7 +128,7 @@ services:
             - $HOME/proxy/fpms/$DIR:/etc/nginx/sites-available
         restart: always
     fpm$SERVICE_NUMBER:
-        image: rash07/php-fpm:2.0
+        image: rash07/php-fpm:1.0
         working_dir: /var/www/html
         volumes:
             - ./:/var/www/html

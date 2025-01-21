@@ -73,7 +73,7 @@
                     <tr>
                         <td class="celda">{{ $row['type_name'] }}</td>
                         <td class="celda">{{ $row['internal_id'] }}</td>
-                        <td class="celda">{{ $row['name'] }}</td>
+                        <td class="celda">{{ preg_replace('/[[:^print:]]/', '', $row['name']) }}</td>
                         <td class="celda">{{ $row['quantity'] }}</td>
                         <td class="celda">{{ $row['cost'] }}</td>
                         <td class="celda">{{ $row['net_value'] }}</td>

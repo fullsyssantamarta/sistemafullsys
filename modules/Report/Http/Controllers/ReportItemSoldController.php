@@ -15,7 +15,6 @@ use App\Models\Tenant\{
 };
 use DB;
 
-
 class ReportItemSoldController extends Controller
 {
 
@@ -23,7 +22,6 @@ class ReportItemSoldController extends Controller
     {
         return view('report::co-items-sold.index');
     }
-
 
     /**
      *
@@ -34,7 +32,6 @@ class ReportItemSoldController extends Controller
     {
         $document_type_id = $request->document_type_id ?? null;
         $records = [];
-
         switch ($document_type_id)
         {
             case 'documents':
@@ -49,10 +46,8 @@ class ReportItemSoldController extends Controller
                 $document_items = DocumentItem::filterReportSoldItems($request)->get();
                 $document_items_pos = DocumentPosItem::filterReportSoldItems($request)->get();
                 $records = $document_items->concat($document_items_pos);
-
                 break;
         }
-
         return $records;
     }
 
@@ -79,14 +74,10 @@ class ReportItemSoldController extends Controller
     {
         $records = $this->getQueryRecords($request);
         $filters = $request;
-
         $company = Company::first();
         $establishment = auth()->user()->establishment;
-
         $pdf = PDF::loadView('report::co-items-sold.report_pdf', compact('records', 'company', 'establishment', 'filters'))->setPaper('a4', 'landscape');
-
         $filename = 'Reporte_Articulos_Vendidos_'.date('YmdHis');
-
         return $pdf->stream($filename.'.pdf');
     }
 
@@ -98,11 +89,8 @@ class ReportItemSoldController extends Controller
     public function excel(Request $request) {
         $records = $this->getQueryRecords($request);
         $filters = $request;
-
         $company = Company::first();
         $establishment = auth()->user()->establishment;
-
-
         return (new ItemSoldExport)
             ->records($records)
             ->company($company)
@@ -110,5 +98,4 @@ class ReportItemSoldController extends Controller
             ->filters($filters)
             ->download('ReporteArticulosVendidos'.Carbon::now().'.xlsx');
     }
-
 }

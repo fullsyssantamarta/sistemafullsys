@@ -236,6 +236,7 @@
                 this.form_clone.resolution = this.form.resolution_number
                 this.form_clone.type_document_id = this.form.code
                 this.form_clone.description = this.form.description
+                console.log(`/${this.resource}/type_document/${this.form.id}`)
                 await this.$http.post(`/${this.resource}/type_document/${this.form.id}`, this.form)
                     .then(response => {
                         if (response.data.success) {

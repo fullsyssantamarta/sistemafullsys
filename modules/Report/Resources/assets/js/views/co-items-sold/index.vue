@@ -196,6 +196,7 @@
             {
                 window.open(`/${this.resource}/export/${type}?${this.getQueryParameters()}`, '_blank')
             },
+
             initForm()
             {
                 this.form = {
