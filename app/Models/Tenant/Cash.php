@@ -24,10 +24,7 @@ class Cash extends ModelTenant
         'state',
         'reference_number',
         'resolution_id'
-
     ];
-
-
 
     public function user()
     {
@@ -55,14 +52,14 @@ class Cash extends ModelTenant
     {
         return $this->belongsTo(ConfigurationPos::class, 'resolution_id');
     }
-    
+
     /**
-     * 
+     *
      * Retornar el balance final (total de ingresos - gastos)
      *
      * Usado en:
      * CashController - Cierre de caja chica
-     * 
+     *
      * @return double
      */
     public function getSumCashFinalBalance()
@@ -72,9 +69,9 @@ class Cash extends ModelTenant
         });
     }
 
-    
+
     /**
-     * 
+     *
      * Filtro para obtener caja abierta del usuario en sesion
      *
      * @param  Builder $query
@@ -85,4 +82,27 @@ class Cash extends ModelTenant
         return $query->where('state', 1)->where('user_id', auth()->id());
     }
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::created(function ($cash) {
+            if(env("LOG_ROUTES", false)){
+                $request = request();
+                $isInternal = app()->runningInConsole() || app()->runningUnitTests();
+
+                \Log::info('Se creó un nuevo registro en la tabla cash', [
+                    'id' => $cash->id,
+                    'user_id' => $cash->user_id,
+                    'date_opening' => $cash->date_opening,
+                    'route' => $request->path(), // Ruta que hizo la solicitud
+                    'method' => $request->method(), // Método HTTP (POST, PUT, etc.)
+                    'controller' => optional($request->route())->getActionName(), // Controlador y método
+                    'ip' => $isInternal ? '127.0.0.1' : $request->ip(),
+                    'user_agent' => $request->userAgent(), // Información del navegador/cliente
+                    'auth_user' => optional(auth()->user())->id, // Usuario autenticado (si aplica)
+                ]);
+            }
+        });
+    }
 }

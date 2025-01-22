@@ -23,17 +23,16 @@ class CashCollection extends ResourceCollection
                 'time_opening' => $row->time_opening,
                 'opening' => "{$row->date_opening} {$row->time_opening}",
                 'date_closed' => $row->date_closed,
-                'time_closed' => $row->time_closed, 
+                'time_closed' => $row->time_closed,
                 'closed' => "{$row->date_closed} {$row->time_closed}",
                 'beginning_balance' => $row->beginning_balance,
                 'final_balance' => $row->final_balance,
                 'income' => $row->income,
                 'expense' => $row->expense,
                 'filename' => $row->filename,
-                'state' => (bool) $row->state, 
+                'state' => (bool) $row->state,
                 'state_description' => ($row->state) ? 'Aperturada':'Cerrada',
                 'reference_number' => $row->reference_number,
-
             ];
         });
     }

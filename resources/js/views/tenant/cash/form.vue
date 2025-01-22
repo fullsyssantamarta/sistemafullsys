@@ -2,7 +2,6 @@
     <el-dialog :title="titleDialog" :visible="showDialog" @close="close" @open="create">
         <form autocomplete="off" @submit.prevent="submit">
             <div class="form-body">
-
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group"  >
@@ -48,10 +47,9 @@
 </template>
 
 <script>
-
-
     export default {
         props: ['showDialog', 'recordId', 'typeUser'],
+
         data() {
             return {
                 loading_submit: false,
@@ -70,18 +68,17 @@
                 resolutions: []
             }
         },
-        async created() {
 
+        async created() {
            await this.$http.get(`/${this.resource}/tables`)
                 .then(response => {
                     this.users = response.data.users
                     this.user = response.data.user,
                     this.resolutions = response.data.resolutions
                 })
-
             this.initForm()
-
         },
+
         computed: {
             disableUser() {
                 if(this.typeUser == 'admin')
@@ -91,8 +88,8 @@
                 return true
             }
         },
-        methods: {
 
+        methods: {
             initForm() {
                 this.errors = {}
                 this.form = {
@@ -110,6 +107,7 @@
                     reference_number: null
                 }
             },
+
             create() {
                 this.titleDialog = (this.recordId)? 'Editar Caja chica':'Aperturar Caja chica'
                 if (this.recordId) {
@@ -122,6 +120,7 @@
                     //this.form.user = this.user.name
                 }
             },
+
             async openingCashCkeck()
             {
                 let response =  await this.$http.get(`/${this.resource}/opening_cash_check/${this.form.user_id}`)
@@ -131,6 +130,7 @@
                     })
                 return response
             },
+
             async submit() {
                 this.loading_submit = true
                 if(!this.recordId)
@@ -146,7 +146,6 @@
                         return false
                     }
                 }
-
 
                 this.$http.post(`/${this.resource}`, this.form)
                     .then(response => {
@@ -171,6 +170,7 @@
                         this.loading_submit = false
                     })
             },
+
             close() {
                 this.$emit('update:showDialog', false)
                 this.initForm()

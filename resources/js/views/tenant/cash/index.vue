@@ -8,7 +8,6 @@
             <div class="right-wrapper pull-right">
                 <template  v-if="open_cash">
                     <button type="button" class="btn btn-custom btn-sm  mt-2 mr-2" @click.prevent="clickDownloadGeneral()"><i class="fas fa-shopping-cart"></i> Reporte general (Cajas del Día)</button>
-
                     <button type="button" class="btn btn-custom btn-sm  mt-2 mr-2" @click.prevent="clickCreate()"><i class="fas fa-shopping-cart"></i> Aperturar caja chica</button>
                 </template>
                 <!-- <template v-else>                 -->
@@ -50,20 +49,15 @@
                             <button type="button" class="btn waves-effect waves-light btn-xs btn-primary" @click.prevent="clickDownload(row.id)">Reporte</button>
                             <button type="button" class="btn waves-effect waves-light btn-xs btn-primary" @click.prevent="clickDownload(row.id, 'resumido')">Reporte Resumen</button>
                             <button type="button" class="btn waves-effect waves-light btn-xs btn-primary" @click.prevent="clickDownloadArqueo(row.id)">Arqueo</button>
-
                             <template v-if="row.state">
-
                                 <button type="button" class="btn waves-effect waves-light btn-xs btn-warning" @click.prevent="clickCloseCash(row.id)">Cerrar caja</button>
                                 <button v-if="typeUser === 'admin'" type="button" class="btn waves-effect waves-light btn-xs btn-info" @click.prevent="clickCreate(row.id)">Editar</button>
                                 <button v-if="typeUser === 'admin'" type="button" class="btn waves-effect waves-light btn-xs btn-danger" @click.prevent="clickDelete(row.id)">Eliminar</button>
-
                             </template>
-
                         </td>
                     </tr>
                 </data-table>
             </div>
-
         </div>
         <cash-form :showDialog.sync="showDialog" :typeUser="typeUser"
                             :recordId="recordId"></cash-form>
@@ -71,7 +65,6 @@
 </template>
 
 <script>
-
     import DataTable from '../../../components/DataTable.vue'
     import {deletable} from '../../../mixins/deletable'
     import CashForm from './form.vue'
@@ -90,35 +83,38 @@
                 cash:null,
             }
         },
+
         async created() {
+//            await this.$http.get(`/${this.resource}/opening_cash`)
+//                .then(response => {
+//                    this.cash = response.data.cash
+//                    this.open_cash = (this.cash) ? false : true
+//                })
 
-            /*await this.$http.get(`/${this.resource}/opening_cash`)
-                .then(response => {
-                    this.cash = response.data.cash
-                    this.open_cash = (this.cash) ? false : true
-                })*/
-
-            /*this.$eventHub.$on('openCash', () => {
-                this.open_cash = false
-            })*/
-
+//            this.$eventHub.$on('openCash', () => {
+//                this.open_cash = false
+//            })
         },
+
         methods: {
             clickDownload(id, only_head = '') {
                 window.open(`/${this.resource}/report/${id}/${only_head}`, '_blank');
             },
+
             clickDownloadArqueo(id) {
                 window.open(`/${this.resource}/report-ticket/${id}`, '_blank');
             },
+
             clickDownloadIncomeSummary(id) {
                 window.open(`/${this.resource}/report/income-summary/${id}`, '_blank');
             },
+
             clickCreate(recordId = null) {
                 this.recordId = recordId
                 this.showDialog = true
             },
-            clickCloseCash(recordId) {
 
+            clickCloseCash(recordId) {
                 this.recordId = recordId
                 const h = this.$createElement;
                 this.$msgbox({
@@ -143,15 +139,11 @@
                         })
                     .catch(action => {
                     });
-
-
-
             },
-            createRegister(instance, done){
 
+            createRegister(instance, done){
                 instance.confirmButtonLoading = true;
                 instance.confirmButtonText = 'Cerrando caja...';
-
                 this.$http.get(`/${this.resource}/close/${this.recordId}`)
                     .then(response => {
                         if(response.data.success){
@@ -170,24 +162,26 @@
                         instance.confirmButtonText = 'Iniciar prueba'
                         done()
                     })
-
             },
+
             clickOpenPos() {
                 window.open('/pos')
             },
+
             clickDelete(id) {
                 this.destroy(`/${this.resource}/${id}`).then(() =>
                     this.$eventHub.$emit('reloadData')
                 )
             },
+
             clickDownloadGeneral()
             {
                 window.open(`/${this.resource}/report`, '_blank');
             },
+
             clickDownloadProducts(id)
             {
                 window.open(`/${this.resource}/report/products/${id}`, '_blank');
-
             }
         }
     }

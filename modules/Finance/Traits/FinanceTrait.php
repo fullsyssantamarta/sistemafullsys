@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Finance\Traits; 
+namespace Modules\Finance\Traits;
 
 use App\Models\Tenant\Cash;
 use App\Models\Tenant\BankAccount;
@@ -23,10 +23,10 @@ use Modules\Sale\Models\RemissionPayment;
 
 
 trait FinanceTrait
-{ 
+{
 
     public function getPaymentDestinations(){
-        
+
         $bank_accounts = self::getBankAccounts();
         $cash = $this->getCash();
 
@@ -55,41 +55,40 @@ trait FinanceTrait
         $cash =  Cash::where([['user_id',auth()->user()->id],['state',true]])->first();
 
         if($cash){
-            
+
             return [
                 'id' => 'cash',
                 'cash_id' => $cash->id,
                 'description' => ($cash->reference_number) ? "CAJA CHICA - {$cash->reference_number}" : "CAJA CHICA",
             ];
 
-        }else{
-            
-            $cash_create = Cash::create([
-                                    'user_id' => auth()->user()->id,
-                                    'date_opening' => date('Y-m-d'),
-                                    'time_opening' => date('H:i:s'),
-                                    'date_closed' => null,
-                                    'time_closed' => null,
-                                    'beginning_balance' => 0,
-                                    'final_balance' => 0,
-                                    'income' => 0,
-                                    'state' => true,
-                                    'reference_number' => null
-                                ]);
-
-            return [
-                'id' => 'cash',
-                'cash_id' => $cash_create->id,
-                'description' => "CAJA CHICA"
-            ];
-
         }
+//        else{
+//            $cash_create = Cash::create([
+//                                    'user_id' => auth()->user()->id,
+//                                    'date_opening' => date('Y-m-d'),
+//                                    'time_opening' => date('H:i:s'),
+//                                    'date_closed' => null,
+//                                    'time_closed' => null,
+//                                    'beginning_balance' => 0,
+//                                    'final_balance' => 0,
+//                                    'income' => 0,
+//                                    'state' => true,
+//                                    'reference_number' => null
+//                                ]);
+//
+//            return [
+//                'id' => 'cash',
+//                'cash_id' => $cash_create->id,
+//                'description' => "CAJA CHICA"
+//            ];
+//        }
 
     }
 
     public function createGlobalPayment($model, $row){
 
-        $destination = $this->getDestinationRecord($row); 
+        $destination = $this->getDestinationRecord($row);
         $company = Company::active();
 
         $model->global_payment()->create([
@@ -101,7 +100,7 @@ trait FinanceTrait
     }
 
     public function getDestinationRecord($row){
-        
+
         if($row['payment_destination_id'] === 'cash'){
 
             $destination_id = $this->getCash()['cash_id'];
@@ -120,7 +119,7 @@ trait FinanceTrait
         ];
     }
 
-    
+
     public function deleteAllPayments($payments){
 
         foreach ($payments as $payment) {
@@ -159,7 +158,7 @@ trait FinanceTrait
         $date_end = $request['date_end'];
         $month_start = $request['month_start'];
         $month_end = $request['month_end'];
-        
+
         $d_start = null;
         $d_end = null;
 
@@ -188,22 +187,22 @@ trait FinanceTrait
         ];
     }
 
-    
+
     public function getBalanceByCash($cash){
- 
+
         $document_payment = $this->getSumPayment($cash, DocumentPayment::class);
-        $expense_payment = $this->getSumPayment($cash, ExpensePayment::class); 
+        $expense_payment = $this->getSumPayment($cash, ExpensePayment::class);
         // $sale_note_payment = $this->getSumPayment($cash, SaleNotePayment::class);
-        $purchase_payment = $this->getSumPayment($cash, PurchasePayment::class); 
-        $quotation_payment = $this->getSumPayment($cash, QuotationPayment::class); 
-        $contract_payment = $this->getSumPayment($cash, ContractPayment::class); 
-        $income_payment = $this->getSumPayment($cash, IncomePayment::class); 
-        $remission_payment = $this->getSumPayment($cash, RemissionPayment::class); 
-        $document_pos_payment = $this->getSumPayment($cash, DocumentPosPayment::class); 
+        $purchase_payment = $this->getSumPayment($cash, PurchasePayment::class);
+        $quotation_payment = $this->getSumPayment($cash, QuotationPayment::class);
+        $contract_payment = $this->getSumPayment($cash, ContractPayment::class);
+        $income_payment = $this->getSumPayment($cash, IncomePayment::class);
+        $remission_payment = $this->getSumPayment($cash, RemissionPayment::class);
+        $document_pos_payment = $this->getSumPayment($cash, DocumentPosPayment::class);
 
         $entry = $document_payment + $quotation_payment + $contract_payment + $income_payment + $remission_payment + $document_pos_payment;
         $egress = $expense_payment + $purchase_payment;
-        
+
         $balance = $entry - $egress;
 
         return [
@@ -220,26 +219,26 @@ trait FinanceTrait
             'remission_payment' => number_format($remission_payment,2, ".", ""),
             'document_pos_payment' => number_format($document_pos_payment,2, ".", ""),
             'balance' => number_format($balance,2, ".", "")
-            
+
         ];
 
     }
 
-    
-    
+
+
     public function getBalanceByBankAcounts($bank_accounts){
 
         $records = $bank_accounts->map(function($row){
 
             $document_payment = $this->getSumPayment($row->global_destination, DocumentPayment::class);
-            $expense_payment = $this->getSumPayment($row->global_destination, ExpensePayment::class); 
+            $expense_payment = $this->getSumPayment($row->global_destination, ExpensePayment::class);
             // $sale_note_payment = $this->getSumPayment($row->global_destination, SaleNotePayment::class);
-            $purchase_payment = $this->getSumPayment($row->global_destination, PurchasePayment::class); 
-            $quotation_payment = $this->getSumPayment($row->global_destination, QuotationPayment::class); 
-            $contract_payment = $this->getSumPayment($row->global_destination, ContractPayment::class); 
-            $income_payment = $this->getSumPayment($row->global_destination, IncomePayment::class); 
-            $remission_payment = $this->getSumPayment($row->global_destination, RemissionPayment::class); 
-            $document_pos_payment = $this->getSumPayment($row->global_destination, DocumentPosPayment::class); 
+            $purchase_payment = $this->getSumPayment($row->global_destination, PurchasePayment::class);
+            $quotation_payment = $this->getSumPayment($row->global_destination, QuotationPayment::class);
+            $contract_payment = $this->getSumPayment($row->global_destination, ContractPayment::class);
+            $income_payment = $this->getSumPayment($row->global_destination, IncomePayment::class);
+            $remission_payment = $this->getSumPayment($row->global_destination, RemissionPayment::class);
+            $document_pos_payment = $this->getSumPayment($row->global_destination, DocumentPosPayment::class);
 
             $entry = $document_payment + $quotation_payment + $contract_payment + $income_payment + $remission_payment + $document_pos_payment;
             $egress = $expense_payment + $purchase_payment;
@@ -248,7 +247,7 @@ trait FinanceTrait
             return [
 
                 'id' => $row->id,
-                'description' => "{$row->bank->description} - {$row->currency_type_id} - {$row->description}", 
+                'description' => "{$row->bank->description} - {$row->currency_type_id} - {$row->description}",
                 'expense_payment' => number_format($expense_payment,2, ".", ""),
                 // 'sale_note_payment' => number_format($sale_note_payment,2, ".", ""),
                 'quotation_payment' => number_format($quotation_payment,2, ".", ""),
@@ -259,13 +258,13 @@ trait FinanceTrait
                 'remission_payment' => number_format($remission_payment,2, ".", ""),
                 'document_pos_payment' => number_format($document_pos_payment,2, ".", ""),
                 'balance' => number_format($balance,2, ".", "")
-                
+
             ];
 
-        }); 
+        });
 
         return $records;
-        
+
     }
 
     public function getSumPayment($record, $model)
@@ -274,7 +273,7 @@ trait FinanceTrait
             return $this->calculateTotalCurrencyType($row->payment->associated_record_payment, $row->payment->payment);
         });
     }
-    
+
 
     public function calculateTotalCurrencyType($record, $payment)
     {
@@ -282,25 +281,25 @@ trait FinanceTrait
         // return ($record->currency_type_id === 'USD') ? $payment * $record->exchange_rate_sale : $payment;
     }
 
-    
+
     public function getRecordsByPaymentMethodTypes($payment_method_types)
     {
-        
+
         $records = $payment_method_types->map(function($row){
 
             $document_payment = $this->getSumByPMT($row->document_payments);
             // $sale_note_payment = $this->getSumByPMT($row->sale_note_payments);
-            $purchase_payment = $this->getSumByPMT($row->purchase_payments); 
-            $quotation_payment = $this->getSumByPMT($row->quotation_payments); 
-            $contract_payment = $this->getSumByPMT($row->contract_payments); 
-            $income_payment = $this->getSumByPMT($row->income_payments); 
-            $remission_payment = $this->getSumByPMT($row->remission_payments); 
+            $purchase_payment = $this->getSumByPMT($row->purchase_payments);
+            $quotation_payment = $this->getSumByPMT($row->quotation_payments);
+            $contract_payment = $this->getSumByPMT($row->contract_payments);
+            $income_payment = $this->getSumByPMT($row->income_payments);
+            $remission_payment = $this->getSumByPMT($row->remission_payments);
             $document_pos_payment = $this->getSumByPMT($row->document_pos_payments);
 
             return [
 
                 'id' => $row->id,
-                'description' => $row->description, 
+                'description' => $row->description,
                 'expense_payment' => '-',
                 // 'sale_note_payment' => number_format($sale_note_payment,2, ".", ""),
                 'document_payment' => number_format($document_payment,2, ".", ""),
@@ -310,27 +309,27 @@ trait FinanceTrait
                 'income_payment' => number_format($income_payment,2, ".", ""),
                 'remission_payment' => number_format($remission_payment,2, ".", ""),
                 'document_pos_payment' => number_format($document_pos_payment,2, ".", ""),
-                
+
             ];
 
-        }); 
+        });
 
         return $records;
     }
 
-    
+
     public function getRecordsByExpenseMethodTypes($expense_method_types)
     {
-        
+
         $records = $expense_method_types->map(function($row){
 
             // dd($row->expense_payments);
-            $expense_payment = $this->getSumByPMT($row->expense_payments); 
+            $expense_payment = $this->getSumByPMT($row->expense_payments);
 
             return [
 
                 'id' => $row->id,
-                'description' => $row->description, 
+                'description' => $row->description,
                 'expense_payment' => number_format($expense_payment,2, ".", ""),
                 'document_pos_payment' => '-',
                 // 'sale_note_payment' => '-',
@@ -340,10 +339,10 @@ trait FinanceTrait
                 'income_payment' => '-',
                 'purchase_payment' => '-',
                 'remission_payment' => '-'
-                
+
             ];
 
-        }); 
+        });
 
         return $records;
     }
@@ -357,7 +356,7 @@ trait FinanceTrait
 
     public function getTotalsPaymentMethodType($records_by_pmt, $records_by_emt)
     {
-        
+
         $t_documents = 0;
         // $t_sale_notes = 0;
         $t_quotations = 0;
@@ -384,7 +383,7 @@ trait FinanceTrait
         foreach ($records_by_emt as $value) {
 
             $t_expenses += $value['expense_payment'];
-            
+
         }
 
         return [

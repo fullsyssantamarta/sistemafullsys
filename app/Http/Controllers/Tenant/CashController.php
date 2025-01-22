@@ -45,8 +45,6 @@ class CashController extends Controller
         $records = Cash::where($request->column, 'like', "%{$request->value}%")
                         ->whereTypeUser()
                         ->orderBy('date_opening', 'DESC');
-
-
         return new CashCollection($records->paginate(config('tenant.items_per_page')));
     }
 
@@ -71,17 +69,13 @@ class CashController extends Controller
                 $users = User::where('id', $user->id)->get();
                 break;
         }
-
         $resolutions = ConfigurationPos::select('id', 'prefix', 'resolution_number')->get();
-
         return compact('users', 'user', 'resolutions');
     }
 
     public function opening_cash()
     {
-
         $cash = Cash::where([['user_id', auth()->user()->id],['state', true]])->first();
-
         return compact('cash');
     }
 
@@ -91,16 +85,13 @@ class CashController extends Controller
         return compact('cash');
     }
 
-
     public function record($id)
     {
         $record = new CashResource(Cash::findOrFail($id));
-
         return $record;
     }
 
     public function store(CashRequest $request) {
-
         $id = $request->input('id');
         $cash = Cash::firstOrNew(['id' => $id]);
         $cash->fill($request->all());
@@ -116,63 +107,42 @@ class CashController extends Controller
             'success' => true,
             'message' => ($id)?'Caja actualizada con éxito':'Caja aperturada con éxito'
         ];
-
     }
 
     public function close($id) {
-
         $cash = Cash::findOrFail($id);
-
         $cash->date_closed = date('Y-m-d');
         $cash->time_closed = date('H:i:s');
-
         $final_balance = $cash->getSumCashFinalBalance();
         $cash->final_balance = round($final_balance + $cash->beginning_balance, 2);
         $cash->income = round($final_balance, 2);
         $cash->state = false;
         $cash->save();
-
         return [
             'success' => true,
             'message' => 'Caja cerrada con éxito',
         ];
 
         // $final_balance = 0;
-
         // foreach ($cash->cash_documents as $cash_document) {
-
-
         //     if($cash_document->sale_note){
-
         //         // $final_balance += ($cash_document->sale_note->currency_type_id == 'PEN') ? $cash_document->sale_note->total : ($cash_document->sale_note->total * $cash_document->sale_note->exchange_rate_sale);
-
         //         $final_balance += $cash_document->sale_note->total;
-
         //     }
         //     else if($cash_document->document){
-
         //         // $final_balance += ($cash_document->document->currency_type_id == 'PEN') ? $cash_document->document->total : ($cash_document->document->total * $cash_document->document->exchange_rate_sale);
-
         //         $final_balance += $cash_document->document->total;
-
         //     }
         //     else if($cash_document->expense_payment){
-
         //         // $final_balance -= ($cash_document->expense_payment->expense->currency_type_id == 'PEN') ? $cash_document->expense_payment->payment:($cash_document->expense_payment->payment  * $cash_document->expense_payment->expense->exchange_rate_sale);
         //         $final_balance -= $cash_document->expense_payment->payment;
-
         //     }
-
         // }
-
     }
 
-
     public function cash_document(Request $request) {
-
         $cash = Cash::where([['user_id',auth()->user()->id],['state',true]])->first();
         $cash->cash_documents()->create($request->all());
-
         return [
             'success' => true,
             'message' => 'Venta con éxito',

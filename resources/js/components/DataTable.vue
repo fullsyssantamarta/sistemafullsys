@@ -74,6 +74,7 @@
                 required: false
             }
         },
+
         data () {
             return {
                 search: {
@@ -85,13 +86,16 @@
                 pagination: {}
             }
         },
+
         computed: {
         },
+
         created() {
             this.$eventHub.$on('reloadData', () => {
                 this.getRecords()
             })
         },
+
         async mounted () {
             let column_resource = _.split(this.resource, '/')
            // console.log(column_resource)
@@ -100,12 +104,13 @@
                 this.search.column = _.head(Object.keys(this.columns))
             });
             await this.getRecords()
-
         },
+
         methods: {
             customIndex(index) {
                 return (this.pagination.per_page * (this.pagination.current_page - 1)) + index + 1
             },
+
             getRecords() {
                 return this.$http.get(`/${this.resource}/records?${this.getQueryParameters()}`).then((response) => {
                     this.records = response.data.data
@@ -113,6 +118,7 @@
                     this.pagination.per_page = parseInt(response.data.meta.per_page)
                 });
             },
+
             getQueryParameters() {
                 return queryString.stringify({
                     page: this.pagination.current_page,
@@ -120,6 +126,7 @@
                     ...this.search
                 })
             },
+
             changeClearInput(){
                 this.search.value = ''
                 this.getRecords()
