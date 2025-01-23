@@ -883,7 +883,7 @@ class DocumentController extends Controller
             // Inicializar el mensaje de error
             $userFriendlyMessage = 'Ocurrió un error inesperado.';
             // Verificar si hay un mensaje de error específico en la respuesta de la API
-            if (is_object($response_model) && isset($response_model->message)) {
+            if (isset($response_model) && is_object($response_model) && isset($response_model->message)) {
                 $userFriendlyMessage = $response_model->message;  // Mensaje general de la API
                 // Verificar si hay detalles de errores específicos
                 if (isset($response_model->errors) && is_object($response_model->errors)) {
@@ -1587,7 +1587,12 @@ class DocumentController extends Controller
         if($err){
             return null;
         }
-        else{
+        else {
+            // error del api y la respuesta es una excepcion
+            if(isset($response_encode->exception)) {
+                \Log::error($response_encode->trace);
+                throw new \Exception($response_encode->message);
+            }
             return $response_encode->number;
         }
     }
