@@ -333,7 +333,7 @@
                     dv: 1,
                     language_id: 79,
                     country_id: 46,
-                    type_liability_id: 14,
+                    type_liability_id: 117,
                     id_service: null,
                     modules: []
                 }

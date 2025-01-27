@@ -679,6 +679,7 @@ export default {
                 else
                     this.form.payment_form_id = 2
         },
+
         async fetchCorrelative() {
             const typeService = 1; // supongo que es el Id del tipo de documento que para este caso es 1 factura de venta
             if (this.currentPrefix) {
@@ -690,6 +691,7 @@ export default {
                 }
             }
         },
+
         changeResolution() {
             if (typeof this.invoice !== 'undefined') {
                 this.form.type_document_id = this.invoice.type_document_id;
@@ -703,15 +705,18 @@ export default {
                 this.form.prefix = resol.prefix;
                 this.form.type_document_id = resol.id;
                 this.currentPrefix = resol.prefix; // Actualizar el prefijo en data
-                this.fetchCorrelative(); // Llama al método para obtener el correlativo
+//                this.fetchCorrelative(); // Llama al método para obtener el correlativo
             }
         },
+
         ratePrefix(tax = null) {
             if ((tax != null) && (!tax.is_fixed_value)) return null;
             return (this.company.currency != null) ? this.company.currency.symbol : '$';
         },
+
         keyupCustomer() {
         },
+
         clickAddItemInvoice() {
             this.recordItem = null
             this.showDialogAddItem = true
@@ -1215,7 +1220,7 @@ export default {
             this.loading_submit = true
             //                console.log(JSON.stringify(this.form))
             this.$http.post(`/${this.resource}`, this.form).then(response => {
-                //                    console.log(response)
+                console.log(response)
                 if (response.data.success) {
                     if (response.data.validation_errors === false) {
                         this.resetForm();
