@@ -66,7 +66,7 @@
         </td>
     </tr>
     <tr>
-        <td colspan="2"> <h6>{{ $sucursal->description }} {{ $establishment->address }}  {{$establishment->address != '-' ? $establishment->address : $company->address}} - {{$establishment->city->name ?? ''}} - {{$establishment->department->name ?? ''}} - {{$establishment->country->name ?? ''}}</h6></td>
+        <td colspan="2"> <h6>{{ $sucursal->description }} - {{$establishment->address != '-' ? $establishment->address : $company->address}} - {{$establishment->city->name ?? ''}} - {{$establishment->department->name ?? ''}} - {{$establishment->country->name ?? ''}}</h6></td>
     </tr>
     <br>
     <tr>
