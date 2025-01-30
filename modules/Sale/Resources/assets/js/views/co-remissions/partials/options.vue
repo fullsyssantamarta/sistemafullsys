@@ -16,7 +16,13 @@
                 <button type="button" class="btn btn-lg btn-info waves-effect waves-light" @click="clickToPrint('a4')">
                     <i class="fa fa-print"></i>
                 </button>
-                <p>Imprimir</p>
+                <p>A4</p>
+            </div>
+            <div class="col-lg-12 col-md-12 col-sm-12 text-center font-weight-bold mt-3">
+                <button type="button" class="btn btn-lg btn-info waves-effect waves-light" @click="clickToPrint('ticket')">
+                    <i class="fa fa-print"></i>
+                </button>
+                <p>Ticket</p>
             </div>
         </div>
 

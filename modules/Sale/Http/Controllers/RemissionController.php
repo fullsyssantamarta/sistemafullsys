@@ -211,28 +211,39 @@ class RemissionController extends Controller
 
 
 
-    public function createPdf($remission = null, $format_pdf = 'a4', $filename = null)
+    public function createPdf($remission = null, $format_pdf = null, $filename = null)
     {
-
         ini_set("pcre.backtrack_limit", "5000000");
         $template = new Template();
-        $pdf = new Mpdf();
-
+        
         $document = ($remission != null) ? $remission : $this->remission;
         $company = Company::first();
         $filename = ($filename != null) ? $filename : $this->remission->filename;
-
+        $format_pdf = ($format_pdf != null) ? $format_pdf : 'a4';
         $base_template = config('tenant.pdf_template');
+
+        // Configuración inicial del PDF según formato
+        $pdf_config = [];
+        if ($format_pdf === 'ticket') {
+            $pdf_config = [
+                'mode' => 'utf-8',
+                'format' => [80, 297],
+                'margin_top' => 0,
+                'margin_right' => 2,
+                'margin_bottom' => 0,
+                'margin_left' => 2
+            ];
+        }
+
+        // Crear instancia de PDF con la configuración correspondiente
+        $pdf = new Mpdf($pdf_config);
 
         $html = $template->pdf($base_template, "remission", $company, $document, $format_pdf);
 
-        $pdf_font_regular = config('tenant.pdf_name_regular');
-        $pdf_font_bold = config('tenant.pdf_name_bold');
-
-        if ($pdf_font_regular != false) {
+        // Configurar fuentes solo para formato A4
+        if ($format_pdf === 'a4' && config('tenant.pdf_name_regular')) {
             $defaultConfig = (new ConfigVariables())->getDefaults();
             $fontDirs = $defaultConfig['fontDir'];
-
             $defaultFontConfig = (new FontVariables())->getDefaults();
             $fontData = $defaultFontConfig['fontdata'];
 
@@ -245,10 +256,10 @@ class RemissionController extends Controller
                 ]),
                 'fontdata' => $fontData + [
                     'custom_bold' => [
-                        'R' => $pdf_font_bold.'.ttf',
+                        'R' => config('tenant.pdf_name_bold').'.ttf',
                     ],
                     'custom_regular' => [
-                        'R' => $pdf_font_regular.'.ttf',
+                        'R' => config('tenant.pdf_name_regular').'.ttf',
                     ],
                 ]
             ]);
@@ -264,7 +275,8 @@ class RemissionController extends Controller
         $pdf->WriteHTML($stylesheet, HTMLParserMode::HEADER_CSS);
         $pdf->WriteHTML($html, HTMLParserMode::HTML_BODY);
 
-        if(config('tenant.pdf_template_footer')) {
+        // Agregar footer solo en formato A4
+        if ($format_pdf === 'a4' && config('tenant.pdf_template_footer')) {
             $html_footer = $template->pdfFooter($base_template);
             $pdf->SetHTMLFooter($html_footer);
         }
