@@ -764,7 +764,7 @@ class DocumentPosController extends Controller
                 'mode' => 'utf-8',
                 'format' => [
                     $width,
-                    100 +
+                    200 +
                     (($quantity_rows * 8) + $extra_by_item_description) +
                     ($discount_global * 3) +
                     $company_logo +

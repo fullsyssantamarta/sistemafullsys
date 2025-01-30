@@ -1,10 +1,13 @@
 @php
+    use Mpdf\QrCode\QrCode;
+    use Mpdf\QrCode\Output; 
     $establishment = $document->establishment;
     $customer = $document->customer;
     //$path_style = app_path('CoreFacturalo'.DIRECTORY_SEPARATOR.'Templates'.DIRECTORY_SEPARATOR.'pdf'.DIRECTORY_SEPARATOR.'style.css');
     $accounts = \App\Models\Tenant\BankAccount::all();
     $tittle = $document->series.'-'.$document->number;
     $sucursal = \App\Models\Tenant\Establishment::where('id', $document->establishment_id)->first();
+    $is_epos = $document->electronic === 1 ? true : false;
     if(!is_null($sucursal->establishment_logo)){
         if(file_exists(public_path('storage/uploads/logos/'.$sucursal->id."_".$sucursal->establishment_logo)))
             $filename_logo = public_path('storage/uploads/logos/'.$sucursal->id."_".$sucursal->establishment_logo);
@@ -13,6 +16,13 @@
     }
     else
         $filename_logo = public_path("storage/uploads/logos/{$company->logo}");
+
+    if($is_epos && $document->qr) {
+        $data_qr = $document->qr;
+        $codigoQR = new QrCode($data_qr);
+        $output = new Output\Png();
+        $imagenCodigoQR = $output->output($codigoQR, 180);
+    }
 @endphp
 <html>
 <head>
@@ -290,21 +300,33 @@
 </table>
 <br>
 <table class="full-width">
-<tr>
-    <td>
-    <strong>PAGOS:</strong> </td></tr>
-        @php
-            $payment = 0;
-        @endphp
-        @foreach($document->payments as $row)
-            <tr><td>- {{ $row->payment_method_type->description }} - {{ $row->reference ? $row->reference.' - ':'' }} {{ $document->currency->symbol }} {{ $row->payment }}</td></tr>
+    <tr>
+        <td width="60%" style="vertical-align: top; font-size: 15px;">
+            <strong>PAGOS:</strong>
             @php
-                $payment += (float) $row->payment;
+                $payment = 0;
             @endphp
-        @endforeach
-        <tr><td><strong>SALDO:</strong> {{ $document->currency->symbol }} {{ number_format($document->total - $payment, 2) }}</td>
+            @foreach($document->payments as $row)
+                <div>- {{ $row->payment_method_type->description }} - {{ $row->reference ? $row->reference.' - ':'' }} {{ $document->currency->symbol }} {{ $row->payment }}</div>
+                @php
+                    $payment += (float) $row->payment;
+                @endphp
+            @endforeach
+            <div><strong>SALDO:</strong> {{ $document->currency->symbol }} {{ number_format($document->total - $payment, 2) }}</div>
+        </td>
+        @if($is_epos && $document->qr)
+        <td width="40%" style="text-align: right; vertical-align: top;">
+            <img src="data:image/png;base64,{{ base64_encode($imagenCodigoQR) }}" alt="QR" >
+        </td>
+        @endif
     </tr>
-
+    @if($is_epos)
+    <tr width="100%">
+        <td>
+            <strong>CUDE:</strong> {{ $document->cude }}
+        </td>
+    </tr>
+    @endif
 </table>
 </body>
 </html>

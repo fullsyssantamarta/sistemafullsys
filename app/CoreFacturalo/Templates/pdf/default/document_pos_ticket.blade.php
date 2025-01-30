@@ -66,7 +66,7 @@
         </td>
     </tr>
     <tr>
-        <td colspan="2"> <h6>{{ $sucursal->description }}. {{ $establishment->address }}</h6></td>
+        <td colspan="2"> <h6>{{ $sucursal->description }} {{ $establishment->address }}  {{$establishment->address != '-' ? $establishment->address : $company->address}} - {{$establishment->city->name ?? ''}} - {{$establishment->department->name ?? ''}} - {{$establishment->country->name ?? ''}}</h6></td>
     </tr>
     <br>
     <tr>
@@ -98,7 +98,8 @@
     </tr>
     <tr>
         <td><h6>Cliente:{{ $customer->name }}</h6></td>
-        <td><h6>Ciudad: {{ ($customer->city_id)? ''.$customer->city->name : '' }}</h6></td>
+        <td><h6>Ciudad:{{ ($customer->department_id)? ', '.$customer->department->name : '' }}
+        {{ ($customer->city_id)? '- '.$customer->city->name : '' }}</h6></td>
     </tr>
     <tr>
         <td colspan="2"><h6>{{$customer->identity_document_type->name}}: {{ $customer->identity_document_type->id == 3 ? $customer->number : $customer->code }}</h6></td>
