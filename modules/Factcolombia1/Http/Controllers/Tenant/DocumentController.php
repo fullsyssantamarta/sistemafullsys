@@ -358,8 +358,8 @@ class DocumentController extends Controller
                 $request->taxes = Tax::all();
                 $request->total_tax = $service_invoice['legal_monetary_totals']['tax_inclusive_amount'] - $service_invoice['legal_monetary_totals']['line_extension_amount'];
                 $request->subtotal = $service_invoice['legal_monetary_totals']['line_extension_amount'];
-                $request->payment_form_id = $service_invoice['payment_form']['payment_form_id'];
-                $request->payment_method_id = $service_invoice['payment_form']['payment_method_id'];
+                $request->payment_form_id = $service_invoice['payment_form']['payment_form_id'] ? $service_invoice['payment_form']['payment_form_id'] : 1;
+                $request->payment_method_id = $service_invoice['payment_form']['payment_method_id'] ? $service_invoice['payment_form']['payment_method_id'] : 10;
                 $request->time_days_credit = isset($service_invoice['payment_form']['duration_measure']) ? $service_invoice['payment_form']['duration_measure'] : 0;
                 $request->xml = $document_invoice->xml;
                 $request->cufe = $document_invoice->cufe;
@@ -712,9 +712,7 @@ class DocumentController extends Controller
                 "Authorization: Bearer {$company->api_token}"
             ));
             $response = curl_exec($ch);
-            if(config('tenant.show_log')) {
-                \Log::debug('DocumentController:715: '.$response);
-            }
+//            \Log::debug('DocumentController:715: '.$response);
             curl_close($ch);
             $response_model = json_decode($response);
             $zip_key = null;
@@ -1238,7 +1236,7 @@ class DocumentController extends Controller
 //\Log::debug($correlative_api);
 //\Log::debug($data_document);
 //            return $data_document;
-\Log::debug($response);
+//\Log::debug($response);
 //return "";
 
             $response_model = json_decode($response);
@@ -1492,7 +1490,7 @@ class DocumentController extends Controller
         ));
 
         $response = curl_exec($ch2);
-        \Log::debug($response);
+//        \Log::debug($response);
         $respuesta = json_decode($response);
         curl_close($ch2);
 

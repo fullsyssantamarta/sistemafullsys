@@ -382,6 +382,7 @@
 
                 this.button_text = (this.form.is_update) ? 'Actualizando compañia...':'Creando base de datos...'
                 this.loading_submit = true
+                console.log(`${this.resource}${(this.form.is_update ? '/update' : '')}`)
                 await this.$http.post(`${this.resource}${(this.form.is_update ? '/update' : '')}`, this.form)
                     .then(response => {
                         if (response.data.success) {
