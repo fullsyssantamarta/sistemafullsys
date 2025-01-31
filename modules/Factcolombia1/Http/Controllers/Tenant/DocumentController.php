@@ -358,8 +358,8 @@ class DocumentController extends Controller
                 $request->taxes = Tax::all();
                 $request->total_tax = $service_invoice['legal_monetary_totals']['tax_inclusive_amount'] - $service_invoice['legal_monetary_totals']['line_extension_amount'];
                 $request->subtotal = $service_invoice['legal_monetary_totals']['line_extension_amount'];
-                $request->payment_form_id = $service_invoice['payment_form']['payment_form_id'] ? $service_invoice['payment_form']['payment_form_id'] : 1;
-                $request->payment_method_id = $service_invoice['payment_form']['payment_method_id'] ? $service_invoice['payment_form']['payment_method_id'] : 10;
+                $request->payment_form_id = isset($service_invoice['payment_form']['payment_form_id']) ? $service_invoice['payment_form']['payment_form_id'] : 1;
+                $request->payment_method_id = isset($service_invoice['payment_form']['payment_method_id']) ? $service_invoice['payment_form']['payment_method_id'] : 10;
                 $request->time_days_credit = isset($service_invoice['payment_form']['duration_measure']) ? $service_invoice['payment_form']['duration_measure'] : 0;
                 $request->xml = $document_invoice->xml;
                 $request->cufe = $document_invoice->cufe;
