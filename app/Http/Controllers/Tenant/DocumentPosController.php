@@ -1092,15 +1092,75 @@ class DocumentPosController extends Controller
 
     public function email(Request $request)
     {
-        $company = Company::active();
-        $record = DocumentPos::find($request->input('id'));
-        $customer_email = $request->input('customer_email');
+        try {
+            $company = ServiceTenantCompany::firstOrFail();
+            $document = DocumentPos::find($request->input('id'));
+            $sucursal = \App\Models\Tenant\Establishment::where('id', auth()->user()->establishment_id)->first();
 
-        Mail::to($customer_email)->send(new SaleNoteEmail($company, $record));
+            if (!$document) {
+                throw new Exception('Documento no encontrado');
+            }
 
-        return [
-            'success' => true
-        ];
+            // Preparar datos para enviar a la API
+            $data = [
+                'prefix' => $document->prefix,
+                'number' => $document->number,
+                'alternate_email' => $request->input('customer_email'),
+                'email_cc_list' => [
+                    ['email' => $sucursal->email]
+                ],
+                'sendmail' => true,
+                'is_eqdoc' => true
+            ];
+
+            // Enviar a la API
+            $base_url = config('tenant.service_fact');
+            $ch = curl_init("{$base_url}ubl2.1/send-email");
+            
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Content-Type: application/json',
+                'Accept: application/json',
+                "Authorization: Bearer {$company->api_token}"
+            ]);
+
+            $response = curl_exec($ch);
+            $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            if(config('tenant.show_log')) {
+                \Log::debug('Email API Response: ' . $response);
+            }
+
+            $response_decoded = json_decode($response);
+
+            if ($httpcode !== 200) {
+                if (isset($response_decoded->message)) {
+                    throw new Exception($response_decoded->message);
+                }
+                throw new Exception('Error al enviar el correo');
+            }
+
+            if (!$response_decoded->success) {
+                throw new Exception($response_decoded->message ?? 'Error al enviar el correo');
+            }
+
+            return [
+                'success' => true,
+                'message' => 'Correo enviado correctamente'
+            ];
+
+        } catch (\Exception $e) {
+            \Log::error('Error enviando correo: ' . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
     }
 
 
