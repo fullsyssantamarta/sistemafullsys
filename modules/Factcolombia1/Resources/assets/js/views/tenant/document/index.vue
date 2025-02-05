@@ -189,7 +189,7 @@
                 this.Sincronizing = true
 
                 await this.$http.post(`/${this.resource}/sincronize`).then(response => {
-                    // console.log(response)
+                    console.log(response)
                     if (response.data.success) {
                         this.$message.success(response.data.message)
                     }

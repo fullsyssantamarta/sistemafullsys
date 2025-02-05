@@ -228,8 +228,11 @@ class DocumentController extends Controller
             if(count($advanced_configuration) > 0){
 //                $lastsync_date = new DateTime($advanced_configuration[0]->lastsync);
 //                $lastsync = $lastsync_date->modify('-1 day')->format('Y-m-d');
-//                $lastsync = $advanced_configuration[0]->lastsync;
-                $lastsync = 0;
+                if($advanced_configuration[0]->lastsync - 3 >= 0)
+                    $lastsync = $advanced_configuration[0]->lastsync - 3;
+                else
+                    $lastsync = 0;
+//                $lastsync = 0;
             }
             else{
                 $advanced_configuration = AdvancedConfiguration::where('lastsync', 0)->get();
@@ -277,9 +280,9 @@ class DocumentController extends Controller
                     }
                 }
                 $lastsync++;
+                $advanced_configuration[0]->lastsync = $lastsync;
+                $advanced_configuration[0]->save();
             }while($response_status_decoded->data[0]->count != 0);
-            $advanced_configuration[0]->lastsync = $lastsync;
-            $advanced_configuration[0]->save();
             return [
                 "success" => true,
                 "message" => "Se sincronizaron satisfactoriamente, {$i} registros que se habian enviado directamente desde API...",

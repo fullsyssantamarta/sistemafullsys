@@ -262,6 +262,10 @@ class DocumentPosController extends Controller
                     $tax_exclusive_amount += $tax_totals[count($tax_totals) - 1]['taxable_amount'];
                 }
             }
+            if(count($data['allowance_charges']) > 0)
+                $allowance_charges = $data['allowance_charges'][0]['amount'];
+            else
+                $allowance_charges = "0.00";
             $data_invoice_pos = [
                 'number' => $data['number'],
                 'type_document_id' => 15,
@@ -314,8 +318,9 @@ class DocumentPosController extends Controller
                 'legal_monetary_totals' => [
                     'line_extension_amount' => $data['sale'],
                     'tax_exclusive_amount' => (string)$tax_exclusive_amount,
-                    'tax_inclusive_amount' => $data['total'],
-                    'payable_amount' => $data['total'],
+                    'tax_inclusive_amount' => (string)($data['sale'] + $data['total_tax']),
+                    'allowance_total_amount' => $allowance_charges,
+                    'payable_amount' => (string)$data['total'],
                 ],
                 'tax_totals' => $tax_totals,
                 'allowance_charges' => $data['allowance_charges'] ?? [],
@@ -351,15 +356,13 @@ class DocumentPosController extends Controller
                     "Authorization: Bearer {$company->api_token}"
                 ));
                 $response = curl_exec($ch);
-                // \Log::debug($company->eqdocs_type_environment_id);
-                // \Log::debug($company->test_set_id_eqdocs);
-                // \Log::debug("{$base_url}ubl2.1/eqdoc");
-                // \Log::debug($company->api_token);
-                // \Log::debug($data_document);
-                //\Log::debug($response);
-                if(config('tenant.show_log')) {
-                    \Log::debug('DocumentPosController:1186: '.$response);
-                }
+//                 \Log::debug($data);
+//                 \Log::debug($company->eqdocs_type_environment_id);
+//                 \Log::debug($company->test_set_id_eqdocs);
+//                 \Log::debug("{$base_url}ubl2.1/eqdoc");
+//                 \Log::debug($company->api_token);
+//                 \Log::debug($data_document);
+//                 \Log::debug($response);
                 $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
                 curl_close($ch);
                 $response_model = json_decode($response);
@@ -651,6 +654,7 @@ class DocumentPosController extends Controller
             'cash_type' => $config->cash_type,
             'number' => $number,
             'prefix' => $config->prefix,
+            'total_tax' => $inputs['total_tax'],
             'electronic' => (bool)$config->electronic,
             'total_discount' => $total_discount,
         ];
