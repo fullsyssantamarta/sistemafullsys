@@ -220,7 +220,8 @@ class DocumentPosController extends Controller
                     'notes' => null,
                     'code' => $row['item']['internal_id'],
                     'type_item_identification_id' => 4,
-                    'price_amount' => $row['item']['edit_sale_unit_price'],
+//                    'price_amount' => $row['item']['edit_sale_unit_price'],
+                    'price_amount' => $row['subtotal'] / $row['quantity'],
                     'base_quantity' => $row['quantity']
                 ];
                 if($row['item']['tax'] !== null){
@@ -228,7 +229,8 @@ class DocumentPosController extends Controller
                         [
                             'tax_id' => $row['item']['tax']['type_tax']['id'],
                             'tax_amount' => $row['total_tax'],
-                            'taxable_amount' => number_format((float)($row['item']['sale_unit_price'] * $row['quantity']), 2, '.', ''),
+//                            'taxable_amount' => number_format((float)($row['item']['sale_unit_price'] * $row['quantity']), 2, '.', ''),
+                            'taxable_amount' => number_format((float)($row['unit_price'] * $row['quantity']), 2, '.', ''),
                             'percent' => $row['item']['tax']['rate'],
                         ]
                     ];
@@ -237,7 +239,8 @@ class DocumentPosController extends Controller
                     $tax_id = $row['item']['tax']['type_tax']['id'];
                     $percent = $row['item']['tax']['rate'];
                     $tax_amount = $row['total_tax'];
-                    $taxable_amount = $row['item']['sale_unit_price'] * $row['quantity'];
+//                    $taxable_amount = $row['item']['sale_unit_price'] * $row['quantity'];
+                    $taxable_amount = $row['unit_price'] * $row['quantity'];
                     if (strpos($taxable_amount, '.') !== false){
                         // Si ya tiene dos decimales, no es necesario agregar más
                         $taxable_amount = number_format($taxable_amount, 2, '.', '');
@@ -245,13 +248,17 @@ class DocumentPosController extends Controller
                         // Si solo tiene un decimal, agregar un cero adicional
                         $taxable_amount = number_format($taxable_amount, 1, '.', '') . '0';
                     }
-                    if(isset($tax_totals[$tax_id][$percent])) {
-                        // Si ya existe, actualizar los valores
-                        $tax_totals[$tax_id][$percent]['tax_amount'] += $tax_amount;
-                        $tax_totals[$tax_id][$percent]['taxable_amount'] += $taxable_amount;
+
+                    $found = false;
+                    foreach($tax_totals as $key => $tax){
+                        if ($tax['tax_id'] == $tax_id && $tax['percent'] == $percent) {
+                            $tax_totals[$key]['tax_amount'] += $tax_amount;
+                            $tax_totals[$key]['taxable_amount'] += $taxable_amount;
+                            $found = true;
+                            break;
+                        }
                     }
-                    else {
-                    // Si no existe, agregar un nuevo elemento
+                    if(!$found){
                         $tax_totals[] = [
                             'tax_id' => $tax_id,
                             'percent' => $percent,
@@ -259,6 +266,20 @@ class DocumentPosController extends Controller
                             'taxable_amount' => $taxable_amount,
                         ];
                     }
+//                    if(isset($tax_totals[$tax_id][$percent])) {
+//                        // Si ya existe, actualizar los valores
+//                        $tax_totals[$tax_id][$percent]['tax_amount'] += $tax_amount;
+//                        $tax_totals[$tax_id][$percent]['taxable_amount'] += $taxable_amount;
+//                    }
+//                    else {
+//                    // Si no existe, agregar un nuevo elemento
+//                        $tax_totals[] = [
+//                            'tax_id' => $tax_id,
+//                            'percent' => $percent,
+//                            'tax_amount' => $tax_amount,
+//                            'taxable_amount' => $taxable_amount,
+//                        ];
+//                    }
                     $tax_exclusive_amount += $tax_totals[count($tax_totals) - 1]['taxable_amount'];
                 }
             }

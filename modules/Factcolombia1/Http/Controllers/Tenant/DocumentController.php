@@ -328,7 +328,7 @@ class DocumentController extends Controller
                 if(count($p) == 0){
                     $person = new Person();
                     $person->type = 'customers';
-                    $person->dv = $customer->dv ? $customer->dv : NULL;
+                    $person->dv = isset($customer->dv) ? $customer->dv : NULL;
                     $person->type_regime_id = $customer->type_regime_id ? $customer->type_regime_id : 2;
                     $person->type_person_id = $customer->type_organization_id ? $customer->type_organization_id : 2;
                     $person->type_obligation_id = $customer->type_liability_id ? $customer->type_liability_id : 117;
