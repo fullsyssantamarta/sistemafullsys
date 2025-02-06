@@ -262,8 +262,12 @@ class DocumentPosController extends Controller
                     $tax_exclusive_amount += $tax_totals[count($tax_totals) - 1]['taxable_amount'];
                 }
             }
-            if(count($data['allowance_charges']) > 0)
-                $allowance_charges = $data['allowance_charges'][0]['amount'];
+            if(isset($data['allowance_charges'])){
+                if(count($data['allowance_charges']) > 0)
+                    $allowance_charges = $data['allowance_charges'][0]['amount'];
+                else
+                    $allowance_charges = "0.00";
+            }
             else
                 $allowance_charges = "0.00";
             $data_invoice_pos = [
@@ -362,7 +366,7 @@ class DocumentPosController extends Controller
 //                 \Log::debug("{$base_url}ubl2.1/eqdoc");
 //                 \Log::debug($company->api_token);
 //                 \Log::debug($data_document);
-//                 \Log::debug($response);
+                 \Log::debug($response);
                 $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
                 curl_close($ch);
                 $response_model = json_decode($response);
