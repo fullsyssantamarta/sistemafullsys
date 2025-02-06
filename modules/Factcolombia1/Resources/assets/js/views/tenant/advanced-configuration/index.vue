@@ -49,6 +49,19 @@
                                             <small class="form-control-feedback" v-if="errors.item_tax_included" v-text="errors.item_tax_included[0]"></small>
                                         </div>
                                     </div>
+
+                                    <div class="col-md-4 mt-4" :class="{'has-danger': errors.blind_cash}">
+                                        <label class="control-label">
+                                            Caja ciega
+                                            <el-tooltip class="item" effect="dark" content="Si activado, se restringen las opciones de cierre de caja, reportes y arqueos en cajas chicas y solo estaran disponibles para administradores" placement="top-start">
+                                                <i class="fa fa-info-circle"></i>
+                                            </el-tooltip>
+                                        </label>
+                                        <div class="form-group" :class="{'has-danger': errors.blind_cash}">
+                                            <el-switch v-model="form.blind_cash" active-text="Si" inactive-text="No" @change="submit"></el-switch>
+                                            <small class="form-control-feedback" v-if="errors.blind_cash" v-text="errors.blind_cash[0]"></small>
+                                        </div>
+                                    </div>
                                 </div>
                             </el-tab-pane>
 
@@ -217,13 +230,14 @@ export default {
     created() {
         this.getRecord()
     },
+
     methods: {
         async getRecord() {
-
             await this.$http.get(`/${this.resource}/record`).then(response => {
                 this.form = response.data.data
             })
         },
+
         initForm() {
             this.errors = {}
             this.form = {
@@ -236,21 +250,21 @@ export default {
                 radian_imap_user: null,
                 uvt: 0,
                 item_tax_included: false,
+                blind_cash: false,
             }
         },
+
         clickSaveEmailRadian()
         {
             if(!this.form.radian_imap_encryption || !this.form.radian_imap_host || !this.form.radian_imap_port || !this.form.radian_imap_password || !this.form.radian_imap_user)
             {
                 return this.$message.error('Todos los campos son obligatorios')
             }
-
             this.submit()
         },
+
         submit() {
-
             this.loading_submit = true
-
             this.$http.post(`/${this.resource}`, this.form).then(response => {
                 let data = response.data
                 if (data.success) {
@@ -259,7 +273,6 @@ export default {
                 } else {
                     this.$message.error(data.message)
                 }
-
             }).catch(error => {
                 if (error.response.status === 422) {
                     this.errors = error.response.data
@@ -270,6 +283,7 @@ export default {
                 this.loading_submit = false
             })
         },
+
         showDialogDataDelete() {
             this.getResolutions();
             this.openDialogDataDelete = true;

@@ -29,17 +29,14 @@ class AdvancedConfigurationController extends Controller
     public function store(AdvancedConfigurationRequest $request) {
 
         $id = $request->input('id');
-
         $record = AdvancedConfiguration::find($id);
         $record->fill($request->all());
         $record->save();
-
         return [
             'success' => true,
             'message' => 'Configuración actualizada'
         ];
     }
-
 
     public function deleteDocumentByResolution(Request $request)
     {

@@ -22,7 +22,6 @@ class AdvancedConfiguration extends Model
     protected $fillable = [
         'minimum_salary',
         'transportation_allowance',
-
         'radian_imap_encryption',
         'radian_imap_host',
         'radian_imap_port',
@@ -33,14 +32,15 @@ class AdvancedConfiguration extends Model
         'digital_certificate_qztray',
         'private_certificate_qztray',
         'enable_qz_tray',
+        'blind_cash',
     ];
 
     protected $casts = [
         'uvt' => 'float',
         'item_tax_included' => 'bool',
         'enable_qz_tray' => 'bool',
+        'blind_cash' => 'bool',
     ];
-
 
     /**
      * Use in resource and collection
@@ -48,12 +48,10 @@ class AdvancedConfiguration extends Model
      * @return array
      */
     public function getRowResource(){
-
         return [
             'id' => $this->id,
             'minimum_salary' => $this->minimum_salary,
             'transportation_allowance' => $this->transportation_allowance,
-
             'radian_imap_encryption' => $this->radian_imap_encryption,
             'radian_imap_host' => $this->radian_imap_host,
             'radian_imap_port' => $this->radian_imap_port,
@@ -61,10 +59,9 @@ class AdvancedConfiguration extends Model
             'radian_imap_user' => $this->radian_imap_user,
             'uvt' => $this->uvt,
             'item_tax_included' => $this->item_tax_included,
+            'blind_cash' => $this->blind_cash,
         ];
-
     }
-
 
     public function scopeSelectImapColumns($query)
     {
@@ -76,7 +73,6 @@ class AdvancedConfiguration extends Model
             'radian_imap_user',
         ]);
     }
-
 
     /**
      *
