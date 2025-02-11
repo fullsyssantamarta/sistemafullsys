@@ -324,6 +324,7 @@ class CompanyController extends Controller
                         ['module_level_id' => 7, 'user_id' => 1],
                         ['module_level_id' => 8, 'user_id' => 1],
                         ['module_level_id' => 9, 'user_id' => 1],
+                        ['module_level_id' => 10, 'user_id' => 1],
                     ]);
                 }
             }

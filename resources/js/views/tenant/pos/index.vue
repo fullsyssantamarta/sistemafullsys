@@ -516,9 +516,9 @@ export default {
 
     async created() {
         this.electronic = this.configuration.configuration_pos.electronic
-        console.log(localStorage.getItem("plate_number"))
-        console.log(this.configuration.configuration_pos.plate_number)
-        console.log(this.electronic)
+//        console.log(localStorage.getItem("plate_number"))
+//        console.log(this.configuration.configuration_pos.plate_number)
+//        console.log(this.electronic)
         if(localStorage.getItem("plate_number") == this.configuration.configuration_pos.plate_number || this.electronic == false){
             this.plate_number_valid = true
             await this.initForm();
@@ -943,7 +943,7 @@ export default {
         },
         async clickAddItem(item, index, input = false) {
             const presentation = item.presentation
-            // console.log(item)
+//            console.log(item)
             if (this.type_refund) {
 //                console.log("Aqui devolucion...")
                 this.form_item.item = item;
@@ -970,23 +970,22 @@ export default {
                 this.items_refund.push(this.form_item);
                 //item.aux_quantity = 1;
             } else {
+                console.log("Aqui no devolucion...")
                 this.loading = true;
                 // let exchangeRateSale = this.form.exchange_rate_sale;
                 // let exist_item = _.find(this.form.items, {
                 //     item_id: item.item_id
                 // });
-
                 let exist_item = null
 
                 if(!presentation) {
-
+                    console.log("No presentacion...")
                     exist_item = _.find(this.form.items, {
                         item_id: item.item_id,
                         unit_type_id: item.unit_type_id
                     })
-
                 }else{
-
+                    console.log("Presentacion...")
                     exist_item = _.find(this.form.items, {
                         item_id: item.item_id,
                         presentation: presentation,
@@ -994,11 +993,11 @@ export default {
                     })
                 }
 
-
                 let pos = this.form.items.indexOf(exist_item);
                 let response = null;
 
                 if (exist_item) {
+                    console.log(input)
                     item.edited_price = input
                     if (input) {
                         response = await this.getStatusStock(item.item_id, exist_item.item.aux_quantity);

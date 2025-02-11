@@ -276,6 +276,7 @@ trait CompanyTrait
                             ['module_level_id' => 7, 'user_id' => $user_id],
                             ['module_level_id' => 8, 'user_id' => $user_id],
                             ['module_level_id' => 9, 'user_id' => $user_id],
+                            ['module_level_id' => 10, 'user_id' => $user_id],
                         ]);
                     }
                 }
