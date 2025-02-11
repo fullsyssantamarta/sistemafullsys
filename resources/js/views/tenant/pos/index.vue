@@ -690,16 +690,17 @@ export default {
         clickOpenInputEditUP(index) {
             this.items[index].edit_unit_price = true
         },
+
         clickEditUnitPriceItem(index) {
             // console.log(index)
             let price_with_tax = this.items[index].edit_sale_unit_price //price with tax
             this.items[index].sale_unit_price_with_tax = price_with_tax
             this.items[index].sale_unit_price = price_with_tax / (1 + (this.items[index].tax.rate / this.items[index].tax.conversion))
+//            console.log(this.items[index].sale_unit_price)
             this.items[index].edit_unit_price = false
-
             // console.log(item_search)
-
         },
+
         clickCancelUnitPriceItem(index) {
             // console.log(index)
             this.items[index].edit_unit_price = false
@@ -970,7 +971,7 @@ export default {
                 this.items_refund.push(this.form_item);
                 //item.aux_quantity = 1;
             } else {
-                console.log("Aqui no devolucion...")
+//                console.log("Aqui no devolucion...")
                 this.loading = true;
                 // let exchangeRateSale = this.form.exchange_rate_sale;
                 // let exist_item = _.find(this.form.items, {
@@ -979,13 +980,13 @@ export default {
                 let exist_item = null
 
                 if(!presentation) {
-                    console.log("No presentacion...")
+//                    console.log("No presentacion...")
                     exist_item = _.find(this.form.items, {
                         item_id: item.item_id,
                         unit_type_id: item.unit_type_id
                     })
                 }else{
-                    console.log("Presentacion...")
+//                    console.log("Presentacion...")
                     exist_item = _.find(this.form.items, {
                         item_id: item.item_id,
                         presentation: presentation,
@@ -997,26 +998,21 @@ export default {
                 let response = null;
 
                 if (exist_item) {
-                    console.log(input)
                     item.edited_price = input
                     if (input) {
                         response = await this.getStatusStock(item.item_id, exist_item.item.aux_quantity);
-
                         if (!response.success) {
                             item.item.aux_quantity = item.quantity;
                             this.loading = false;
                             return this.$message.error(response.message);
                         }
-
                         exist_item.quantity = exist_item.item.aux_quantity;
                     } else {
                         response = await this.getStatusStock(item.item_id, parseFloat(exist_item.item.aux_quantity) + 1);
-
                         if (!response.success) {
                             this.loading = false;
                             return this.$message.error(response.message);
                         }
-
                         exist_item.quantity++;
                         exist_item.item.aux_quantity++;
                     }
@@ -1030,24 +1026,18 @@ export default {
                     }
 
                     let unit_price = exist_item.item.sale_unit_price
+                    console.log(unit_price)
                     exist_item.item.unit_price = unit_price
-
                     exist_item.unit_type_id = item.unit_type_id
-
                     this.form.items[pos] = exist_item;
-
                 } else {
-
                     response = await this.getStatusStock(item.item_id, 1);
-
                     if (!response.success) {
                         this.loading = false;
                         return this.$message.error(response.message);
                     }
-
                     this.form_item.item = { ...item }
                     // this.form_item.item = item;
-
                     this.form_item.unit_price_value = this.form_item.item.sale_unit_price;
                     this.form_item.quantity = 1;
                     this.form_item.aux_quantity = 1;
@@ -1057,7 +1047,6 @@ export default {
                     this.form_item.unit_price = unit_price;
                     this.form_item.item.unit_price = unit_price;
                     // this.form_item.item.presentation = null;
-
                     // this.form_item.id = this.form_item.item.item_id
                     this.form_item.item_id = this.form_item.item.item_id
                     this.form_item.tax_id = (this.taxes.length > 0) ? (this.form_item.item.tax !== null ? this.form_item.item.tax.id : null) : null
@@ -1078,11 +1067,8 @@ export default {
                         this.form_item.unit_type_id = this.form_item.item.unit_type_id
                         this.form_item.unit_type = this.form_item.item.unit_type
                     }
-
-
                     this.form.items.push(this.form_item);
                     item.aux_quantity = 1;
-
                 }
 
                 if(!input)
@@ -1092,8 +1078,8 @@ export default {
                         type: "success",
                         duration: 700
                     });
-
             }
+//            console.log()
 
             // console.log(this.form.items)
             await this.calculateTotal();
@@ -1181,7 +1167,7 @@ export default {
 //                            console.log(item.tax.conversion)
 //                            console.log(1 + (item.tax.rate / item.tax.conversion))
                             item.unit_price = (item.sale_unit_price_with_tax / (1 + (item.tax.rate / item.tax.conversion)))
-//                            console.log(item.unit_price)
+                            console.log(item.unit_price)
                             item.total_tax = (
                                 (item.unit_price * item.quantity -
                                     (item.discount < item.sale_unit_price_with_tax * item.quantity ?
