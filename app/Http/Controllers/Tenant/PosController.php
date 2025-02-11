@@ -171,10 +171,8 @@ class PosController extends Controller
                         $query->where('category_id', $request->cat);
                     })
                     ->paginate(50);
-
         return new PosCollection($items, $configuration);
     }
-
 
     public function tables()
     {

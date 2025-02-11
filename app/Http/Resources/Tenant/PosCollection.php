@@ -15,6 +15,7 @@ class PosCollection extends ResourceCollection
         parent::__construct($resource);
         $this->configuration = $configuration;
     }
+
     /**
      * Transform the resource collection into an array.
      *

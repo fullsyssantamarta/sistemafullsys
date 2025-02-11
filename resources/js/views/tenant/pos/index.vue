@@ -580,8 +580,10 @@ export default {
                 limit: this.limit
             });
         },
+
         getRecords() {
             this.loading = true;
+//            console.log(`/${this.resource}/search_items?${this.getQueryParameters()}&cat=${this.category_selected}`)
             return this.$http
                 .get(
                     `/${this.resource}/search_items?${this.getQueryParameters()}&cat=${
@@ -589,8 +591,15 @@ export default {
                     }`
                 )
                 .then(response => {
-                    this.all_items = response.data.data;
-                    this.items = response.data.data;
+//                    this.all_items = response.data.data;
+//                    this.items = response.data.data;
+                    // Convertir sale_unit_price a string en cada item para evitar truncamiento
+                    this.all_items = response.data.data.map(item => ({
+                        ...item,
+                        sale_unit_price: parseFloat(item.sale_unit_price).toFixed(6) // Mantiene 6 decimales
+                    }));
+                    this.items = [...this.all_items]; // Copia con la conversión aplicada
+//                    console.log(this.items)
                     this.filterItems();
                     this.pagination = response.data.meta;
                     this.pagination.per_page = parseInt(
@@ -604,6 +613,7 @@ export default {
                     }
                 });
         },
+
         setListPriceItem(item_unit_type, index) {
 
             let list_price = 0
@@ -942,6 +952,7 @@ export default {
             this.form.customer_id = null;
             this.setFormPosLocalStorage()
         },
+
         async clickAddItem(item, index, input = false) {
             const presentation = item.presentation
 //            console.log(item)
@@ -1026,7 +1037,7 @@ export default {
                     }
 
                     let unit_price = exist_item.item.sale_unit_price
-                    console.log(unit_price)
+//                    console.log(unit_price)
                     exist_item.item.unit_price = unit_price
                     exist_item.unit_type_id = item.unit_type_id
                     this.form.items[pos] = exist_item;
@@ -1079,9 +1090,8 @@ export default {
                         duration: 700
                     });
             }
-//            console.log()
 
-            // console.log(this.form.items)
+//            console.log(this.form.items)
             await this.calculateTotal();
             this.loading = false;
             await this.setFormPosLocalStorage()
@@ -1167,6 +1177,10 @@ export default {
 //                            console.log(item.tax.conversion)
 //                            console.log(1 + (item.tax.rate / item.tax.conversion))
                             item.unit_price = (item.sale_unit_price_with_tax / (1 + (item.tax.rate / item.tax.conversion)))
+                            console.log("Aqui...")
+                            console.log(item.sale_unit_price_with_tax)
+                            console.log(item.tax.rate)
+                            console.log(item.tax.conversion)
                             console.log(item.unit_price)
                             item.total_tax = (
                                 (item.unit_price * item.quantity -
