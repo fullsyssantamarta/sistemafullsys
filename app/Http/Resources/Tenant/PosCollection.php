@@ -39,7 +39,8 @@ class PosCollection extends ResourceCollection
                 'category_id' => $row->category_id,
                 'internal_id' => $row->internal_id,
                 'currency_type_symbol' => $row->currency_type->symbol,
-                'sale_unit_price' => number_format($row->sale_unit_price, $this->configuration->decimal_quantity, ".",""),
+//                'sale_unit_price' => number_format($row->sale_unit_price, $this->configuration->decimal_quantity, ".",""),
+                'sale_unit_price' => $row->sale_unit_price,
                 'purchase_unit_price' => $row->purchase_unit_price,
                 'unit_type_id' => $row->unit_type_id,
                 'calculate_quantity' => (bool) $row->calculate_quantity,
@@ -47,7 +48,8 @@ class PosCollection extends ResourceCollection
                 'tax_id' => $row->tax_id,
                 'edit_unit_price' => false,
                 'aux_quantity' => 1,
-                'aux_sale_unit_price' => number_format($row->sale_unit_price, $this->configuration->decimal_quantity, ".",""),
+//                'aux_sale_unit_price' => number_format($row->sale_unit_price, $this->configuration->decimal_quantity, ".",""),
+                'aux_sale_unit_price' => $row->sale_unit_price,
                 'edit_sale_unit_price' => $price_with_tax,
                 'image_url' => ($row->image !== 'imagen-no-disponible.jpg') ? asset('storage'.DIRECTORY_SEPARATOR.'uploads'.DIRECTORY_SEPARATOR.'items'.DIRECTORY_SEPARATOR.$row->image) : asset("/logo/{$row->image}"),
                 'sets' => collect($row->sets)->transform(function($r){
@@ -78,7 +80,8 @@ class PosCollection extends ResourceCollection
      */
     private function getSaleUnitPriceWithTax($item, $decimal_quantity)
     {
-        return number_format($item->sale_unit_price * ( 1 + ($item->tax->rate ?? 0) / ($item->tax->conversion ?? 1)), $decimal_quantity, ".","");
+//        return number_format($item->sale_unit_price * ( 1 + ($item->tax->rate ?? 0) / ($item->tax->conversion ?? 1)), $decimal_quantity, ".","");
+        return $item->sale_unit_price * ( 1 + ($item->tax->rate ?? 0) / ($item->tax->conversion ?? 1));
     }
 
     /**
@@ -93,6 +96,7 @@ class PosCollection extends ResourceCollection
         $conversion_rate = $item->tax->conversion ?? 1;
         $tax_rate = $item->tax->rate ?? 0;
         $price_without_tax = $item->sale_unit_price / (1 + ($tax_rate / $conversion_rate));
-        return number_format($price_without_tax, $decimal_quantity, ".", "");
+//        return number_format($price_without_tax, $decimal_quantity, ".", "");
+        return $price_without_tax;
     }
 }
