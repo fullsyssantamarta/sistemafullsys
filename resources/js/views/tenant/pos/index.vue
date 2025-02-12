@@ -591,15 +591,15 @@ export default {
                     }`
                 )
                 .then(response => {
-//                    this.all_items = response.data.data;
-//                    this.items = response.data.data;
-                    // Convertir sale_unit_price a string en cada item para evitar truncamiento
-                    this.all_items = response.data.data.map(item => ({
-                        ...item,
-                        sale_unit_price: parseFloat(item.sale_unit_price).toFixed(6) // Mantiene 6 decimales
-                    }));
-                    this.items = [...this.all_items]; // Copia con la conversión aplicada
-//                    console.log(this.items)
+                    this.all_items = response.data.data;
+                    this.items = response.data.data;
+//                    // Convertir sale_unit_price a string en cada item para evitar truncamiento
+//                    this.all_items = response.data.data.map(item => ({
+//                        ...item,
+//                        sale_unit_price: parseFloat(item.sale_unit_price).toFixed(6) // Mantiene 6 decimales
+//                    }));
+//                    this.items = [...this.all_items]; // Copia con la conversión aplicada
+                    console.log(this.items)
                     this.filterItems();
                     this.pagination = response.data.meta;
                     this.pagination.per_page = parseInt(
