@@ -599,7 +599,7 @@ export default {
 //                        sale_unit_price: parseFloat(item.sale_unit_price).toFixed(6) // Mantiene 6 decimales
 //                    }));
 //                    this.items = [...this.all_items]; // Copia con la conversión aplicada
-                    console.log(this.items)
+//                    console.log(this.items)
                     this.filterItems();
                     this.pagination = response.data.meta;
                     this.pagination.per_page = parseInt(

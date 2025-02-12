@@ -25,7 +25,7 @@ class PosCollection extends ResourceCollection
     public function toArray($request)
     {
         return $this->collection->transform(function ($row, $key) {
-            \Log::debug($row);
+//            \Log::debug($row);
             $full_description = isset($row->internal_id) && isset($row->name) ? $row->internal_id.' - '.$row->name : $row->name;
             $price_with_tax = $this->getSaleUnitPriceWithTax($row, $this->configuration->decimal_quantity);
             $price_without_tax = $this->getSaleUnitPriceWithoutTax($row, $this->configuration->decimal_quantity);
