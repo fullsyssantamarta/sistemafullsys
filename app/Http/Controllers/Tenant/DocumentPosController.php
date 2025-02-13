@@ -382,13 +382,13 @@ class DocumentPosController extends Controller
                     "Authorization: Bearer {$company->api_token}"
                 ));
                 $response = curl_exec($ch);
-                 \Log::debug($data);
+//                 \Log::debug($data);
 //                 \Log::debug($company->eqdocs_type_environment_id);
 //                 \Log::debug($company->test_set_id_eqdocs);
 //                 \Log::debug("{$base_url}ubl2.1/eqdoc");
 //                 \Log::debug($company->api_token);
-                 \Log::debug($data_document);
-                 \Log::debug($response);
+//                 \Log::debug($data_document);
+//                 \Log::debug($response);
                 $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
                 curl_close($ch);
                 $response_model = json_decode($response);
