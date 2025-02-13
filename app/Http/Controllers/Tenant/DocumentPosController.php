@@ -343,7 +343,8 @@ class DocumentPosController extends Controller
                 'legal_monetary_totals' => [
                     'line_extension_amount' => $data['sale'],
                     'tax_exclusive_amount' => (string)$tax_exclusive_amount,
-                    'tax_inclusive_amount' => (string)($data['sale'] + $data['total_tax']),
+                    'tax_inclusive_amount' => (string)($data['total'] + $allowance_charges),
+//                    'tax_inclusive_amount' => (string)($data['sale'] + $data['total_tax']),
                     'allowance_total_amount' => $allowance_charges,
                     'payable_amount' => (string)$data['total'],
                 ],
@@ -382,10 +383,10 @@ class DocumentPosController extends Controller
                 ));
                 $response = curl_exec($ch);
                  \Log::debug($data);
-                 \Log::debug($company->eqdocs_type_environment_id);
-                 \Log::debug($company->test_set_id_eqdocs);
-                 \Log::debug("{$base_url}ubl2.1/eqdoc");
-                 \Log::debug($company->api_token);
+//                 \Log::debug($company->eqdocs_type_environment_id);
+//                 \Log::debug($company->test_set_id_eqdocs);
+//                 \Log::debug("{$base_url}ubl2.1/eqdoc");
+//                 \Log::debug($company->api_token);
                  \Log::debug($data_document);
                  \Log::debug($response);
                 $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
