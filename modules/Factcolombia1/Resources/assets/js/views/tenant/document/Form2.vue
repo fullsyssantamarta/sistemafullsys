@@ -1074,10 +1074,10 @@ export default {
             if (!this.global_discount_is_amount && amount_total_dicount_global > 0) {
                 amount_total_dicount_global = ((total - val.total_tax) * amount_total_dicount_global) / 100;
             }
-            val.subtotal = val.items.reduce((p, c) => Number(p) + (Number(c.subtotal) - Number(c.total_discount) - Number(amount_total_dicount_global, 0)), 0).toFixed(2);
-            val.sale = val.items.reduce((p, c) => Number(p) + Number(c.price * c.quantity) - Number(c.total_discount) - Number(amount_total_dicount_global, 0), 0).toFixed(2);
-            val.total_discount = (val.items.reduce((p, c) => Number(p) + Number(c.total_discount), 0) + Number(amount_total_dicount_global, 0)).toFixed(2);
-            total = (Number(total, 0) - Number(amount_total_dicount_global, 0)).toFixed(2);
+            val.subtotal = val.items.reduce((p, c) => Number(p) + (Number(c.subtotal) - Number(c.total_discount)), 0).toFixed(2);
+            val.sale = val.items.reduce((p, c) => Number(p) + Number(c.price * c.quantity) - Number(c.total_discount), 0).toFixed(2);
+            val.total_discount = (val.items.reduce((p, c) => Number(p) + Number(c.total_discount), 0) + Number(amount_total_dicount_global)).toFixed(2);
+            total = (Number(total) - Number(amount_total_dicount_global)).toFixed(2);
             let totalRetentionBase = Number(0);
             // this.taxes.forEach(tax => {
             val.taxes.forEach(tax => {
