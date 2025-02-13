@@ -290,16 +290,22 @@
                                 </div>
                                 <div class="col-lg-12" v-if="form_payment.payment_method_type_id=='01'">
                                     <div class="row">
-                                        <div class="col-lg-3">
+                                        <div class="col-lg-3 mb-2">
+                                            <button class="btn btn-block btn-secondary" @click="setAmountCash(2000)">{{currencyTypeActive.symbol}} {{getFormatDecimal(2000)}}</button>
+                                        </div>
+                                        <div class="col-lg-3 mb-2">
+                                            <button class="btn btn-block btn-secondary" @click="setAmountCash(5000)">{{currencyTypeActive.symbol}} {{getFormatDecimal(5000)}}</button>
+                                        </div>
+                                        <div class="col-lg-3 mb-2">
                                             <button class="btn btn-block btn-secondary" @click="setAmountCash(10000)">{{currencyTypeActive.symbol}} {{getFormatDecimal(10000)}}</button>
                                         </div>
-                                        <div class="col-lg-3">
+                                        <div class="col-lg-3 mb-2">
                                             <button class="btn btn-block btn-secondary" @click="setAmountCash(20000)" >{{currencyTypeActive.symbol}} {{getFormatDecimal(20000)}}</button>
                                         </div>
-                                        <div class="col-lg-3">
+                                        <div class="col-lg-3 mb-2">
                                             <button class="btn btn-block btn-secondary" @click="setAmountCash(50000)"  >{{currencyTypeActive.symbol}} {{getFormatDecimal(50000)}}</button>
                                         </div>
-                                        <div class="col-lg-3">
+                                        <div class="col-lg-3 mb-2">
                                             <button class="btn btn-block btn-secondary"  @click="setAmountCash(100000)" >{{currencyTypeActive.symbol}} {{getFormatDecimal(100000)}}</button>
                                         </div>
                                     </div>
