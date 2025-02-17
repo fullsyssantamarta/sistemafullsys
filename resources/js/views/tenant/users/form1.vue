@@ -71,7 +71,7 @@
                             <label class="control-label">Nivel de acceso del módulo ventas</label>
                             <div class="row">
                                 <div class="col-4" v-for="level in form.levels">
-                                    <el-checkbox v-model="level.checked" :disabled="form.locked" >{{ level.description }}</el-checkbox>
+                                    <el-checkbox v-model="level.checked">{{ level.description }}</el-checkbox>
                                 </div>
                             </div>
                         </div>
