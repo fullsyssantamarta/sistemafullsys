@@ -101,13 +101,6 @@
                                                 Nueva Nota Contable Sin Referencia A Factura Electronica
                                             </a>
                                         </li>
-                                        @if(in_array('remissions', $vc_module_levels))
-                                        <li class="{{ ($path[0] === 'co-remissions')?'nav-active':'' }}">
-                                            <a class="nav-link" href="{{route('tenant.co-remissions.index')}}">
-                                                Listado de Remisiones
-                                            </a>
-                                        </li>
-                                        @endif
                                         {{-- <li class="{{ ($path[0] === 'documents' && $path[1] === 'create')?'nav-active':'' }}">
                                             <a class="nav-link" href="{{route('tenant.documents.create')}}">
                                                 Nuevo comprobante electrónico
