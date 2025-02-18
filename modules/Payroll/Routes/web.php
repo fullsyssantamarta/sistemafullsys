@@ -23,17 +23,13 @@ if($hostname) {
                     Route::post('query-zipkey', 'DocumentPayrollController@queryZipkey');
                 });
 
-
                 // nómina eliminación y ajuste
                 Route::prefix('document-payroll-adjust-notes')->group(function () {
-
                     Route::get('tables/{type_payroll_adjust_note_id}', 'DocumentPayrollAdjustNoteController@tables');
                     Route::get('{id}', 'DocumentPayrollAdjustNoteController@create');
                     Route::post('', 'DocumentPayrollAdjustNoteController@store');
                     Route::get('record/{record}', 'DocumentPayrollAdjustNoteController@record');
-
                 });
-
 
                 Route::prefix('workers')->group(function () {
                     Route::get('', 'WorkerController@index')->name('tenant.payroll.workers.index');

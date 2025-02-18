@@ -29,22 +29,21 @@ use Illuminate\Support\Facades\DB;
 use Exception;
 use Modules\Payroll\Helpers\DocumentPayrollHelper;
 use Modules\Factcolombia1\Http\Controllers\Tenant\DocumentController;
-use Modules\Payroll\Traits\UtilityTrait; 
+use Modules\Payroll\Traits\UtilityTrait;
 
 
 class DocumentPayrollAdjustNoteController extends Controller
 {
-    
+
     use UtilityTrait;
 
     public function create($id)
     {
         $type_payroll_adjust_note_id = DocumentPayrollAdjustNote::ADJUST_NOTE_REPLACE_ID;
-
         return view('payroll::document-payrolls.form', compact('id', 'type_payroll_adjust_note_id'));
     }
 
- 
+
     public function tables($type_payroll_adjust_note_id)
     {
 
@@ -59,7 +58,7 @@ class DocumentPayrollAdjustNoteController extends Controller
         }
 
         // nomina de reemplazo
-        
+
         return [
             'workers' => [],
             'payroll_periods' => PayrollPeriod::get(),
@@ -71,7 +70,7 @@ class DocumentPayrollAdjustNoteController extends Controller
         ];
 
     }
-        
+
     /**
      * Buscar nómina afectada
      *
@@ -82,10 +81,10 @@ class DocumentPayrollAdjustNoteController extends Controller
     {
         return new DocumentPayrollAdjustNoteResource(DocumentPayroll::with(['accrued', 'deduction'])->findOrFail((int) $id));
     }
-    
-     
+
+
     /**
-     * 
+     *
      * Registar nómina de eliminación/reemplazo
      *
      * @param  DocumentPayrollAdjustNoteRequest $request
@@ -93,11 +92,8 @@ class DocumentPayrollAdjustNoteController extends Controller
      */
     public function store(DocumentPayrollAdjustNoteRequest $request)
     {
-
         try {
-
             $data = DB::connection('tenant')->transaction(function () use($request) {
-    
                 // inputs
                 $helper = new DocumentPayrollHelper();
                 $inputs = $helper->getInputsAdjustNote($request);
@@ -113,19 +109,19 @@ class DocumentPayrollAdjustNoteController extends Controller
                     $document->accrued()->create($inputs['accrued']);
                     $document->deduction()->create($inputs['deduction']);
                 }
-    
+
                 // enviar nomina ajuste a la api
                 $send_to_api = $helper->sendToApi($document, $inputs);
-    
+
                 $document->update([
                     'response_api' => $send_to_api
                 ]);
-    
+
                 return $document;
             });
 
             $message = $data->adjust_note->is_adjust_note_elimination ? "Nómina de eliminación {$data->number_full} registrada con éxito" : "Nómina de reemplazo {$data->number_full} registrada con éxito";
-    
+
             return [
                 'success' => true,
                 'message' => $message,
@@ -140,6 +136,6 @@ class DocumentPayrollAdjustNoteController extends Controller
         }
 
     }
- 
-        
+
+
 }

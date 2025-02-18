@@ -1856,12 +1856,12 @@
 
                 this.showDialogDocumentPayrollExtraHours = true
             },
-            changePaymentMethod(){
 
+            changePaymentMethod(){
                 //mostrar campos adicionales, si el metodo de pago es el definido en el arreglo/obligatorio
                 this.show_inputs_payment_method = [2,3,4,5,6,7,21,22,30,31,42,45,46,47].includes(this.form.payment.payment_method_id)
-
             },
+
             changePeriodSettlement(){
 
                 this.form.period.worked_time = moment(this.form.period.settlement_end_date).diff(moment(this.form.period.settlement_start_date), 'days', true)
@@ -2388,8 +2388,8 @@
                 // this.calculateTotalAccrued()
                 this.calculateTotal()
             },
-            async changeWorker() {
 
+            async changeWorker() {
                 // let worker = await _.find(this.workers, {id : this.form.worker_id})
                 this.form.select_worker = await _.find(this.workers, {id : this.form.worker_id[0]})
 
@@ -2397,14 +2397,12 @@
                 {
                     //autocompletar campos
                     await this.autocompleteDataFromWorker(this.form.select_worker)
-
                     //recalcular campos que utilizan el salario base del empleado para calculos, estos se ven afectados por el mismo
                     await this.recalculateData()
-
                     await this.calculateTotal()
                 }
-
             },
+
             recalculateLicense(){
                 this.$refs.componentDocumentPayrollLicenses.recalculateDataLicense()
             },
@@ -2436,21 +2434,17 @@
                 await this.recalculateLaborUnion()
 
             },
-            autocompleteDataFromWorker(worker){
 
+            autocompleteDataFromWorker(worker){
                 this.form.payroll_period_id = worker.payroll_period_id
                 this.form_disabled.payroll_period_id = worker.payroll_period_id ? true : false
-
                 this.form.period.admision_date = worker.work_start_date
                 this.form_disabled.admision_date = worker.work_start_date ? true : false
-
                 this.autocompleteDataSalary(worker.salary)
-
                 this.autocompleteDataPayment(worker)
-
                 this.changePayrollPeriod()
-
             },
+
             async autocompleteDataSalary(worker_salary){
 
                 this.form.accrued.worked_days = this.quantity_days_month
@@ -2525,63 +2519,52 @@
                 }
 
             },
+
             autocompleteDataPayment(worker){
-
                 if(worker.payment){
-
                     this.form.payment = worker.payment
                     this.form_disabled.payment = !this.isAdjustNote
-
                 }else{
-
                     this.form.payment = {
                         payment_method_id: null,
                         bank_name: null,
                         account_type: null,
                         account_number: null,
                     }
-
                     this.form_disabled.payment = false
                 }
-
                 this.changePaymentMethod()
-
             },
+
             getErrorMessage(message){
                 return {
                     success: false,
                     message: message
                 }
             },
-            getExistErrorEpctvBonuses(){
 
+            getExistErrorEpctvBonuses(){
                 let exist_error = 0
                 this.form.accrued.epctv_bonuses.forEach(row => {
                     if(!row.paymentS && !row.paymentNS && !row.salary_food_payment && !row.non_salary_food_payment) exist_error++
                 })
-
                 return exist_error
-
             },
-            validateData(){
 
+            validateData(){
                 // validar bono EPCTVs
                 if(this.getExistErrorEpctvBonuses() > 0) return this.getErrorMessage('Debe agregar al menos un valor en un campo del bono EPCTVs.')
-
                 if(!this.form.resolution_number) return this.getErrorMessage('El número de resolución es obligatorio, debe asignarle un valor.')
-
                 return {
                     success : true
                 }
-
             },
-            async submit() {
 
+            async submit() {
                 const validateData = await this.validateData()
                 if(!validateData.success) return this.$message.error(validateData.message)
-
                 this.loading_submit = true
-
+                console.log(this.form)
                 await this.$http.post(`/${(this.isAdjustNote) ? this.resource_adjust_note : this.resource}`, this.form).then(response => {
                     // console.log(response)
                     if (response.data.success) {
@@ -2594,21 +2577,17 @@
                             this.recordIds = response.data.data.documents
                             this.showDialogDocumentPayrollOptionsMultiple = true
                         }
-
                     }
                     else {
                         this.$message.error(response.data.message)
                     }
                 }).catch(error => {
-
                     if (error.response.status === 422) {
                         this.errors = error.response.data
                     }
                     else {
                         this.$message.error(error.response.data.message)
                     }
-
-
                 }).finally(() => {
                     this.loading_submit = false;
                 });

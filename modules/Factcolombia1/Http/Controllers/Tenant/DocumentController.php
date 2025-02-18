@@ -1039,7 +1039,7 @@ class DocumentController extends Controller
 //\Log::debug(json_encode($service_invoice));
             $service_invoice['web_site'] = env('APP_NAME', 'FACTURALATAM');
 //\Log::debug(json_encode($service_invoice));
-            if(!is_null($this->company['jpg_firma_facturas']))
+            if(!is_null($this->company['jpg_firma_flsacturas']))
               if(file_exists(public_path('storage/uploads/logos/'.$this->company['jpg_firma_facturas']))){
                   $firma_facturacion = base64_encode(file_get_contents(public_path('storage/uploads/logos/'.$this->company['jpg_firma_facturas'])));
                   $service_invoice['firma_facturacion'] = $firma_facturacion;
