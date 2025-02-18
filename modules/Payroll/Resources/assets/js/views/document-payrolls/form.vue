@@ -2521,10 +2521,13 @@
             },
 
             autocompleteDataPayment(worker){
+                console.log(1)
                 if(worker.payment){
+                    console.log(1.1)
                     this.form.payment = worker.payment
                     this.form_disabled.payment = !this.isAdjustNote
                 }else{
+                    console.log(1.2)
                     this.form.payment = {
                         payment_method_id: null,
                         bank_name: null,
@@ -2564,7 +2567,6 @@
                 const validateData = await this.validateData()
                 if(!validateData.success) return this.$message.error(validateData.message)
                 this.loading_submit = true
-                console.log(this.form)
                 await this.$http.post(`/${(this.isAdjustNote) ? this.resource_adjust_note : this.resource}`, this.form).then(response => {
                     // console.log(response)
                     if (response.data.success) {
