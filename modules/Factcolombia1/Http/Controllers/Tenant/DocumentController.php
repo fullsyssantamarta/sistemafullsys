@@ -283,6 +283,9 @@ class DocumentController extends Controller
                 $advanced_configuration[0]->lastsync = $lastsync;
                 $advanced_configuration[0]->save();
             }while($response_status_decoded->data[0]->count != 0);
+            $lastsync--;
+            $advanced_configuration[0]->lastsync = $lastsync;
+            $advanced_configuration[0]->save();
             return [
                 "success" => true,
                 "message" => "Se sincronizaron satisfactoriamente, {$i} registros que se habian enviado directamente desde API...",
