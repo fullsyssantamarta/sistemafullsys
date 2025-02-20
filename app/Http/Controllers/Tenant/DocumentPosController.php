@@ -209,64 +209,99 @@ class DocumentPosController extends Controller
             $customer = Person::where('number', $data['customer']['number'])->where('type', 'customers')->firstOrFail();
             $tax_totals = [];
             $invoice_lines = [];
-            $tax_exclusive_amount = 0;
-            foreach($data['items'] as $row){
-                $invoice_lines[] = [
-                    'unit_measure_id' => $row['item']['unit_type']['code'],
-                    'invoiced_quantity' => $row['quantity'],
-                    'line_extension_amount' => (string)($row['total'] - $row['total_tax']),
-                    'free_of_charge_indicator' => false,
-                    'description' => !empty($row['item']['description']) ? $row['item']['description'] : (!empty($row['item']['name']) ? $row['item']['name'] : 'Sin descripción'),
-                    'notes' => null,
-                    'code' => $row['item']['internal_id'],
-                    'type_item_identification_id' => 4,
-                    'price_amount' => $row['item']['edit_sale_unit_price'],
-                    'base_quantity' => $row['quantity']
-                ];
-                if($row['item']['tax'] !== null){
-                    $invoice_lines[count($invoice_lines) - 1]['tax_totals'] = [
-                        [
-                            'tax_id' => $row['item']['tax']['type_tax']['id'],
-                            'tax_amount' => $row['total_tax'],
-                            'taxable_amount' => number_format((float)($row['item']['sale_unit_price'] * $row['quantity']), 2, '.', ''),
-                            'percent' => $row['item']['tax']['rate'],
-                        ]
-                    ];
-                }
-                if($row['item']['tax'] !== null){
+            $total_net_amount = 0;
+            $total_tax_amount = 0;
+
+            // Acumuladores por tipo de impuesto
+            $tax_groups = [];
+
+            foreach($data['items'] as $row) {
+                // Cálculo del valor neto por línea sin impuestos
+                $line_net_amount = $row['total'] - $row['total_tax'];
+                $total_net_amount += $line_net_amount;
+
+                if($row['item']['tax'] !== null) {
                     $tax_id = $row['item']['tax']['type_tax']['id'];
-                    $percent = $row['item']['tax']['rate'];
-                    $tax_amount = $row['total_tax'];
-                    $taxable_amount = $row['item']['sale_unit_price'] * $row['quantity'];
-                    if (strpos($taxable_amount, '.') !== false){
-                        // Si ya tiene dos decimales, no es necesario agregar más
-                        $taxable_amount = number_format($taxable_amount, 2, '.', '');
-                    } else {
-                        // Si solo tiene un decimal, agregar un cero adicional
-                        $taxable_amount = number_format($taxable_amount, 1, '.', '') . '0';
-                    }
-                    if(isset($tax_totals[$tax_id][$percent])) {
-                        // Si ya existe, actualizar los valores
-                        $tax_totals[$tax_id][$percent]['tax_amount'] += $tax_amount;
-                        $tax_totals[$tax_id][$percent]['taxable_amount'] += $taxable_amount;
-                    }
-                    else {
-                    // Si no existe, agregar un nuevo elemento
-                        $tax_totals[] = [
+                    $tax_rate = $row['item']['tax']['rate'];
+                    $tax_name = $row['item']['tax']['name'];
+
+                    // Crear clave única para cada combinación de impuesto y tasa
+                    $tax_key = $tax_id . '_' . number_format($tax_rate, 2, '.', '');
+
+                    if(!isset($tax_groups[$tax_key])) {
+                        $tax_groups[$tax_key] = [
                             'tax_id' => $tax_id,
-                            'percent' => $percent,
-                            'tax_amount' => $tax_amount,
-                            'taxable_amount' => $taxable_amount,
+                            'tax_name' => $tax_name,
+                            'tax_rate' => $tax_rate,
+                            'tax_amount' => 0,
+                            'taxable_amount' => 0
                         ];
                     }
-                    $tax_exclusive_amount += $tax_totals[count($tax_totals) - 1]['taxable_amount'];
+
+                    $tax_groups[$tax_key]['tax_amount'] += $row['total_tax'];
+                    $tax_groups[$tax_key]['taxable_amount'] += $line_net_amount;
+                    $total_tax_amount += $row['total_tax'];
                 }
+
+                // Preparar línea de factura
+                $line = [
+                    'unit_measure_id' => $row['item']['unit_type']['code'],
+                    'invoiced_quantity' => $row['quantity'],
+                    'line_extension_amount' => $line_net_amount, 
+                    'free_of_charge_indicator' => false,
+                    'description' => !empty($row['item']['description']) ? $row['item']['description'] : (!empty($row['item']['name']) ? $row['item']['name'] : 'Sin descripción'),
+                    'code' => $row['item']['internal_id'],
+                    'type_item_identification_id' => 4,
+                    'price_amount' => $row['item']['edit_sale_unit_price'], 
+                    'base_quantity' => $row['quantity']
+                ];
+
+                // Agregar impuestos a nivel de línea
+                if($row['item']['tax'] !== null) {
+                    $line['tax_totals'] = [[
+                        'tax_id' => $tax_id,
+                        'tax_amount' => $row['total_tax'], 
+                        'taxable_amount' => $line_net_amount, 
+                        'percent' => $tax_rate 
+                    ]];
+                }
+
+                $invoice_lines[] = $line;
             }
+
+            // Convertir los grupos de impuestos en el formato requerido para tax_totals
+            $tax_totals = array_values(array_map(function($tax_group) {
+                return [
+                    'tax_id' => $tax_group['tax_id'],
+                    'tax_amount' => $tax_group['tax_amount'], 
+                    'taxable_amount' => $tax_group['taxable_amount'], 
+                    'percent' => $tax_group['tax_rate'] 
+                ];
+            }, $tax_groups));
+
+            // Procesar descuentos globales si existen
+            $total_discount = isset($data['allowance_charges']) ? 
+                collect($data['allowance_charges'])->sum('amount') : 0;
+
+            // Calcular totales finales
+            $tax_inclusive_amount = $total_net_amount + $total_tax_amount;
+            $payable_amount = $tax_inclusive_amount - $total_discount;
+
+            // Formatear tax_totals para el JSON final
+            $tax_totals = array_values(array_map(function($tax) {
+                return [
+                    'tax_id' => $tax['tax_id'],
+                    'tax_amount' => $tax['tax_amount'], 
+                    'taxable_amount' => $tax['taxable_amount'], 
+                    'percent' => $tax['percent'] 
+                ];
+            }, $tax_totals));
+
             $data_invoice_pos = [
                 'number' => $data['number'],
                 'type_document_id' => 15,
                 'date' => $data['date_of_issue'],
-	            'time' => $data['time_of_issue'],
+                'time' => $data['time_of_issue'],
                 'postal_zone_code' => '411001',
                 'resolution_number' => $data['resolution_number'],
                 'prefix' => $data['prefix'],
@@ -312,10 +347,11 @@ class DocumentPosController extends Controller
                     'duration_measure' => "0",
                 ],
                 'legal_monetary_totals' => [
-                    'line_extension_amount' => $data['sale'],
-                    'tax_exclusive_amount' => (string)$tax_exclusive_amount,
-                    'tax_inclusive_amount' => $data['total'],
-                    'payable_amount' => $data['total'],
+                    'line_extension_amount' => $total_net_amount, 
+                    'tax_exclusive_amount' => $total_net_amount, 
+                    'tax_inclusive_amount' => $tax_inclusive_amount, 
+                    'allowance_total_amount' => $total_discount, 
+                    'payable_amount' => $payable_amount 
                 ],
                 'tax_totals' => $tax_totals,
                 'allowance_charges' => $data['allowance_charges'] ?? [],
