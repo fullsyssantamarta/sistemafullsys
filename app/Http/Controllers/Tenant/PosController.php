@@ -36,6 +36,7 @@ use App\Models\Tenant\ConfigurationPos;
 use App\Http\Requests\Tenant\ConfigurationPosRequest;
 use Modules\Factcolombia1\Models\TenantService\AdvancedConfiguration;
 use App\Http\Resources\Tenant\PosCollection;
+use App\Models\Tenant\WhatsappConfiguration;
 use Modules\Factcolombia1\Models\TenantService\{
     Company as ServiceCompany
 };
@@ -443,6 +444,131 @@ class PosController extends Controller
         ];
 
 
+    }
+
+    public function saveWhatsappConfig(Request $request)
+    {
+        $request->validate([
+            'api_url' => 'required|url',
+            'api_token' => 'required'
+        ]);
+
+        try {
+            $config = WhatsappConfiguration::firstOrNew(['id' => 1]);
+            $config->fill($request->only(['api_url', 'api_token']));
+            $config->save();
+
+            return [
+                'success' => true,
+                'message' => 'Configuración guardada correctamente'
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    public function getWhatsappConfig()
+    {
+        try {
+            $config = WhatsappConfiguration::first();
+            return [
+                'success' => true,
+                'data' => $config
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    private function normalizeWhatsappNumber(string $number): string 
+    {
+        $cleaned = preg_replace('/[^0-9]/', '', $number);
+        
+        return !str_starts_with($cleaned, '57') ? '57' . $cleaned : $cleaned;
+    }
+
+    private function sendWhatsappRequest(string $endpoint, array $data, string $token) 
+    {
+        $ch = curl_init($endpoint);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => json_encode($data),
+            CURLOPT_SSL_VERIFYHOST => 0,
+            CURLOPT_SSL_VERIFYPEER => 0,
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+                'Accept: application/json',
+                "Authorization: Bearer {$token}"
+            ]
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
+
+        if ($error) {
+            throw new \Exception("Error de conexión: {$error}");
+        }
+
+        if ($httpCode !== 200) {
+            throw new \Exception("Error en la API (código {$httpCode}): {$response}");
+        }
+
+        return $response;
+    }
+
+    public function sendWhatsappPdf(Request $request) 
+    {
+        try {
+            $request->validate([
+                'number' => 'required',
+                'message' => 'required',
+                'pdf_base64' => 'required',
+                'filename' => 'required|string'
+            ]);
+
+            $config = WhatsappConfiguration::first();
+            
+            if (!$config || !$config->api_url || !$config->api_token) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se ha configurado la API de WhatsApp. Por favor configure la URL y el Token primero.'
+                ], 422);
+            }
+
+            $normalizedNumber = $this->normalizeWhatsappNumber($request->number);
+            
+            $endpoint = rtrim($config->api_url, '/') . '/api/message/send/pdf';
+            $payload = [
+                'number' => $normalizedNumber,
+                'message' => $request->message,
+                'file' => $request->pdf_base64,
+                'filename' => $request->filename
+            ];
+
+            $this->sendWhatsappRequest($endpoint, $payload, $config->api_token);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Mensaje enviado correctamente'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error WhatsApp: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 422);
+        }
     }
 
 }

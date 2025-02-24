@@ -454,7 +454,19 @@ if ($hostname) {
            Route::get('pos/status_configuration', 'Tenant\PosController@status_configuration');
            Route::get('pos/validate_stock/{item}/{quantity}', 'Tenant\PosController@validate_stock');
            Route::get('pos/records', 'Tenant\PosController@records');
+        
+        
+           //WhatsApp
+           Route::post('pos/whatsapp/config', 'Tenant\PosController@saveWhatsappConfig');
+           Route::get('pos/whatsapp/config', 'Tenant\PosController@getWhatsappConfig');
+           Route::post('pos/whatsapp/send', 'Tenant\PosController@sendWhatsappPdf');
+           Route::prefix('quotations')->group(function() {
+            Route::post('whatsapp/send', 'Tenant\PosController@sendWhatsappPdf');
+        });
 
+        Route::prefix('co-remissions')->group(function() {
+            Route::post('whatsapp/send', 'Tenant\PosController@sendWhatsappPdf');
+        });
 
 
            Route::get('cash', 'Tenant\CashController@index')->name('tenant.cash.index');

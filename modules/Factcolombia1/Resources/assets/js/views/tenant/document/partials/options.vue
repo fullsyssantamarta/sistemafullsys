@@ -46,19 +46,13 @@
                 <small class="form-control-feedback" v-if="errors.customer_email" v-text="errors.customer_email[0]"></small>
             </div>
         </div>
-        <!-- <div class="row mt-3">
+        <div class="row mt-3">
             <div class="col-md-12">
-                <el-input v-model="form.customer_phone">
-                    <template slot="prepend">+51</template>
-                        <el-button slot="append" @click="clickSendWhatsapp" >Enviar
-                            <el-tooltip class="item" effect="dark"  content="Es necesario tener aperturado Whatsapp web" placement="top-start">
-                                <i class="fab fa-whatsapp" ></i>
-                            </el-tooltip>
-                        </el-button>
+                <el-input v-model="form.whatsapp_number" placeholder="Número WhatsApp">
+                    <el-button slot="append" icon="el-icon-chat-dot-round" @click="clickSendWhatsapp" :loading="loadingWhatsapp">Enviar</el-button>
                 </el-input>
-                <small class="form-control-feedback" v-if="errors.customer_phone" v-text="errors.customer_phone[0]"></small>
             </div>
-        </div>  -->
+        </div>
         <span slot="footer" class="dialog-footer">
             <template v-if="showClose">
                 <el-button @click="clickClose">Cerrar</el-button>
@@ -82,7 +76,10 @@
                 errors: {},
                 form: {},
                 company: {},
-                locked_emission:{}
+                locked_emission:{},
+                loadingWhatsapp: false,
+                apiConfig: {},
+                whatsappError: null,
             }
         },
         async created() {
@@ -93,6 +90,9 @@
                         this.company = response.data.data
                     }
                 })
+        },
+        mounted() {
+            this.loadApiConfig();
         },
         methods: {
             clickDownload(download) {
@@ -136,6 +136,63 @@
 
                 window.open(`https://wa.me/51${this.form.customer_phone}?text=${this.form.message_text}`, '_blank');
 
+            },
+            async clickSendWhatsapp() {
+                if (!this.form.whatsapp_number) {
+                    this.$message.error('Ingrese un número de WhatsApp');
+                    return;
+                }
+
+                this.loadingWhatsapp = true;
+                this.whatsappError = null;
+                
+                try {
+                    const [pdfBase64] = await Promise.all([
+                        this.getPdfAsBase64(this.form.download_pdf)
+                    ]);
+
+                    const payload = {
+                        number: this.form.whatsapp_number,
+                        message: `Documento: ${this.form.number_full}`,
+                        pdf_base64: pdfBase64,
+                        filename: `documento_${this.form.number_full}.pdf`
+                    };
+
+                    const { data } = await this.$http.post('/pos/whatsapp/send', payload);
+
+                    if (data.success) {
+                        this.$message.success('Documento enviado por WhatsApp exitosamente');
+                    } else {
+                        throw new Error(data.message);
+                    }
+                } catch (error) {
+                    this.whatsappError = error.response?.data?.message || error.message;
+                    this.$message.error(this.whatsappError);
+                } finally {
+                    this.loadingWhatsapp = false;
+                }
+            },
+            loadApiConfig() {
+                const config = localStorage.getItem('pos_api_config')
+                if (config) {
+                    this.apiConfig = JSON.parse(config)
+                }
+            },
+            async getPdfAsBase64(url) {
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('Error al obtener el PDF');
+                    
+                    const blob = await response.blob();
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                        reader.readAsDataURL(blob);
+                    });
+                } catch (error) {
+                    console.error('Error al convertir PDF a base64:', error);
+                    throw error;
+                }
             },
             initForm() {
                 this.errors = {};
