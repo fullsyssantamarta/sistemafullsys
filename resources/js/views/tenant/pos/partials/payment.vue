@@ -459,7 +459,6 @@
             await this.initLStoPayment()
             await this.getTables()
             this.initFormPayment()
-            this.inputAmount()
             this.form.payments = []
             this.$eventHub.$on('reloadDataCardBrands', (card_brand_id) => {
                 this.reloadDataCardBrands(card_brand_id)
@@ -467,17 +466,9 @@
 
             this.$eventHub.$on('localSPayments', (payments) => {
                 this.payments = payments
-
-                //inciaalizo el pago el total
-                this.enter_amount = parseFloat( this.form.total)
-                this.enterAmount()
             })
 
             await this.getFormPosLocalStorage()
-
-            // await this.getConfigPrint()
-
-            // console.log(this.form.payments, this.payments)
         },
         mounted(){
         },
@@ -745,7 +736,7 @@
                     card_brand_id:null,
                     document_id:null,
                     sale_note_id:null,
-                    payment: this.form.total,
+                    payment: 0
                 }
 
                 this.form_cash_document = {
@@ -1134,26 +1125,26 @@
                 // Limpiar cargos y descuentos
                 this.form.allowance_charges = []
                 
-                // Reiniciar montos y diferencias
-                this.enter_amount = parseFloat(this.form.total)
-                this.amount = parseFloat(this.form.total)
-                this.difference = 0
+                // Inicializar todo en 0
+                this.enter_amount = 0
+                this.amount = 0
+                this.difference = -this.form.total
                 
                 // Reiniciar pagos
                 this.form.payments = []
                 this.payments = []
                 
-                // Inicializar pago en efectivo por defecto
+                // Pago por defecto en 0
                 const defaultPayment = {
                     payment_method_type_id: '01',
-                    payment: parseFloat(this.form.total),
+                    payment: 0,
                     date_of_payment: moment().format('YYYY-MM-DD')
                 }
                 this.form.payments.push(defaultPayment)
                 this.payments.push(defaultPayment)
                 
                 // Actualizar button_payment según la diferencia
-                this.button_payment = this.difference < 0
+                this.button_payment = true
                 
                 // Recalcular totales
                 await this.enterAmount()
