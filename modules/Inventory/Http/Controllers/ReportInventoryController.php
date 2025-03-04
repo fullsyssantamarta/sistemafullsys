@@ -91,14 +91,11 @@ class ReportInventoryController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function pdf(Request $request) {
-
         $company = Company::first();
         $establishment = Establishment::first();
         ini_set('max_execution_time', 0);
         [$relation, $id] = explode('_', $request->filter) + [null, null];
-
-        if($request->warehouse_id && $request->warehouse_id != 'all')
-        {
+        if($request->warehouse_id && $request->warehouse_id != 'all'){
             $records = ItemWarehouse::with(['item'])
                 ->where('warehouse_id', $request->warehouse_id)
                 ->whereFilterDate($request->date)
@@ -121,10 +118,8 @@ class ReportInventoryController extends Controller
                 ->latest()
                 ->get();
         }
-
         $pdf = PDF::loadView('inventory::reports.inventory.report_pdf', compact("records", "company", "establishment"))->setPaper('a4', 'landscape');
         $filename = 'Reporte_Inventario'.date('YmdHis');
-
         return $pdf->download($filename.'.pdf');
     }
 
@@ -136,10 +131,9 @@ class ReportInventoryController extends Controller
     public function excel(Request $request) {
         $company = Company::first();
         $establishment = Establishment::first();
+        ini_set('max_execution_time', 0);
         [$relation, $id] = explode('_', $request->filter) + [null, null];
-
-        if($request->warehouse_id && $request->warehouse_id != 'all')
-        {
+        if($request->warehouse_id && $request->warehouse_id != 'all'){
             $records = ItemWarehouse::with(['item'])
                 ->where('warehouse_id', $request->warehouse_id)
                 ->whereFilterDate($request->date)
@@ -162,12 +156,10 @@ class ReportInventoryController extends Controller
             ->latest()
             ->get();
         }
-
         return (new InventoryExport)
             ->records($records)
             ->company($company)
             ->establishment($establishment)
             ->download('ReporteInv'.Carbon::now().'.xlsx');
     }
-
 }

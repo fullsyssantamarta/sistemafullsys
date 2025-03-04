@@ -1464,6 +1464,7 @@ class DocumentController extends Controller
 
     public function sendEmailCoDocument(Request $request)
     {
+        \Log::debug("XXXXXXXXXXXXXX");
         $company = ServiceTenantCompany::firstOrFail();
         $sucursal = \App\Models\Tenant\Establishment::where('id', auth()->user()->establishment_id)->first();
 //        $send= (object)['number'=> $request->number, 'email'=> $request->email, 'number_full'=> $request->number_full];

@@ -38,7 +38,7 @@ class DocumentRequest extends FormRequest
             'currency_id' => 'required|exists:tenant.co_currencies,id',
             'date_issue' => 'required|date',
             'date_expiration' => 'nullable|date',
-            'observation' => 'nullable|string|max:255',
+            'observation' => 'nullable|string',
             'reference_id' => 'nullable|exists:tenant.documents,id',
             'note_concept_id' => 'nullable|exists:tenant.co_note_concepts,id',
             'sale' => 'required|numeric|between:0.00,9999999999.99',
