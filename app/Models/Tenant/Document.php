@@ -666,7 +666,8 @@ class Document extends ModelTenant
                                 'tax',
                                 'total_tax',
                                 'subtotal',
-                                'total'
+                                'total',
+                                'discount' // Añadir este campo
                             ]);
                         },
                         'type_document' => function($type_document){
@@ -694,10 +695,27 @@ class Document extends ModelTenant
                         'currency_id',
                         'sale',
                         'total_tax',
-                        'subtotal'
+                        'subtotal',
+                        'total_discount' // Asegurarse que este campo esté incluido
                     ]);
     }
 
+    /**
+     * Devuelve el total de descuento formateado
+     */
+    public function getTotalDiscountFormatted()
+    {
+        return $this->generalApplyNumberFormat($this->total_discount ?? 0);
+    }
+
+    /**
+     * Devuelve el total de descuento global formateado
+     */
+    public function getGlobalDiscountFormatted()
+    {
+        // El total_discount es el descuento global
+        return $this->generalApplyNumberFormat($this->total_discount ?? 0);
+    }
 
     /**
      *
@@ -730,16 +748,55 @@ class Document extends ModelTenant
      */
     public function getDataReportSalesBook()
     {
-        return [
-            'date_of_issue' => $this->date_of_issue->format('d/m/Y'),
-            'number_full' => $this->number_full,
-            'type_document_name' => $this->type_document->name,
-            'currency_code' => $this->currency->code,
-            'customer_name' => $this->customer->name,
-            'net_total' => $this->generalApplyNumberFormat($this->sale),
-            'total' => $this->generalApplyNumberFormat($this->total),
-            'total_exempt' => $this->generalApplyNumberFormat($this->getTotalExempt()),
-        ];
+        try {
+            $customer_data = $this->customer;
+            if (!is_object($customer_data)) {
+                $customer_data = (object)[
+                    'name' => '',
+                    'address' => '',
+                    'number' => ''
+                ];
+            }
+
+            // Si la dirección no existe o es null, asignar cadena vacía
+            $customer_address = '';
+            if (isset($customer_data->address)) {
+                $customer_address = $customer_data->address ?: '';
+            }
+            
+            return [
+                'date_of_issue' => $this->date_of_issue->format('d/m/Y'),
+                'number_full' => $this->number_full,
+                'type_document_name' => $this->type_document->name,
+                'currency_code' => $this->currency->code,
+                'customer_name' => $customer_data->name ?? '',
+                'customer_number' => $customer_data->number ?? '', // Agregamos el número de identificación
+                'customer_address' => $customer_address,
+                'total_discount' => $this->getGlobalDiscountFormatted(),
+                'net_total' => $this->generalApplyNumberFormat($this->sale),
+                'total' => $this->generalApplyNumberFormat($this->total),
+                'total_exempt' => $this->generalApplyNumberFormat($this->getTotalExempt()),
+                'consolidated_taxes' => $this->getTotalsByTaxConsolidated(),
+            ];
+        } catch (\Exception $e) {
+            return [
+                'date_of_issue' => $this->date_of_issue->format('d/m/Y'),
+                'number_full' => $this->number_full,
+                'type_document_name' => $this->type_document->name,
+                'currency_code' => $this->currency->code,
+                'customer_name' => '',
+                'customer_number' => '', // Agregamos el número de identificación
+                'customer_address' => '',
+                'total_discount' => $this->getGlobalDiscountFormatted(),
+                'net_total' => $this->generalApplyNumberFormat($this->sale),
+                'total' => $this->generalApplyNumberFormat($this->total),
+                'total_exempt' => $this->generalApplyNumberFormat($this->getTotalExempt()),
+                'consolidated_taxes' => [
+                    'total_base' => '0.00',
+                    'total_tax' => '0.00'
+                ],
+            ];
+        }
     }
 
 
@@ -819,5 +876,28 @@ class Document extends ModelTenant
         if($establishment_id) $query->where('establishment_id', $establishment_id);
 
         return $query;
+    }
+
+    /**
+     * Obtiene los totales consolidados de impuestos
+     */
+    public function getTotalsByTaxConsolidated()
+    {
+        $totals = [
+            'total_base' => 0,
+            'total_tax' => 0
+        ];
+
+        foreach($this->items as $item) {
+            if(isset($item->tax) && !$item->tax->is_retention) {
+                $totals['total_base'] += $item->total - $item->total_tax;
+                $totals['total_tax'] += $item->total_tax;
+            }
+        }
+
+        return [
+            'total_base' => $this->generalApplyNumberFormat($totals['total_base']),
+            'total_tax' => $this->generalApplyNumberFormat($totals['total_tax'])
+        ];
     }
 }

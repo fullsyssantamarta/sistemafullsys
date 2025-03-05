@@ -442,9 +442,6 @@ export default {
         },
         submit() {
             if (!this.showAdditionalFields) {
-                this.form.country_id = 47;
-                this.form.department_id = 783;
-                this.form.city_id = 12890;
                 this.form.telephone = '8888888888';
                 this.form.address = 'CR 00 00 00 BRR N/A';
                 this.form.code = this.form.number;

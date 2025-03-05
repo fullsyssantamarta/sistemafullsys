@@ -1,7 +1,6 @@
 <template>
     <div>
-        <el-dialog :title="titleDialog" :visible="showDialog" @open="create" width="30%"
-                >
+        <el-dialog :title="titleDialog" :visible="showDialog" @open="create" width="30%">
             <div class="row">
                 <div class="col-lg-4 col-md-4 col-sm-4 text-center font-weight-bold">
                     <p>Imprimir A4</p>
@@ -38,17 +37,30 @@
                 </div>
             </div>
 
+            <div class="row mt-4">
+                <div class="col-lg-12 col-md-12 col-sm-12">
+                    <div class="form-group">
+                        <label class="control-label">Enviar por WhatsApp</label>
+                        <div class="input-group">
+                            <el-input v-model="whatsapp_number" placeholder="Número WhatsApp">
+                                <el-button slot="append" icon="el-icon-chat-dot-round" @click="clickSendWhatsapp" :loading="loadingWhatsapp">
+                                    Enviar
+                                </el-button>
+                            </el-input>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-            <!-- <span slot="footer" class="dialog-footer row"> -->
             <span slot="footer" class="dialog-footer">
-                <!-- <div class="col-md-6">
+<!-- <div class="col-md-6">
                     <el-input v-model="form.customer_email">
                         <el-button slot="append" icon="el-icon-message"   @click="clickSendEmail" :loading="loading">Enviar</el-button>
                     </el-input>
                 </div> -->
                 <!-- <div class="col-md-6">  -->
-                    <el-button @click="clickClose">Cerrar</el-button>
-                <!-- </div> -->
+                <el-button @click="clickClose">Cerrar</el-button>
+<!-- </div> -->
 
             </span>
         </el-dialog>
@@ -69,7 +81,8 @@
                 resource: 'quotations',
                 form: {},
                 loading: false,
-
+                whatsapp_number: "",
+                loadingWhatsapp: false,
             }
         },
         created() {
@@ -123,6 +136,56 @@
                 .then(() => {
                     this.loading = false
                 })
+            },
+
+            async getPdfAsBase64(url) {
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('Error al obtener el PDF');
+                    
+                    const blob = await response.blob();
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                        reader.readAsDataURL(blob);
+                    });
+                } catch (error) {
+                    console.error('Error al convertir PDF a base64:', error);
+                    throw error;
+                }
+            },
+
+            async clickSendWhatsapp() {
+                if (!this.whatsapp_number) {
+                    this.$message.error('Ingrese un número de WhatsApp');
+                    return;
+                }
+
+                this.loadingWhatsapp = true;
+                
+                try {
+                    const pdfUrl = `/${this.resource}/print/${this.form.external_id}/a4`;
+                    const pdfBase64 = await this.getPdfAsBase64(pdfUrl);
+
+                    const payload = {
+                        number: this.whatsapp_number,
+                        message: `Cotización: ${this.form.identifier}`,
+                        pdf_base64: pdfBase64,
+                        filename: `cotizacion_${this.form.identifier}.pdf`
+                    };
+
+                    const { data } = await this.$http.post('/pos/whatsapp/send', payload);
+
+                    if (data.success) {
+                        this.$message.success('Cotización enviada por WhatsApp exitosamente');
+                    } else {
+                        throw new Error(data.message);
+                    }
+                } catch (error) {
+                    this.$message.error(error.response?.data?.message || error.message);
+                } finally {
+                    this.loadingWhatsapp = false;
+                }
             }
         }
     }

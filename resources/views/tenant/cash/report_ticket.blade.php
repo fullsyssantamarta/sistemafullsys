@@ -254,7 +254,7 @@
                 <th>Egreso</th>
             </tr>
             <tr>
-                <td>${{ number_format($cashEgress, 2, '.', ',') }}</td>
+                <td>${{ number_format($cashEgress, 2) }}</td>
             </tr>
         </table>
 
@@ -281,8 +281,7 @@
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $item->name }}</td>
-                                {{-- <td>${{ number_format($item->sum, 2, '.', ',') }}</td> --}}
-                                <td></td>
+                                <td>${{ number_format($item->sum, 2, '.', ',') }}</td>
                             </tr>
                         @endforeach
                     </tbody>

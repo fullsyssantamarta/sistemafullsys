@@ -12,13 +12,13 @@
         </div>
 
         <div class="row">
-            <div class="col-lg-12 col-md-12 col-sm-12 text-center font-weight-bold mt-3">
+            <div class="col-lg-6 col-md-6 col-sm-12 text-center font-weight-bold mt-3">
                 <button type="button" class="btn btn-lg btn-info waves-effect waves-light" @click="clickToPrint('a4')">
                     <i class="fa fa-print"></i>
                 </button>
                 <p>A4</p>
             </div>
-            <div class="col-lg-12 col-md-12 col-sm-12 text-center font-weight-bold mt-3">
+            <div class="col-lg-6 col-md-6 col-sm-12 text-center font-weight-bold mt-3">
                 <button type="button" class="btn btn-lg btn-info waves-effect waves-light" @click="clickToPrint('ticket')">
                     <i class="fa fa-print"></i>
                 </button>
@@ -26,14 +26,33 @@
             </div>
         </div>
 
+        <div class="row mt-4">
+            <div class="col-lg-12 col-md-12 col-sm-12">
+                <div class="form-group">
+                    <label class="control-label">Enviar por WhatsApp</label>
+                    <div class="input-group">
+                        <el-input v-model="whatsapp_number" placeholder="Número WhatsApp">
+                            <el-button slot="append" icon="el-icon-chat-dot-round" @click="clickSendWhatsapp" :loading="loadingWhatsapp">
+                                Enviar
+                            </el-button>
+                        </el-input>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <span slot="footer" class="dialog-footer">
-            <template v-if="showClose">
-                <el-button @click="clickClose">Cerrar</el-button>
-            </template>
-            <template v-else>
-                <el-button class="list" @click="clickFinalize">Ir al listado</el-button>
-                <el-button type="primary" @click="clickNewDocument">Nueva remisión</el-button>
-            </template>
+            <div class="row w-100">
+                <div class="col-md-12 text-right">
+                    <template v-if="showClose">
+                        <el-button @click="clickClose">Cerrar</el-button>
+                    </template>
+                    <template v-else>
+                        <el-button class="list" @click="clickFinalize">Ir al listado</el-button>
+                        <el-button type="primary" @click="clickNewDocument">Nueva remisión</el-button>
+                    </template>
+                </div>
+            </div>
         </span>
     </el-dialog>
 </template>
@@ -49,7 +68,9 @@
                 errors: {},
                 form: {},
                 company: {},
-                locked_emission:{}
+                locked_emission:{},
+                whatsapp_number: "",
+                loadingWhatsapp: false,
             }
         },
         async created() {
@@ -113,6 +134,55 @@
                     .then(() => {
                         this.loading = false
                     })
+            },
+            async getPdfAsBase64(url) {
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('Error al obtener el PDF');
+                    
+                    const blob = await response.blob();
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                        reader.readAsDataURL(blob);
+                    });
+                } catch (error) {
+                    console.error('Error al convertir PDF a base64:', error);
+                    throw error;
+                }
+            },
+
+            async clickSendWhatsapp() {
+                if (!this.whatsapp_number) {
+                    this.$message.error('Ingrese un número de WhatsApp');
+                    return;
+                }
+
+                this.loadingWhatsapp = true;
+                
+                try {
+                    const pdfUrl = `/${this.resource}/print/${this.form.external_id}/a4`;
+                    const pdfBase64 = await this.getPdfAsBase64(pdfUrl);
+
+                    const payload = {
+                        number: this.whatsapp_number,
+                        message: `Remisión: ${this.form.number_full}`,
+                        pdf_base64: pdfBase64,
+                        filename: `remision_${this.form.number_full}.pdf`
+                    };
+
+                    const { data } = await this.$http.post('/pos/whatsapp/send', payload);
+
+                    if (data.success) {
+                        this.$message.success('Documento enviado por WhatsApp exitosamente');
+                    } else {
+                        throw new Error(data.message);
+                    }
+                } catch (error) {
+                    this.$message.error(error.response?.data?.message || error.message);
+                } finally {
+                    this.loadingWhatsapp = false;
+                }
             },
             clickFinalize() {
                 location.href = `/${this.resource}`

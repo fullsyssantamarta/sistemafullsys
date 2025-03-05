@@ -24,12 +24,17 @@
 
             </div>
             <span slot="footer" class="dialog-footer row">
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <el-input v-model="form.customer_email">
-                        <el-button slot="append" icon="el-icon-message"   @click="clickSendEmail" :loading="loading">Enviar</el-button>
+                        <el-button slot="append" icon="el-icon-message" @click="clickSendEmail" :loading="loading">Enviar</el-button>
                     </el-input>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
+                    <el-input v-model="form.whatsapp_number" placeholder="Número WhatsApp">
+                        <el-button slot="append" icon="el-icon-chat-dot-round" @click="clickSendWhatsapp" :loading="loadingWhatsapp">Enviar</el-button>
+                    </el-input>
+                </div>
+                <div class="col-md-4">
                     <template v-if="originPos">
                         <el-button  type="primary"  class="float-right" @click="clickNewSale">Nueva venta</el-button>
                     </template>
@@ -71,11 +76,17 @@
                 documentNewId: null,
                 activeName: 'third',
                 enable_qz_tray: false,
+                loadingWhatsapp: false,
+                apiConfig: {},
+                whatsappError: null,
             }
         },
         async created() {
             this.initForm()
             await this.getConfigPrint()
+        },
+        mounted() {
+            this.loadApiConfig()
         },
         methods: {
             async getConfigPrint() {
@@ -130,6 +141,71 @@
                     print_html: null,
                     series:null,
                     number:null,
+                    whatsapp_number: null,
+                }
+            },
+            async getPdfAsBase64(url) {
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('Error al obtener el PDF');
+                    
+                    const blob = await response.blob();
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                        reader.readAsDataURL(blob);
+                    });
+                } catch (error) {
+                    console.error('Error al convertir PDF a base64:', error);
+                    throw error;
+                }
+            },
+
+            async clickSendWhatsapp() {
+                if (!this.form.whatsapp_number) {
+                    this.$message.error('Ingrese un número de WhatsApp');
+                    return;
+                }
+
+                this.loadingWhatsapp = true;
+                this.whatsappError = null;
+                
+                try {
+                    const pdfUrl = {
+                        first: this.form.print_a4,
+                        second: this.form.print_a5,
+                        third: this.form.print_ticket
+                    }[this.activeName] || this.form.print_ticket;
+
+                    const [pdfBase64] = await Promise.all([
+                        this.getPdfAsBase64(pdfUrl)
+                    ]);
+
+                    const payload = {
+                        number: this.form.whatsapp_number,
+                        message: `Documento POS: ${this.form.serie}-${this.form.number}`,
+                        pdf_base64: pdfBase64,
+                        filename: `documento_${this.form.serie}-${this.form.number}.pdf`
+                    };
+
+                    const { data } = await this.$http.post('/pos/whatsapp/send', payload);
+
+                    if (data.success) {
+                        this.$message.success('Documento enviado por WhatsApp exitosamente');
+                    } else {
+                        throw new Error(data.message);
+                    }
+                } catch (error) {
+                    this.whatsappError = error.response?.data?.message || error.message;
+                    this.$message.error(this.whatsappError);
+                } finally {
+                    this.loadingWhatsapp = false;
+                }
+            },
+            loadApiConfig() {
+                const config = localStorage.getItem('pos_api_config')
+                if (config) {
+                    this.apiConfig = JSON.parse(config)
                 }
             },
             create() {

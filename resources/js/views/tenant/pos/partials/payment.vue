@@ -453,11 +453,12 @@
             }
         },
         async created() {
-
+            // Reiniciar el descuento antes de cualquier otra operación
+            await this.resetDiscount()
+            
             await this.initLStoPayment()
             await this.getTables()
             this.initFormPayment()
-            this.inputAmount()
             this.form.payments = []
             this.$eventHub.$on('reloadDataCardBrands', (card_brand_id) => {
                 this.reloadDataCardBrands(card_brand_id)
@@ -465,17 +466,9 @@
 
             this.$eventHub.$on('localSPayments', (payments) => {
                 this.payments = payments
-
-                //inciaalizo el pago el total
-                this.enter_amount = parseFloat( this.form.total)
-                this.enterAmount()
             })
 
             await this.getFormPosLocalStorage()
-
-            // await this.getConfigPrint()
-
-            // console.log(this.form.payments, this.payments)
         },
         mounted(){
         },
@@ -526,25 +519,50 @@
             changeEnabledDiscount() {
                 if (!this.form.hasOwnProperty('total_without_discount')) {
                     this.form.total_without_discount = parseFloat(this.form.total)
-                }
+                }                
                 if (!this.enabled_discount) {
                     this.discount_amount = 0
                     this.form.total = parseFloat(this.form.total_without_discount)
+                    this.form.allowance_charges = []
+                    this.enter_amount = parseFloat(this.form.total)
                     this.enterAmount()
                     this.initFormPayment()
+                } else {
+                    if (this.discount_amount > 0) {
+                        this.inputDiscountAmount()
+                    }
                 }
             },
-            async inputDiscountAmount(){
-                if(this.discount_amount === 0 && this.form.total_without_discount != null) {
+            async inputDiscountAmount() {
+                if (!this.enabled_discount) {
+                    this.discount_amount = 0
+                    return
+                }
+
+                if (this.discount_amount === 0 && this.form.total_without_discount != null) {
                     this.form.total = parseFloat(this.form.total_without_discount)
                 }
                 if (this.discount_amount && !isNaN(this.discount_amount) && parseFloat(this.discount_amount) > 0) {
-                    if (parseFloat(this.discount_amount) >= this.form.total) {
-                        return this.$message.error("El monto de descuento debe ser menor al total de venta")
+                    const discount = parseFloat(this.discount_amount)
+                    
+                    if (discount >= this.form.total_without_discount) {
+                        this.$message.error("El monto de descuento debe ser menor al total de venta")
+                        this.discount_amount = 0
+                        return
                     }
                     this.form.allowance_charges = []
-                    this.form.allowance_charges = await this.createAllowanceCharge(this.discount_amount, this.form.total_without_discount);
-                    this.form.total = parseFloat(this.form.total_without_discount - this.discount_amount)
+                    this.form.allowance_charges = await this.createAllowanceCharge(
+                        discount, 
+                        this.form.total_without_discount
+                    )
+                    this.form.total = parseFloat(this.form.total_without_discount - discount)
+                    this.enter_amount = parseFloat(this.form.total)
+                    this.enterAmount()
+                    this.initFormPayment()
+                } else {
+                    // Si el descuento no es válido, restaurar al total original
+                    this.form.total = parseFloat(this.form.total_without_discount)
+                    this.form.allowance_charges = []
                     this.enter_amount = parseFloat(this.form.total)
                     this.enterAmount()
                     this.initFormPayment()
@@ -718,7 +736,7 @@
                     card_brand_id:null,
                     document_id:null,
                     sale_note_id:null,
-                    payment: this.form.total,
+                    payment: 0
                 }
 
                 this.form_cash_document = {
@@ -1093,7 +1111,52 @@
                 else
                     return amount.toString()+".00";
                 },
-            }
+            async resetDiscount() {
+                // Reiniciar flags y montos de descuento
+                this.enabled_discount = false
+                this.discount_amount = 0
+                
+                // Restaurar total original si existe descuento previo
+                if (this.form.hasOwnProperty('total_without_discount')) {
+                    this.form.total = parseFloat(this.form.total_without_discount)
+                    delete this.form.total_without_discount
+                }
+                
+                // Limpiar cargos y descuentos
+                this.form.allowance_charges = []
+                
+                // Inicializar todo en 0
+                this.enter_amount = 0
+                this.amount = 0
+                this.difference = -this.form.total
+                
+                // Reiniciar pagos
+                this.form.payments = []
+                this.payments = []
+                
+                // Pago por defecto en 0
+                const defaultPayment = {
+                    payment_method_type_id: '01',
+                    payment: 0,
+                    date_of_payment: moment().format('YYYY-MM-DD')
+                }
+                this.form.payments.push(defaultPayment)
+                this.payments.push(defaultPayment)
+                
+                // Actualizar button_payment según la diferencia
+                this.button_payment = true
+                
+                // Recalcular totales
+                await this.enterAmount()
+                
+                // Actualizar localStorage
+                this.$eventHub.$emit('eventSetFormPosLocalStorage', this.form)
+                await this.lStoPayment()
+                
+                // Reiniciar formulario de pago
+                this.initFormPayment()
+            },
+        }
 
     }
 </script>

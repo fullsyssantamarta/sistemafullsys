@@ -101,7 +101,6 @@
                                                 Nueva Nota Contable Sin Referencia A Factura Electronica
                                             </a>
                                         </li>
-
                                         {{-- <li class="{{ ($path[0] === 'documents' && $path[1] === 'create')?'nav-active':'' }}">
                                             <a class="nav-link" href="{{route('tenant.documents.create')}}">
                                                 Nuevo comprobante electrónico

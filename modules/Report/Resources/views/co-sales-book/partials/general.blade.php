@@ -1,30 +1,22 @@
-
-<table class="">
+<table class="combined-table">
     <thead>
         <tr>
-            <th colspan="7"></th>
-
-            @foreach($taxes as $tax)
-                <th colspan="2">
-                    IMPUESTO #{{ $loop->iteration }}
-                    <br>
-                    {{ $tax->name }} - ({{ $tax->rate }}%)
-                </th>
-            @endforeach
+            <th colspan="6">Información Básica</th>
+            <th colspan="6">Detalles Financieros</th>
         </tr>
         <tr>
-            <th>F. Emisión</th>
-            <th>Nro/Doc</th>
-            <th>Nombre</th>
-            <th>Moneda</th>
-            <th>Total/Neto</th>
-            <th>Total <br>+<br> Impuesto</th>
+            <th>FECHA</th>
+            <th>TIPO DOC</th>
+            <th>PREFIJO</th>
+            <th>IDENTIFICACIÓN</th>
+            <th>NOMBRE</th>
+            <th>DIRECCIÓN</th>
+            <th>TOTAL BASE</th>
             <th>Total/Excento</th>
-
-            @foreach($taxes as $tax)
-                <th>Base</th>
-                <th>Impuesto</th>
-            @endforeach
+            <th>Impuestos</th>
+            <th>IVA Total</th>
+            <th>Descuento</th>
+            <th>Total pagar</th>
         </tr>
     </thead>
     <tbody>
@@ -32,47 +24,64 @@
             $total = 0;
             $net_total = 0;
             $total_exempt = 0;
+            $total_discount = 0;
+            $total_tax_base = 0;
+            $total_tax_amount = 0;
         @endphp
+
         @foreach($records as $value)
             @php
                 $row = $value->getDataReportSalesBook();
-                $total = $total + $row['total'];
-                $net_total = $net_total + $row['net_total'];
-                $total_exempt = $total_exempt + $row['total_exempt'];
+                $total += $row['total'];
+                $net_total += $row['net_total'];
+                $total_exempt += $row['total_exempt'];
+                $total_discount += $row['total_discount'] ?? 0;
+
+                // Obtener nombres de impuestos
+                $tax_names = collect($value->items)
+                    ->pluck('tax.name')
+                    ->unique()
+                    ->implode(', ');
+
+                // Calcular totales de impuestos por documento
+                $tax_totals = [
+                    'base' => 0,
+                    'tax' => 0
+                ];
+                
+                foreach($taxes as $tax) {
+                    $item_values = $value->getItemValuesByTax($tax->id);
+                    $tax_totals['base'] += floatval(str_replace(',', '', $item_values['taxable_amount']));
+                    $tax_totals['tax'] += floatval(str_replace(',', '', $item_values['tax_amount']));
+                }
+                
+                $total_tax_base += $tax_totals['base'];
+                $total_tax_amount += $tax_totals['tax'];
             @endphp
             <tr>
                 <td class="celda">{{ $row['date_of_issue'] }}</td>
-                <td class="celda">{{$row['type_document_name']}} <br/> {{ $row['number_full'] }}</td>
-                <td class="celda">{{ $row['customer_name'] }}</td>
-                <td class="celda">{{ $row['currency_code'] }}</td>
+                <td class="celda">{{ $row['type_document_name'] }}</td>
+                <td class="celda">{{ $row['number_full'] }}</td>
+                <td class="celda">{{ $row['customer_number'] ?? '' }}</td>
+                <td class="celda">{{ $row['customer_name'] ?? '' }}</td>
+                <td class="celda">{{ $row['customer_address'] ?? '' }}</td>
                 <td class="celda text-right-td">{{ $row['net_total'] }}</td>
+                <td class="celda text-right-td">{{ $row['total_exempt'] }}</td>
+                <td class="celda">{{ $tax_names }}</td>
+                <td class="celda text-right-td">{{ number_format($tax_totals['tax'], 2) }}</td>
+                <td class="celda text-right-td">{{ $row['total_discount'] ?? '0.00' }}</td>
                 <td class="celda text-right-td">{{ $row['total'] }}</td>
-                <td class="celda text-right-td"> {{ $row['total_exempt'] }} </td>
-
-                @foreach($taxes as $tax)
-
-                    @php
-                        $item_values = $value->getItemValuesByTax($tax->id);
-                    @endphp
-
-                    <td class="celda text-right-td">{{ $item_values['taxable_amount'] }}</td>
-                    <td class="celda text-right-td">{{ $item_values['tax_amount'] }}</td>
-
-                @endforeach
             </tr>
         @endforeach
+
         <tr>
-            <th colspan="4" class="celda text-right-td">TOTALES</th>
-            <th>{{ $net_total }}</th>
-            <th>{{ $total }}</th>
-            <th>{{ $total_exempt }}</th>
-            @foreach($taxes as $tax)
-                <th></th>
-                <th></th>
-            @endforeach
+            <th colspan="6" class="celda text-right-td">TOTALES</th>
+            <th>{{ number_format($net_total, 2) }}</th>
+            <th>{{ number_format($total_exempt, 2) }}</th>
+            <th></th>
+            <th>{{ number_format($total_tax_amount, 2) }}</th>
+            <th>{{ number_format($total_discount, 2) }}</th>
+            <th>{{ number_format($total, 2) }}</th>
         </tr>
     </tbody>
-</table>
-<table>
-
 </table>

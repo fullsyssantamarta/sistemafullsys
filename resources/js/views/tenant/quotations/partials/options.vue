@@ -43,7 +43,7 @@
       </div>
       <br />
       <div class="row" v-show="!showGenerate">
-        <div class="col-md-12">
+        <div class="col-md-6">
           <el-input v-model="customer_email">
             <el-button
               slot="append"
@@ -52,7 +52,16 @@
               :loading="loading"
             >Enviar</el-button>
           </el-input>
-          <!--<small class="form-control-feedback" v-if="errors.customer_email" v-text="errors.customer_email[0]"></small> -->
+        </div>
+        <div class="col-md-6">
+          <el-input v-model="whatsapp_number" placeholder="Número WhatsApp">
+            <el-button
+              slot="append"
+              icon="el-icon-chat-dot-round"
+              @click="clickSendWhatsapp"
+              :loading="loadingWhatsapp"
+            >Enviar</el-button>
+          </el-input>
         </div>
       </div>
       <br />
@@ -227,7 +236,10 @@ export default {
       is_document_type_invoice: true,
       payment_destinations:  [],
       loading_search: false,
-      type_documents: []
+      type_documents: [],
+      whatsapp_number: "",
+      loadingWhatsapp: false,
+      whatsappError: null,
     };
   },
 
@@ -703,7 +715,57 @@ export default {
         else
             return amount.toString()+".00";
         },
-    }
+    async getPdfAsBase64(url) {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Error al obtener el PDF');
+        
+        const blob = await response.blob();
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result.split(',')[1]);
+          reader.readAsDataURL(blob);
+        });
+      } catch (error) {
+        console.error('Error al convertir PDF a base64:', error);
+        throw error;
+      }
+    },
 
+    async clickSendWhatsapp() {
+      if (!this.whatsapp_number) {
+        this.$message.error('Ingrese un número de WhatsApp');
+        return;
+      }
+
+      this.loadingWhatsapp = true;
+      this.whatsappError = null;
+      
+      try {
+        const pdfUrl = `/${this.resource}/print/${this.form.external_id}/a4`;
+        const pdfBase64 = await this.getPdfAsBase64(pdfUrl);
+
+        const payload = {
+          number: this.whatsapp_number,
+          message: `Cotización: ${this.form.identifier}`,
+          pdf_base64: pdfBase64,
+          filename: `cotizacion_${this.form.identifier}.pdf`
+        };
+
+        const { data } = await this.$http.post('/pos/whatsapp/send', payload);
+
+        if (data.success) {
+          this.$message.success('Cotización enviada por WhatsApp exitosamente');
+        } else {
+          throw new Error(data.message);
+        }
+      } catch (error) {
+        this.whatsappError = error.response?.data?.message || error.message;
+        this.$message.error(this.whatsappError);
+      } finally {
+        this.loadingWhatsapp = false;
+      }
+    },
+  }
 }
 </script>

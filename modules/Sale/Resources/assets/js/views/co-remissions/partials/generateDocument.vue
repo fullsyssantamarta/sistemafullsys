@@ -110,6 +110,11 @@ export default {
         async assignDocument() {
             let q = this.record;
             this.document.remission_id = q.id,
+            // Agregar flag para items de remisión
+            this.document.items = q.items.map(item => ({
+                ...item,
+                from_remission: true // Agregamos esta bandera
+            }));
             this.document.date_issue = q.date_of_issue
             this.document.customer_id = q.customer_id
             this.document.customer = q.customer
@@ -120,7 +125,6 @@ export default {
             this.document.subtotal = q.subtotal
             this.document.total = q.total
             this.document.sale = q.sale
-            this.document.items = q.items
             this.document.taxes = q.taxes
             this.document.payments = q.payments;
             this.document.time_days_credit = 0,
