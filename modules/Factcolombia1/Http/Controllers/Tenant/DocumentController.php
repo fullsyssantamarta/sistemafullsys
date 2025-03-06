@@ -327,7 +327,7 @@ class DocumentController extends Controller
                     $person->dv = $customer->dv ? $customer->dv : NULL;
                     $person->type_regime_id = $customer->type_regime_id ? $customer->type_regime_id : 2;
                     $person->type_person_id = $customer->type_organization_id ? $customer->type_organization_id : 2;
-                    $person->type_obligation_id = $customer->type_liability_id ? $customer->type_liability_id : 117;
+                    $person->type_obligation_id = isset($customer->type_liability_id) ? $customer->type_liability_id : 117;
                     $person->identity_document_type_id = $customer->type_document_identification_id;
                     $person->number = $customer->identification_number;
                     $person->code = $customer->identification_number;
