@@ -28,29 +28,51 @@ trait ReportSalesBookTrait
         $data = [
             'documents' => [],
             'documents_pos' => [],
+            'credit_notes' => [],
+            'pos_credit_notes' => [],
             'records' => [],
         ];
 
         switch ($document_type_id)
         {
             case 'documents':
-                $documents = $this->getDocuments($request);
+            case 'credit_notes':
+            case 'debit_notes':
+                $documents = $this->getDocuments($request, $document_type_id);
                 $data['records'] = $documents;
                 $data['documents'] = $documents;
                 break;
 
             case 'documents_pos':
+                // Los documentos POS vienen de otra tabla
                 $documents_pos = $this->getDocumentPos($request);
                 $data['records'] = $documents_pos;
                 $data['documents_pos'] = $documents_pos;
                 break;
 
+            case 'pos_credit_notes':
+                $pos_credit_notes = $this->getDocuments($request, $document_type_id);
+                $data['records'] = $pos_credit_notes;
+                $data['pos_credit_notes'] = $pos_credit_notes;
+                break;
+
             default:
-                $documents = $this->getDocuments($request);
+                // Al mostrar todos, incluimos los 4 tipos
+                $documents = $this->getDocuments($request, 'documents');
+                $credit_notes = $this->getDocuments($request, 'credit_notes');
+                $debit_notes = $this->getDocuments($request, 'debit_notes');
                 $documents_pos = $this->getDocumentPos($request);
-                $data['records'] = $documents->concat($documents_pos)->sortBy('date_of_issue');
+                $pos_credit_notes = $this->getDocuments($request, 'pos_credit_notes');
+                
+                $data['records'] = $documents->concat($credit_notes)
+                                           ->concat($debit_notes)
+                                           ->concat($documents_pos)
+                                           ->concat($pos_credit_notes)
+                                           ->sortBy('date_of_issue');
                 $data['documents'] = $documents;
                 $data['documents_pos'] = $documents_pos;
+                $data['credit_notes'] = $credit_notes;
+                $data['pos_credit_notes'] = $pos_credit_notes;
                 break;
         }
 
@@ -61,11 +83,14 @@ trait ReportSalesBookTrait
     /**
      *
      * @param  Request $request
+     * @param  string|null $document_type
      * @return Collection
      */
-    private function getDocuments($request)
+    private function getDocuments($request, $document_type = null)
     {
-        return Document::filterReportSalesBook($request)->get();
+        return Document::filterReportSalesBook($request)
+                      ->filterInvoiceDocument($document_type)
+                      ->get();
     }
 
 

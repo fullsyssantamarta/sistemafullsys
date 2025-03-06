@@ -568,13 +568,34 @@ class Document extends ModelTenant
      * @param  Builder $query
      * @return Builder
      */
-    public function scopeFilterInvoiceDocument($query)
+    public function scopeFilterInvoiceDocument($query, $document_type = null)
     {
-        return $query->whereHas('type_document', function($q){
-            $q->where('code', TypeDocument::INVOICE_CODE);
+        if (!$document_type || $document_type === 'all') {
+            return $query;
+        }
+
+        $code = $this->getDocumentTypeCode($document_type);
+
+        return $query->whereHas('type_document', function($q) use ($code) {
+            $q->where('code', $code);
         });
     }
 
+    private function getDocumentTypeCode($document_type)
+    {
+        switch($document_type) {
+            case 'documents':
+                return TypeDocument::INVOICE_CODE;
+            case 'credit_notes':
+                return TypeDocument::CREDIT_NOTE_CODE;
+            case 'debit_notes':
+                return TypeDocument::DEBIT_NOTE_CODE;
+            case 'pos_credit_notes':
+                return TypeDocument::POS_CREDIT_NOTE_CODE;
+            default:
+                return TypeDocument::INVOICE_CODE;
+        }
+    }
 
     /**
      *
@@ -696,7 +717,7 @@ class Document extends ModelTenant
                         'sale',
                         'total_tax',
                         'subtotal',
-                        'total_discount' // Asegurarse que este campo esté incluido
+                        'total_discount' 
                     ]);
     }
 

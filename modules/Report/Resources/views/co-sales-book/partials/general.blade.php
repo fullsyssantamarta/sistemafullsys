@@ -32,10 +32,16 @@
         @foreach($records as $value)
             @php
                 $row = $value->getDataReportSalesBook();
-                $total += $row['total'];
-                $net_total += $row['net_total'];
-                $total_exempt += $row['total_exempt'];
-                $total_discount += $row['total_discount'] ?? 0;
+                $customer = $value->person;
+                
+                // Identificar notas de crédito por el nombre del documento
+                $is_credit_note = stripos($row['type_document_name'], 'crédit') !== false;
+                $multiplier = $is_credit_note ? -1 : 1;
+                
+                $total += floatval(str_replace(',', '', $row['total'])) * $multiplier;
+                $net_total += floatval(str_replace(',', '', $row['net_total'])) * $multiplier;
+                $total_exempt += floatval(str_replace(',', '', $row['total_exempt'])) * $multiplier;
+                $total_discount += floatval(str_replace(',', '', ($row['total_discount'] ?? 0))) * $multiplier;
 
                 // Obtener nombres de impuestos
                 $tax_names = collect($value->items)
@@ -51,26 +57,26 @@
                 
                 foreach($taxes as $tax) {
                     $item_values = $value->getItemValuesByTax($tax->id);
-                    $tax_totals['base'] += floatval(str_replace(',', '', $item_values['taxable_amount']));
-                    $tax_totals['tax'] += floatval(str_replace(',', '', $item_values['tax_amount']));
+                    $tax_totals['base'] += floatval(str_replace(',', '', $item_values['taxable_amount'])) * $multiplier;
+                    $tax_totals['tax'] += floatval(str_replace(',', '', $item_values['tax_amount'])) * $multiplier;
                 }
                 
                 $total_tax_base += $tax_totals['base'];
                 $total_tax_amount += $tax_totals['tax'];
             @endphp
-            <tr>
+            <tr class="{{ $is_credit_note ? 'credit-note' : '' }}">
                 <td class="celda">{{ $row['date_of_issue'] }}</td>
                 <td class="celda">{{ $row['type_document_name'] }}</td>
                 <td class="celda">{{ $row['number_full'] }}</td>
-                <td class="celda">{{ $row['customer_number'] ?? '' }}</td>
-                <td class="celda">{{ $row['customer_name'] ?? '' }}</td>
-                <td class="celda">{{ $row['customer_address'] ?? '' }}</td>
-                <td class="celda text-right-td">{{ $row['net_total'] }}</td>
-                <td class="celda text-right-td">{{ $row['total_exempt'] }}</td>
+                <td class="celda">{{ $customer ? $customer->number : ($row['customer_number'] ?? '') }}</td>
+                <td class="celda">{{ $customer ? $customer->name : ($row['customer_name'] ?? '') }}</td>
+                <td class="celda">{{ $customer ? $customer->address : ($row['customer_address'] ?? '') }}</td>
+                <td class="celda text-right-td">{{ number_format(floatval(str_replace(',', '', $row['net_total'])) * $multiplier, 2) }}</td>
+                <td class="celda text-right-td">{{ number_format(floatval(str_replace(',', '', $row['total_exempt'])) * $multiplier, 2) }}</td>
                 <td class="celda">{{ $tax_names }}</td>
                 <td class="celda text-right-td">{{ number_format($tax_totals['tax'], 2) }}</td>
-                <td class="celda text-right-td">{{ $row['total_discount'] ?? '0.00' }}</td>
-                <td class="celda text-right-td">{{ $row['total'] }}</td>
+                <td class="celda text-right-td">{{ number_format(floatval(str_replace(',', '', ($row['total_discount'] ?? 0))) * $multiplier, 2) }}</td>
+                <td class="celda text-right-td">{{ number_format(floatval(str_replace(',', '', $row['total'])) * $multiplier, 2) }}</td>
             </tr>
         @endforeach
 
