@@ -19,6 +19,12 @@
         @include('report::co-items-sold.partials.filters')
 
         @if($records->count() > 0)
+            @php
+                $grouped_records = $records->groupBy(function($item) {
+                    $data = $item->getDataReportSoldItems();
+                    return $data['type_name'] . '-' . $data['internal_id'] . '-' . $data['name'];
+                });
+            @endphp
             <div class="">
                 <div class="">
                     <table class="">
@@ -46,30 +52,59 @@
                                 $total_cost = 0;
                                 $total_discount = 0;
                             @endphp
-                            @foreach($records as $value)
+                            @foreach($grouped_records as $group)
                                 @php
-                                    $row = $value->getDataReportSoldItems();
-                                    $total += $row['total'] ?? 0;
-                                    $total_tax += $row['total_tax'] ?? 0;
-                                    $total_utility += $row['utility'] ?? 0;
-                                    $total_quantity += $row['quantity'] ?? 0;
-                                    $total_net_value += $row['net_value'] ?? 0;
-                                    $total_cost += $row['cost'] ?? 0;
-                                    $total_discount += $row['discount'] ?? 0;
+                                    $first_item = $group->first()->getDataReportSoldItems();
+                                    $quantity = $group->sum(function($item) {
+                                        $data = $item->getDataReportSoldItems();
+                                        return $data['quantity'] ?? 0;
+                                    });
+                                    $cost = $group->sum(function($item) {
+                                        $data = $item->getDataReportSoldItems();
+                                        return $data['cost'] ?? 0;
+                                    });
+                                    $net_value = $group->sum(function($item) {
+                                        $data = $item->getDataReportSoldItems();
+                                        return $data['net_value'] ?? 0;
+                                    });
+                                    $utility = $group->sum(function($item) {
+                                        $data = $item->getDataReportSoldItems();
+                                        return $data['utility'] ?? 0;
+                                    });
+                                    $total_tax_item = $group->sum(function($item) {
+                                        $data = $item->getDataReportSoldItems();
+                                        return $data['total_tax'] ?? 0;
+                                    });
+                                    $discount = $group->sum(function($item) {
+                                        $data = $item->getDataReportSoldItems();
+                                        return $data['discount'] ?? 0;
+                                    });
+                                    $total_item = $group->sum(function($item) {
+                                        $data = $item->getDataReportSoldItems();
+                                        return $data['total'] ?? 0;
+                                    });
+
+                                    $total += $total_item;
+                                    $total_tax += $total_tax_item;
+                                    $total_utility += $utility;
+                                    $total_quantity += $quantity;
+                                    $total_net_value += $net_value;
+                                    $total_cost += $cost;
+                                    $total_discount += $discount;
                                 @endphp
                                 <tr>
-                                    <td class="celda">{{ $row['type_name'] }}</td>
-                                    <td class="celda">{{ $row['internal_id'] }}</td>
-                                    <td class="celda">{{ $row['name'] }}</td>
-                                    <td class="celda">{{ $row['quantity'] }}</td>
-                                    <td class="celda">{{ $row['cost'] }}</td>
-                                    <td class="celda">{{ $row['net_value'] }}</td>
-                                    <td class="celda">{{ $row['utility'] }}</td>
-                                    <td class="celda">{{ $row['total_tax'] }}</td>
-                                    <td class="celda">{{ $row['discount'] ?? 0 }}</td>
-                                    <td class="celda">{{ $row['total'] }}</td>
+                                    <td class="celda">{{ $first_item['type_name'] }}</td>
+                                    <td class="celda">{{ $first_item['internal_id'] }}</td>
+                                    <td class="celda">{{ $first_item['name'] }}</td>
+                                    <td class="celda">{{ $quantity }}</td>
+                                    <td class="celda">{{ $cost }}</td>
+                                    <td class="celda">{{ $net_value }}</td>
+                                    <td class="celda">{{ $utility }}</td>
+                                    <td class="celda">{{ $total_tax_item }}</td>
+                                    <td class="celda">{{ $discount }}</td>
+                                    <td class="celda">{{ $total_item }}</td>
                                 </tr>
-                            @endforEach
+                            @endforeach
                             <tr>
                                 <td colspan="3" class="celda text-right-td">TOTALES </td>
                                 <td class="celda">{{ $total_quantity }}</td>
