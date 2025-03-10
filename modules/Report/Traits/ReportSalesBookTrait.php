@@ -51,7 +51,7 @@ trait ReportSalesBookTrait
                 break;
 
             case 'pos_credit_notes':
-                $pos_credit_notes = $this->getDocuments($request, $document_type_id);
+                $pos_credit_notes = $this->getDocumentPos($request);
                 $data['records'] = $pos_credit_notes;
                 $data['pos_credit_notes'] = $pos_credit_notes;
                 break;
@@ -101,7 +101,20 @@ trait ReportSalesBookTrait
      */
     private function getDocumentPos($request)
     {
-        return DocumentPos::filterReportSalesBook($request)->get();
+        $query = DocumentPos::filterReportSalesBook($request);
+        
+        switch($request->document_type_id) {
+            case 'documents_pos':
+                $query->where('state_type_id', '01');
+                break;
+            case 'pos_credit_notes':
+                $query->where('state_type_id', '11');
+                break;
+            default:
+                break;
+        }
+
+        return $query->get();
     }
 
 

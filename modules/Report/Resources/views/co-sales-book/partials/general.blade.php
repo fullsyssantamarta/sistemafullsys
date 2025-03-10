@@ -34,8 +34,10 @@
                 $row = $value->getDataReportSalesBook();
                 $customer = $value->person;
                 
-                // Identificar notas de crédito por el nombre del documento
-                $is_credit_note = stripos($row['type_document_name'], 'crédit') !== false;
+                // Identificar notas de crédito por el nombre del documento o por estado
+                $is_credit_note = stripos($row['type_document_name'], 'crédit') !== false || 
+                                ($value instanceof \App\Models\Tenant\DocumentPos && isset($row['state_type_id']) && $row['state_type_id'] === '11');
+                
                 $multiplier = $is_credit_note ? -1 : 1;
                 
                 $total += floatval(str_replace(',', '', $row['total'])) * $multiplier;
