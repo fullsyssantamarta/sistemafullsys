@@ -29,7 +29,7 @@ class ConfigurationServiceResolutionCompanyRequest extends FormRequest
             'code'  => 'required',
             'name'  => 'required',
             'prefix'            => 'nullable|string|max:4',
-            'resolution'        => 'nullable|required_if:type_document_id,=,1|required_if:type_document_id,=,9,10,11|string',
+            'resolution'        => 'nullable|required_if:type_document_id,=,1,3|required_if:type_document_id,=,9,10,11|string',
             'resolution_date'   => 'nullable|required_if:type_document_id,=,1|date_format:Y-m-d',
             'technical_key'     => 'nullable|required_if:type_document_id,=,1|string',
             'from'              => 'required|integer',

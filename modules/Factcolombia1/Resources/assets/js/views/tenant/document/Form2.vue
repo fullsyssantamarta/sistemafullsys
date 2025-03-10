@@ -119,6 +119,16 @@
                                         v-text="errors.payment_form_id[0]"></small>
                                 </div>
                             </div>
+
+                            <template v-if="!is_contingency_3">
+                                <div class="col-lg-2">
+                                    <div class="form-group">
+                                        <label class="control-label">Enviar Contingencia Tipo 4</label>
+                                        <el-switch v-model="is_contingency_4" active-text="Activo" inactive-text="Inactivo" @change="changeContingency4"></el-switch>
+                                    </div>
+                                </div>
+                            </template>
+
                             <template v-if="is_edit">
                                 <div class="col-lg-2">
                                     <div class="form-group">
@@ -127,6 +137,7 @@
                                     </div>
                                 </div>
                             </template>
+
                             <div class="col-lg-4">
                                 <div class="form-group" :class="{ 'has-danger': errors.payment_method_id }">
                                     <label class="control-label">Medio de pago</label>
@@ -465,7 +476,7 @@ import DocumentOrderReference from './partials/order_reference.vue'
 import DocumentHealthData from './partials/health_fields.vue'
 import DocumentHealthUser from './partials/health_users.vue'
 export default {
-    props: ['typeUser', 'configuration', 'invoice', 'is_health', 'is_edit'],
+    props: ['typeUser', 'configuration', 'invoice', 'is_health', 'is_edit', 'is_contingency'],
     components: { PersonForm, DocumentFormItem, DocumentFormRetention, DocumentOptions, DocumentOrderReference, DocumentHealthData, DocumentHealthUser },
     mixins: [functions, exchangeRate],
     data() {
@@ -481,6 +492,8 @@ export default {
             input_person: {},
             company: {},
             health_sector: false,
+            is_contingency_3: false,
+            is_contingency_4: false,
             is_client: false,
             recordItem: null,
             recordItemHealthUser: null,
@@ -529,6 +542,7 @@ export default {
             return `${formattedIntegerPart}${decimalPart}`;
         },
     },
+
     async created() {
         //            console.log(this.invoice)
         await this.initForm()
@@ -547,11 +561,16 @@ export default {
                 this.payment_methods = response.data.payment_methods
                 this.payment_forms = response.data.payment_forms
                 this.form.currency_id = (this.currencies.length > 0) ? 170 : null;
-                this.form.type_invoice_id = (this.type_invoices.length > 0) ? this.type_invoices[0].id : null;
+                if(this.is_contingency_3)
+                    this.form.type_invoice_id = (this.type_invoices.length > 0) ? this.type_invoices[2].id : null;
+                else
+                    this.form.type_invoice_id = (this.type_invoices.length > 0) ? this.type_invoices[0].id : null;
                 //his.form.payment_form_id = (this.payment_forms.length > 0)?this.payment_forms[0].id:null;
                 this.form.payment_method_id = 10;//(this.payment_methods.length > 0)?this.payment_methods[0].id:null;
-                this.resolutions = response.data.resolutions
-                //ordenar resolicones por cristian
+                if(this.is_contingency_3)
+                    this.resolutions = response.data.resolutions.filter(resolution => resolution.code === '3');
+                else
+                    this.resolutions = response.data.resolutions.filter(resolution => resolution.code === '1');
                 // Ordenar por 'id' de forma descendente
                 this.resolutions.sort((a, b) => b.id - a.id);
                 this.form.payment_form_id = 1
@@ -573,6 +592,7 @@ export default {
         //            console.log(this.customers)
         await this.generatedFromExternalDocument()
     },
+
     computed: {
         generatedFromPos() {
             const form_exceed_uvt = this.$getStorage('form_exceed_uvt')
@@ -634,6 +654,11 @@ export default {
             // En otros casos, mostrar todas las opciones
             return true;
         },
+
+        changeContingency4(value) {
+
+        },
+
         generatedFromExternalDocument() {
             if (this.generatedFromPos) {
                 const form_exceed_uvt = this.$getStorage('form_exceed_uvt')
@@ -703,7 +728,7 @@ export default {
             if (resol) {
                 this.form.resolution_number = resol.resolution_number;
                 this.form.prefix = resol.prefix;
-                this.form.type_document_id = resol.id;
+                this.form.type_document_id = resol.code;
                 this.currentPrefix = resol.prefix; // Actualizar el prefijo en data
 //                this.fetchCorrelative(); // Llama al método para obtener el correlativo
             }
@@ -806,6 +831,7 @@ export default {
             if (typeof this.invoice !== 'undefined') {
                 if (this.invoice.health_fields) {
                     this.health_sector = true
+                    this.is_contingency_3 = false
                     this.duplicated_health_fields = JSON.parse(this.invoice.health_fields)
                     this.duplicated_health_users = this.duplicated_health_fields.users_info
                     delete this.duplicated_health_fields.users_info
@@ -844,12 +870,18 @@ export default {
                 }
             }
         },
+
         initForm() {
             //                console.log(JSON.stringify(this.invoice))
             if (this.is_health)
                 this.health_sector = true
             else
                 this.health_sector = false
+
+            if (this.is_contingency)
+                this.is_contingency_3 = true
+            else
+                this.is_contingency_3 = false
             this.form = {
                 type_document_id: null,
                 resolution_id: null,
@@ -946,6 +978,7 @@ export default {
             //                                          'contingency': this.is_contingency});
             // this.form.series_id = (this.series.length > 0)?this.series[0].id:null
         },
+
         filterCustomers() {
             // this.form.customer_id = null
             // if(this.form.operation_type_id === '0101' || this.form.operation_type_id === '1001') {
@@ -962,6 +995,7 @@ export default {
             //    this.customers = this.all_customers
             // }
         },
+
         addRow(row) {
             // si no selecciona la casilla de "impuesto incluido en el precio" se debe sumar el impuesto al precio
             if(row.tax_included_in_price) {
@@ -1170,7 +1204,8 @@ export default {
             });
         },
         close() {
-            location.href = (this.is_contingency) ? `/contingencies` : `/${this.resource}`
+            location.href = `/${this.resource}`
+//            location.href = (this.is_contingency) ? `/contingencies` : `/${this.resource}`
         },
         reloadDataCustomers(customer_id) {
             // this.$http.get(`/${this.resource}/table/customers`).then((response) => {
@@ -1183,6 +1218,10 @@ export default {
             })
         },
         changeCustomer() {
+            if(this.is_contingency_3)
+                this.form.type_invoice_id = (this.type_invoices.length > 0) ? this.type_invoices[2].id : null;
+            else
+                this.form.type_invoice_id = (this.type_invoices.length > 0) ? this.type_invoices[0].id : null;
             // this.customer_addresses = [];
             // let customer = _.find(this.customers, {'id': this.form.customer_id});
             // this.customer_addresses = customer.addresses;
@@ -1302,7 +1341,7 @@ export default {
             // let resol = this.resolution.resolution; //TODO
             let invoice = {
                 number: 0,
-                type_document_id: 1,
+                type_document_id: this.is_contingency_3 ? 3 : 1,
                 prefix: this.form.prefix,
                 resolution_number: this.form.resolution_number,
             };

@@ -33,7 +33,7 @@ if($current_hostname) {
                 Route::get('search-items', 'Tenant\DocumentController@searchItems');
                 Route::get('search/item/{item}', 'Tenant\DocumentController@searchItemById');
                 Route::get('download/{type}/{document}', 'Tenant\DocumentController@download');
-                Route::post('sendEmail', 'Tenant\DocumentController@sendEmailCoDocument');
+                Route::post('sendEmail', 'Tenant\DocumentController@sendEmailCoDocumentToAPI');
                 Route::post('note', 'Tenant\DocumentController@storeNote');
                 Route::get('documents/search/externalId/{external_id}', 'Tenant\DocumentController@searchExternalId');
                 Route::post('store_aiu', 'Tenant\DocumentController@store_aiu');
@@ -45,6 +45,10 @@ if($current_hostname) {
 
             Route::prefix('co-documents-health')->group(function () {
                 Route::get('create', 'Tenant\DocumentController@create_health')->name('tenant.co-documents-health.create');
+            });
+
+            Route::prefix('co-documents-contingency-3')->group(function () {
+                Route::get('create', 'Tenant\DocumentController@create_contingency_3')->name('tenant.co-documents-contingency-3.create');
             });
 
             Route::prefix('co-documents-aiu')->group(function () {

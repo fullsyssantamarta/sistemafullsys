@@ -237,7 +237,7 @@
             typeDocuments: [
                 { id: 1, name: "Factura de Venta Nacional", code: '1' },
                 //{ id: 2, name: "Factura de Exportación", code: '2' },
-                //{ id: 3, name: "Factura de Contingencia", code: '3' },
+                { id: 3, name: "Factura de Contingencia tipo 03", code: '3' },
                 { id: 4, name: "Nota Crédito", code: '4' },
                 { id: 5, name: "Nota Débito", code: '5' },
                 { id: 6, name: "ZIP", code: '6'},
@@ -245,7 +245,7 @@
                 { id: 10, name: "Nomina Individual de Ajuste", code: '10'},
                 { id: 11, name: "Documento Soporte Electrónico", code: '11'},
                 { id: 13, name: "Nota de Ajuste al Documento Soporte Electrónico", code: '13'},
-                { id: 26, name: "Nota de crédito al Documento Equivalente", code: '26'}
+                { id: 26, name: "Nota de crédito al Documento Equivalente", code: '26'},
             ],
             errors: {
             },

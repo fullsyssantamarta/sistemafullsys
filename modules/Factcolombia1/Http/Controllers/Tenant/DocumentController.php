@@ -130,7 +130,16 @@ class DocumentController extends Controller
         /*        $company = Company::with('type_regime', 'type_identity_document')->firstOrFail();
         return json_encode($company);   */
 
-        return view('factcolombia1::document.tenant.create');
+        $is_contingency = false;
+        return view('factcolombia1::document.tenant.create', compact('is_contingency'));
+    }
+
+    public function create_contingency_3() {
+        /*        $company = Company::with('type_regime', 'type_identity_document')->firstOrFail();
+        return json_encode($company);   */
+        $is_contingency = true;
+
+        return view('factcolombia1::document.tenant.create', compact('is_contingency'));
     }
 
     public function create_health() {
@@ -271,7 +280,7 @@ class DocumentController extends Controller
                 $response_status_decoded = json_decode($response_status);
                 $documents = $response_status_decoded->data[0]->documents;
                 foreach($documents as $document){
-                    if($document->cufe != 'cufe-initial-number' && in_array($document->type_document_id, [1, 2, 4, 5])){
+                    if($document->cufe != 'cufe-initial-number' && in_array($document->type_document_id, [1, 2, 3, 4, 5])){
                         $d = Document::where('prefix', $document->prefix)->where('number', $document->number)->get();
                         if(count($d) == 0){
                             $this->store_sincronize($document);
@@ -323,6 +332,7 @@ class DocumentController extends Controller
             if($document_invoice !== NULL){
                 $request = new Request();
                 $request->type_document_id = $resolution[0]->id;
+//                $request->type_document_id = $resolution[0]->code;
                 $request->resolution_id = $resolution[0]->id;
                 $request->type_invoice_id = $resolution[0]->code;
 
@@ -526,7 +536,7 @@ class DocumentController extends Controller
      */
     public function store(DocumentRequest $request, $invoice_json = NULL){
         // \Log::debug($invoice_json);
-        // dd($request->all());
+//         \Log::debug($request->all());
         DB::connection('tenant')->beginTransaction();
         try {
             if($invoice_json !== NULL)
@@ -567,11 +577,11 @@ class DocumentController extends Controller
             // para buscar el correlativo en api sin filtrar por el campo state_document_id=1
 
             $ignore_state_document_id = ($company->type_environment_id === 2 || $invoice_json !== NULL);
-            $ignore_state_document_id = true;
+            $ignore_state_document_id = false;
             if($invoice_json !== NULL)
                 $correlative_api = $invoice_json_decoded['number'];
             else
-                $correlative_api = $this->getCorrelativeInvoice(1, $request->prefix, $ignore_state_document_id);
+                $correlative_api = $this->getCorrelativeInvoice($request->type_invoice_id, $request->prefix, $ignore_state_document_id);
 
             // \Log::debug($correlative_api);
             if(isset($request->number))
@@ -598,8 +608,8 @@ class DocumentController extends Controller
                     $service_invoice['foot_note'] = "Modo de operación: Software Propio - by ".env('APP_NAME', 'FACTURALATAM')." La presente Factura Electrónica de Venta, es un título valor de acuerdo con lo establecido en el Código de Comercio y en especial en los artículos 621,772 y 774. El Decreto 2242 del 24 de noviembre de 2015 y el Decreto Único 1074 de mayo de 2015. El presente título valor se asimila en todos sus efectos a una letra de cambio Art. 779 del Código de Comercio. Con esta el Comprador declara haber recibido real y materialmente las mercancías o prestación de servicios descritos en este título valor.";
                 }
             }
-            //\Log::debug(json_encode($service_invoice));
-            $service_invoice['web_site'] = env('APP_NAME', 'FACTURALATAM');
+//            \Log::debug(json_encode($service_invoice));
+            $service_invoice['web_site'] = env('APP_NAME', 'TORRE SOFTWARE');
             //\Log::debug(json_encode($service_invoice));
             if(!is_null($this->company['jpg_firma_facturas']))
               if(file_exists(public_path('storage/uploads/logos/'.$this->company['jpg_firma_facturas']))){
@@ -610,6 +620,13 @@ class DocumentController extends Controller
             if(file_exists(storage_path('logo_empresa_emisora.jpg'))){
                 $logo_empresa_emisora = base64_encode(file_get_contents(storage_path('logo_empresa_emisora.jpg')));
                 $service_invoice['logo_empresa_emisora'] = $logo_empresa_emisora;
+            }
+
+//            \Log::debug($service_invoice);
+            if($service_invoice['type_document_id'] === 3){
+                $service_invoice['AdditionalDocumentReferenceID'] = $service_invoice['prefix'].$service_invoice['number'];
+                $service_invoice['AdditionalDocumentReferenceDate'] = date('Y-m-d', strtotime($request->date_issue));
+                $service_invoice['AdditionalDocumentReferenceTypeDocument'] = "01";
             }
 
             if ($request->order_reference)
@@ -693,20 +710,25 @@ class DocumentController extends Controller
             $id_test = $company->test_id;
             $base_url = config('tenant.service_fact');
 
-            if($company->type_environment_id == 2 && $company->test_id != 'no_test_set_id'){
-            //     \Log::debug("Alexander");
-                $ch = curl_init("{$base_url}ubl2.1/invoice/{$id_test}");
+            if($service_invoice['type_document_id'] === 3){
+                if($company->type_environment_id == 2 && $company->test_id != 'no_test_set_id')
+                    $ch = curl_init("{$base_url}ubl2.1/invoice-contingency/{$id_test}");
+                else
+                    $ch = curl_init("{$base_url}ubl2.1/invoice-contingency");
             }
-            else
-                $ch = curl_init("{$base_url}ubl2.1/invoice");
+            else{
+                if($company->type_environment_id == 2 && $company->test_id != 'no_test_set_id')
+                    $ch = curl_init("{$base_url}ubl2.1/invoice/{$id_test}");
+                else
+                    $ch = curl_init("{$base_url}ubl2.1/invoice");
+            }
 
             $data_document = json_encode($service_invoice);
-            //\Log::debug("{$base_url}ubl2.1/invoice");
-            //\Log::debug($company->api_token);
-            //\Log::debug($correlative_api);
-            //\Log::debug($data_document);
-            //            return $data_document;
-            //return "";
+//            \Log::debug("{$base_url}ubl2.1/invoice");
+//            \Log::debug($company->api_token);
+//            \Log::debug($correlative_api);
+//            \Log::debug($data_document);
+//            return ['success' => false, 'validation_errors' => true, 'message' => "Guardado en el Log...", 'data' => ['id' => $d->id]];
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
             curl_setopt($ch, CURLOPT_POSTFIELDS,($data_document));
@@ -718,7 +740,7 @@ class DocumentController extends Controller
                 "Authorization: Bearer {$company->api_token}"
             ));
             $response = curl_exec($ch);
-//            \Log::debug('DocumentController:715: '.$response);
+//            \Log::debug($response);
             curl_close($ch);
             $response_model = json_decode($response);
             $zip_key = null;
@@ -870,8 +892,14 @@ class DocumentController extends Controller
                 }
             }
 
-            if($invoice_json === NULL)
-                $nextConsecutive = FacadeDocument::nextConsecutive($request->type_document_id);
+            if($invoice_json === NULL){
+//                if($request->type_document_id === '3')
+                    $nextConsecutive = FacadeDocument::nextConsecutive($request->resolution_id);
+//                else
+//                    $nextConsecutive = FacadeDocument::nextConsecutive($request->type_document_id);
+//                \Log::debug($request->type_document_id);
+//                \Log::debug($nextConsecutive);
+            }
             else{
                 $resolution = TypeDocument::where('resolution_number', $service_invoice['resolution_number'])->where('prefix', $service_invoice['prefix'])->orderBy('resolution_date', 'desc')->get();
                 $nextConsecutive = FacadeDocument::nextConsecutive($resolution[0]->id);
@@ -881,6 +909,7 @@ class DocumentController extends Controller
                 throw new \Exception("Has excedido el límite de documentos de tu cuenta.");
             if($invoice_json !== NULL){
                 $request = new Request();
+//                $request->type_document_id = $resolution[0]->code;
                 $request->type_document_id = $resolution[0]->id;
                 $request->resolution_id = $resolution[0]->id;
                 $request->type_invoice_id = $resolution[0]->code;
@@ -1461,10 +1490,8 @@ class DocumentController extends Controller
         }
     }
 
-
-    public function sendEmailCoDocument(Request $request)
+    public function sendEmailCoDocumentToAPI(Request $request)
     {
-        \Log::debug("XXXXXXXXXXXXXX");
         $company = ServiceTenantCompany::firstOrFail();
         $sucursal = \App\Models\Tenant\Establishment::where('id', auth()->user()->establishment_id)->first();
 //        $send= (object)['number'=> $request->number, 'email'=> $request->email, 'number_full'=> $request->number_full];
@@ -1577,19 +1604,14 @@ class DocumentController extends Controller
     {
         $base_url = config('tenant.service_fact');
         $url = "{$base_url}ubl2.1/invoice/current_number/{$type_service}";
-
         if($ignore_state_document_id){
-
             $val_prefix = $prefix ? $prefix : 'null';
             $url .= "/{$val_prefix}/{$ignore_state_document_id}";
-
         }else{
-
             if($prefix){
                 $url .= "/{$prefix}";
             }
         }
-
         return $url;
     }
 
@@ -1607,7 +1629,7 @@ class DocumentController extends Controller
 
         $url = $this->getBaseUrlCorrelativeInvoice($type_service, $prefix, $ignore_state_document_id);
         $ch2 = curl_init($url);
-        // dd($url, $ch2);
+//        dd($url, $ch2);
 
         curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch2, CURLOPT_CUSTOMREQUEST, "GET");
@@ -1622,6 +1644,9 @@ class DocumentController extends Controller
         $err = curl_error($ch2);
         curl_close($ch2);
         $response_encode = json_decode($response_data);
+//        \Log::debug($url);
+//        \Log::debug($company->api_token);
+//        \Log::debug($response_data);
         if($err){
             return null;
         }
@@ -1695,7 +1720,7 @@ class DocumentController extends Controller
         $type_invoices = TypeInvoice::all();
         $currencies = Currency::all();
         $taxes = $this->table('taxes');
-        $resolutions = TypeDocument::select('id','prefix', 'resolution_number', 'from', 'to', 'description', 'resolution_date_end')->whereNotNull('resolution_number')->whereIn('code', [1,2,3])->where('resolution_date_end', '>', Carbon::now())->get();
+        $resolutions = TypeDocument::select('id','prefix', 'code', 'resolution_number', 'from', 'to', 'description', 'resolution_date_end')->whereNotNull('resolution_number')->whereIn('code', [1,2,3])->where('resolution_date_end', '>', Carbon::now())->get();
         return compact('customers','payment_methods','payment_forms','type_invoices','currencies', 'taxes', 'type_documents', 'resolutions');
     }
 

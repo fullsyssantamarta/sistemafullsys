@@ -819,7 +819,6 @@ class ConfigurationController extends Controller
         try{
             $company = ServiceCompany::firstOrFail();
             $base_url = config("tenant.service_fact", "");
-
             $ch3 = curl_init("{$base_url}ubl2.1/config/resolution");
             $data = [
                 "delete_all_type_resolutions" => false,

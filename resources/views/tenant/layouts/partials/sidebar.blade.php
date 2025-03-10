@@ -82,6 +82,12 @@
                                             </a>
                                         </li>
 
+                                        <li class="{{ ($path[0] === 'co-documents-contingency-3'  && $path[1] === 'create')?'nav-active':'' }}">
+                                            <a class="nav-link" href="{{route('tenant.co-documents-contingency-3.create')}}">
+                                                Nueva F.E. Contingencia Tipo 3
+                                            </a>
+                                        </li>
+
                                         @if(in_array('invoicehealth', $vc_modules))
                                             <li class="{{ ($path[0] === 'co-documents-health'  && $path[1] === 'create')?'nav-active':'' }}">
                                                 <a class="nav-link" href="{{route('tenant.co-documents-health.create')}}">

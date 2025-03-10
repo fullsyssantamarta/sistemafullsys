@@ -42,7 +42,11 @@ class DocumentHelper
         $document->send_server = false;
         $document->type_environment_id = $type_environment_id;
         $document->shipping_two_steps = $shipping_two_steps;
-        $document->type_document_id = $request->type_document_id;
+//        if($request->type_document_id === 3)
+        $document->type_document_id = $nextConsecutive->id;
+//            \Log::debug($nextConsecutive);
+//        else
+//            $document->type_document_id = $request->type_document_id;
         $document->type_invoice_id = $request->type_invoice_id;
         $document->customer_id = $request->customer_id;
         $document->customer = Person::with('typePerson', 'typeRegime', 'identity_document_type', 'country', 'department', 'city')->findOrFail($request->customer_id);
