@@ -820,8 +820,15 @@ export default {
             await this.$eventHub.$on("cancelSale", () => {
                 this.is_payment = false;
                 this.initForm();
-                this.changeExchangeRate()
-                this.cancelFormPosLocalStorage()
+                this.getTables();
+                this.filterItems();
+                this.changeExchangeRate();
+                this.cancelFormPosLocalStorage();
+                const customer_default = _.find(this.all_customers, {'number': '222222222222'}) ?? null
+                if (customer_default) {
+                    this.form.customer_id = customer_default.id
+                    this.changeCustomer()
+                }
             });
 
             await this.$eventHub.$on("reloadDataPersons", customer_id => {

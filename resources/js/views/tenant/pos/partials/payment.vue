@@ -885,7 +885,7 @@
                         this.errors = error.response.data;
                     }else if (error.response){
                         this.$message.error(error.response.data.message);
-                    }else{
+                    }else if(response.data.success == false){
                         this.$message.error("Ha ocurrido un error desconocido.");
                     }
                 }).then(() => {
@@ -894,9 +894,6 @@
             },
 
             saveCashDocument(){
-                if(this.form.document_type_id !== "90") {
-                    return
-                }
                 this.$http.post(`/cash/cash_document`, this.form_cash_document)
                     .then(response => {
                         if (response.data.success) {

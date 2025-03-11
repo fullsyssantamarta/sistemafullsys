@@ -503,12 +503,20 @@ export default {
       location.href = `/${this.resource}`;
     },
     clickNewQuotation() {
+      this.$eventHub.$emit("cancelSale");
+      this.$eventHub.$emit("reloadData");
+      localStorage.removeItem('form_pos');
+      localStorage.removeItem('customer');
       this.clickClose();
     },
     clickClose() {
       this.$emit("update:showDialog", false);
       this.$emit("triggerBack");
-
+      this.$eventHub.$emit("cancelSale");
+      this.$eventHub.$emit("reloadData");
+      localStorage.removeItem('form_pos');
+      localStorage.removeItem('customer');
+      
       this.initForm();
       this.resetDocument();
     },
