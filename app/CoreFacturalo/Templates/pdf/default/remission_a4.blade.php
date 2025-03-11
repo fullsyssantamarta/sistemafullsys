@@ -138,38 +138,33 @@
     <table class="table" style="width: 100%;">
         <thead>
             <tr>
-                <th class="text-center">#</th>
-                <th class="text-center">Código</th>
-                <th class="text-center">Descripcion</th>
-                <th class="text-center">Cantidad</th>
-                <th class="text-center">UM</th>
-                <th class="text-center">Val. Unit</th>
-                <th class="text-center">IVA/IC</th>
-                <th class="text-center">Dcto</th>
-                <th class="text-center">%</th>
-                <th class="text-center">Val. Item</th>
+                <th class="text-center" style="font-size: 10px; padding: 5px;">#</th>
+                <th class="text-center" style="font-size: 10px; padding: 5px;">Código</th>
+                <th class="text-center" style="font-size: 10px; padding: 5px;">Descripcion</th>
+                <th class="text-center" style="font-size: 10px; padding: 5px;">Cantidad</th>
+                <th class="text-center" style="font-size: 10px; padding: 5px;">UM</th>
+                <th class="text-center" style="font-size: 10px; padding: 5px;">Val. Unit</th>
+                <th class="text-center" style="font-size: 10px; padding: 5px;">IVA/IC</th>
+                <th class="text-center" style="font-size: 10px; padding: 5px;">Dcto</th>
+                <th class="text-center" style="font-size: 10px; padding: 5px;">%</th>
+                <th class="text-center" style="font-size: 10px; padding: 5px;">Val. Item</th>
             </tr>
         </thead>
         <tbody>
             @foreach($document->items as $row)
                 <tr>
-
-                    <td>{{ $loop->iteration }}</td>
-                    <td>{{$row->item->internal_id}}</td>
-                    <td>
+                    <td style="font-size: 10px; padding: 3px;">{{ $loop->iteration }}</td>
+                    <td style="font-size: 10px; padding: 3px;">{{$row->item->internal_id}}</td>
+                    <td style="font-size: 10px; padding: 3px;">
                         {{$row->item->name}} @if (!empty($row->item->presentation)) {!!$row->item->presentation->description!!} @endif
                     </td>
-                    <td class="text-right">{{number_format($row->quantity, 2)}}</td>
-
-                    <td class="text-right">{{ $row->item->unit_type->name }}</td>
-
-                    <td class="text-right">{{number_format($row->unit_price, 2)}}</td>
-
-                    <td class="text-right">{{number_format($row->total_tax / $row->quantity, 2)}}</td>
-
-                    <td class="text-right">{{number_format($row->discount, 2)}}</td>
-                    <td class="text-right">{{number_format(($row->discount * 100) / $row->total, 2)}}</td>
-                    <td class="text-right">{{number_format($row->total, 2)}}</td>
+                    <td class="text-right" style="font-size: 10px; padding: 3px;">{{number_format($row->quantity, 2)}}</td>
+                    <td class="text-right" style="font-size: 10px; padding: 3px;">{{ $row->item->unit_type->name }}</td>
+                    <td class="text-right" style="font-size: 10px; padding: 3px;">{{number_format($row->unit_price, 2)}}</td>
+                    <td class="text-right" style="font-size: 10px; padding: 3px;">{{number_format($row->total_tax / $row->quantity, 2)}}</td>
+                    <td class="text-right" style="font-size: 10px; padding: 3px;">{{number_format($row->discount, 2)}}</td>
+                    <td class="text-right" style="font-size: 10px; padding: 3px;">{{number_format(($row->discount * 100) / $row->total, 2)}}</td>
+                    <td class="text-right" style="font-size: 10px; padding: 3px;">{{number_format($row->total, 2)}}</td>
                 </tr>
             @endforeach
         </tbody>
