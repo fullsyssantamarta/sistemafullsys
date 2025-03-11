@@ -777,6 +777,76 @@ class DocumentController extends Controller
                     }
                 }
             }
+            else{
+                if(isset($response_model->success) && ($response_model->success === true) && ($response_model->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->IsValid == "false") && ($response_model->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->ErrorMessage->string == 'Regla: 90, Rechazo: Documento procesado anteriormente.')){
+                    $ch = curl_init("{$base_url}ubl2.1/xml/document/{$response_model->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->XmlDocumentKey}");
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                        'Content-Type: application/json',
+                        'Accept: application/json',
+                        "Authorization: Bearer {$company->api_token}"
+                    ));
+                    $response_xml = curl_exec($ch);
+                    curl_close($ch);
+                    $response_xml_model = json_decode($response_xml);
+                    $signedxml = base64_decode($response_xml_model->ResponseDian->Envelope->Body->GetXmlByDocumentKeyResponse->GetXmlByDocumentKeyResult->XmlBytesBase64);
+                    $xml_document = new \DOMDocument;
+                    $xml_document->loadXML($signedxml);
+//                    \Log::debug(1);
+                    $customer_xml = $this->ValueXML($signedxml, '/Invoice/cac:AccountingCustomerParty/cac:Party/cac:PartyTaxScheme/cbc:CompanyID/');
+//                    \Log::debug($customer_xml);
+//                    \Log::debug($service_invoice['customer']['identification_number']);
+                    $sale_xml = $this->ValueXML($signedxml, '/Invoice/cac:LegalMonetaryTotal/cbc:PayableAmount/');
+//                    \Log::debug($sale_xml);
+//                    \Log::debug(round($service_invoice['legal_monetary_totals']['payable_amount'], 5));
+                    $date_xml = date('Y-m-d', strtotime($this->ValueXML($signedxml, '/Invoice/cbc:IssueDate/')));
+//                    \Log::debug($date_xml);
+//                    \Log::debug($service_invoice['date']);
+                    if($date_xml == $service_invoice['date'] && $customer_xml == $service_invoice['customer']['identification_number'] && round($sale_xml, 5) - round($service_invoice['legal_monetary_totals']['payable_amount'], 5) < 0.005){
+//                        \Log::debug(2);
+                        try{
+                            $d = Document::where('prefix', $service_invoice['prefix'])->where('number', $service_invoice['number'])->firstOrFail();
+                            $response_api = json_decode($d->response_api, true);
+                            $response_api['cufe'] = $response_model->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->XmlDocumentKey;
+                            $d->response_api = json_encode($response_api);
+                            $d->state_document_id = self::ACCEPTED;
+                            $d->cufe = $response_model->cufe;
+                            $d->save();
+                            DB::connection('tenant')->commit();
+                            return [
+                                'success' => true,
+                                'validation_errors' => false,
+                                'message' => "El estado de la Factura Nro: #{$service_invoice['prefix']}{$service_invoice['number']}., fue actualizado satisfactoriamente.",
+                                'data' => [
+                                    'id' => $d->id
+                                ]
+                            ];
+                        }catch(\Exception $e){
+                            return [
+                                'success' => false,
+                                'validation_errors' => true,
+                                'message' => "No se pudo actualizar el estado de la Factura Nro: #{$service_invoice['prefix']}{$service_invoice['number']}. ".$e->getMessage(),
+                                'data' => [
+                                    'id' => $d->id
+                                ]
+                            ];
+                        }
+                    }
+                    else{
+                        return [
+                            'success' => false,
+                            'validation_errors' => true,
+                            'message' => "No se pudo actualizar el estado de la Factura Nro: #{$service_invoice['prefix']}{$service_invoice['number']}. La factura ya existe en la DIAN, pero los datos ingresados no corresponden a los datos registrados en la DIAN, consulte el cufe: {$response_model->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->XmlDocumentKey}",
+                            'data' => [
+                                'id' => $d->id
+                            ]
+                        ];
+                    }
+                }
+            }
 
             if(isset($response_model->success) && !$response_model->success) {
                 return [

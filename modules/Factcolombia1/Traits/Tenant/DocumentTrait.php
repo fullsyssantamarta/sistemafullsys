@@ -550,7 +550,7 @@ trait DocumentTrait
         }
     }
 
-    
+
     /**
      * Retorna array con mensaje de error y registra detalle en el log
      *
@@ -569,11 +569,27 @@ trait DocumentTrait
 
     }
 
-    
+
     public function setErrorLog($exception)
     {
         Log::error("Code: {$exception->getCode()} - Line: {$exception->getLine()} - Message: {$exception->getMessage()} - File: {$exception->getFile()}");
     }
 
-
+    public function ValueXML($stringXML, $xpath){
+        if(substr($xpath, 0, 1) != '/')
+            return NULL;
+        $search = substr($xpath, 1, strpos(substr($xpath, 1), '/'));
+        $posinicio = strpos($stringXML, "<".$search);
+        if($posinicio == 0 and $search != 's:Envelope')
+           return NULL;
+        $posinicio = strpos($stringXML, ">", $posinicio) + 1;
+        $posCierre = strpos($stringXML, "</".$search.">", $posinicio);
+        if($posCierre == 0)
+            return NULL;
+        $valorXML = substr($stringXML, $posinicio, $posCierre - $posinicio);
+        if(strcmp(substr($xpath, strpos($xpath, $search) + strlen($search)), '/') != 0)
+            return $this->ValueXML($valorXML, substr($xpath, strpos($xpath, $search) + strlen($search)));
+        else
+            return $valorXML;
+    }
 }
