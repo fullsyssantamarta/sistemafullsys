@@ -75,7 +75,7 @@
                                 <!-- <p class="font-weight-semibold mb-0" v-if="item.name.length < 50">{{item.name}}</p> -->
                                 <img :src="item.image_url" class="img-thumbail img-custom" />
                                 <p class="text-muted font-weight-lighter mb-0">
-                                    <small>{{item.internal_id}}</small>
+                                    <small>{{item.internal_id}}{{item.lot_code ? '- ' + item.lot_code : ''}}{{item.date_of_due ? '- ' + item.date_of_due : ''}}</small>
                                     <template v-if="item.sets.length  > 0">
                                         <br>
                                         <small> {{ item.sets.join('-') }} </small>
@@ -245,6 +245,13 @@
                                         <p class="m-0" style="line-height: 1em;">
                                             <span v-html="clearText(item.item.name)"></span><br>
                                             <small v-if="item.unit_type">{{ item.unit_type.name }}</small>
+                                            <template v-if="item.item.lot_code || item.item.date_of_due">
+                                                <br>
+                                                <small class="text-muted">
+                                                    {{item.item.lot_code ? '' + item.item.lot_code : ''}}
+                                                    {{item.item.date_of_due ? '- ' + item.item.date_of_due : ''}}
+                                                </small>
+                                            </template>
                                         </p>
                                         <small> {{nameSets(item.item_id)}} </small>
                                     </td>
