@@ -1259,7 +1259,7 @@ export default {
             this.loading_submit = true
             //                console.log(JSON.stringify(this.form))
             this.$http.post(`/${this.resource}`, this.form).then(response => {
-                console.log(response)
+//                console.log(response)
                 if (response.data.success) {
                     if (response.data.validation_errors === false) {
                         this.resetForm();
@@ -1314,7 +1314,13 @@ export default {
                         });
                     }
                     else {
-                        this.$message.error(response.data.message);
+//                        console.log(response.data.message)
+                        this.$message({
+                            type: 'error',
+                            message: response.data.message,
+                            dangerouslyUseHTMLString: true,
+                            duration: 6000
+                        });
                     }
                 }
             }).catch(error => {

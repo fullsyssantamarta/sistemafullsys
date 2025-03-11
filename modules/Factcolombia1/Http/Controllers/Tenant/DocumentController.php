@@ -728,7 +728,8 @@ class DocumentController extends Controller
 //            \Log::debug($company->api_token);
 //            \Log::debug($correlative_api);
 //            \Log::debug($data_document);
-//            return ['success' => false, 'validation_errors' => true, 'message' => "Guardado en el Log...", 'data' => ['id' => $d->id]];
+//            \Log::debug($service_invoice);
+//            return ['success' => false, 'validation_errors' => true, 'message' => "Guardado en el Log...",];
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
             curl_setopt($ch, CURLOPT_POSTFIELDS,($data_document));
@@ -770,9 +771,6 @@ class DocumentController extends Controller
                             'success' => false,
                             'validation_errors' => true,
                             'message' => "No se pudo actualizar el estado de la Factura Nro: #{$service_invoice['prefix']}{$service_invoice['number']}. ".$e->getMessage(),
-                            'data' => [
-                                'id' => $d->id
-                            ]
                         ];
                     }
                 }
@@ -795,7 +793,6 @@ class DocumentController extends Controller
                     $signedxml = base64_decode($response_xml_model->ResponseDian->Envelope->Body->GetXmlByDocumentKeyResponse->GetXmlByDocumentKeyResult->XmlBytesBase64);
                     $xml_document = new \DOMDocument;
                     $xml_document->loadXML($signedxml);
-//                    \Log::debug(1);
                     $customer_xml = $this->ValueXML($signedxml, '/Invoice/cac:AccountingCustomerParty/cac:Party/cac:PartyTaxScheme/cbc:CompanyID/');
 //                    \Log::debug($customer_xml);
 //                    \Log::debug($service_invoice['customer']['identification_number']);
@@ -805,8 +802,7 @@ class DocumentController extends Controller
                     $date_xml = date('Y-m-d', strtotime($this->ValueXML($signedxml, '/Invoice/cbc:IssueDate/')));
 //                    \Log::debug($date_xml);
 //                    \Log::debug($service_invoice['date']);
-                    if($date_xml == $service_invoice['date'] && $customer_xml == $service_invoice['customer']['identification_number'] && round($sale_xml, 5) - round($service_invoice['legal_monetary_totals']['payable_amount'], 5) < 0.005){
-//                        \Log::debug(2);
+                    if($date_xml == $service_invoice['date'] && $customer_xml == $service_invoice['customer']['identification_number'] && round($sale_xml, 5) - round($service_invoice['legal_monetary_totals']['payable_amount'], 5) > 0 && round($sale_xml, 5) - round($service_invoice['legal_monetary_totals']['payable_amount'], 5) < 0.005){
                         try{
                             $d = Document::where('prefix', $service_invoice['prefix'])->where('number', $service_invoice['number'])->firstOrFail();
                             $response_api = json_decode($d->response_api, true);
@@ -826,31 +822,29 @@ class DocumentController extends Controller
                             ];
                         }catch(\Exception $e){
                             return [
-                                'success' => false,
+                                'success' => true,
                                 'validation_errors' => true,
                                 'message' => "No se pudo actualizar el estado de la Factura Nro: #{$service_invoice['prefix']}{$service_invoice['number']}. ".$e->getMessage(),
-                                'data' => [
-                                    'id' => $d->id
-                                ]
                             ];
                         }
                     }
                     else{
-                        return [
-                            'success' => false,
-                            'validation_errors' => true,
-                            'message' => "No se pudo actualizar el estado de la Factura Nro: #{$service_invoice['prefix']}{$service_invoice['number']}. La factura ya existe en la DIAN, pero los datos ingresados no corresponden a los datos registrados en la DIAN, consulte el cufe: {$response_model->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->XmlDocumentKey}",
-                            'data' => [
-                                'id' => $d->id
-                            ]
-                        ];
+                        try{
+                            return [
+                                'success' => false,
+                                'validation_errors' => true,
+                                'message' => "No se pudo actualizar el estado de la Factura Nro: #{$service_invoice['prefix']}{$service_invoice['number']}. La factura ya existe en la DIAN, pero los datos ingresados no corresponden a los datos registrados en la DIAN, consulte el cufe: {$response_model->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->XmlDocumentKey}",
+                            ];
+                        }catch(\Exception $f){
+                            \Log::debug($f->getMessage());
+                        }
                     }
                 }
             }
 
             if(isset($response_model->success) && !$response_model->success) {
                 return [
-                    'success' => false,
+                    'success' => true,
                     'validation_errors' => true,
                     'message' =>  $response_model->message,
                 ];
@@ -1080,9 +1074,9 @@ class DocumentController extends Controller
                 'success' => true,
                 'validation_errors' => true,
                 'message' => "Error al Validar Factura Nro: #{$this->document->prefix}{$nextConsecutive->number}., Sin embargo se guardo la factura para posterior envio, ... Errores: ".$mensajeerror." {$over}",
-                'data' => [
-                    'id' => $this->document->id
-                ]
+//                'data' => [
+//                    'id' => $this->document->id
+//                ]
             ];
         }
     }
