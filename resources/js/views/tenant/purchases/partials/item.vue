@@ -100,7 +100,10 @@
                             <small class="form-control-feedback" v-if="errors.discount" v-text="errors.discount[0]"></small>
                         </div>
                     </div>
-
+                    <div class="form-group">
+                        <label for="sale_unit_price">Precio de venta</label>
+                        <input type="number" class="form-control" id="sale_unit_price" v-model="form.sale_unit_price" step="0.01">
+                    </div>
                     <div class="col-md-12"  v-if="form.item_unit_types.length > 0">
                         <div style="margin:3px" class="table-responsive">
                             <h5 class="separator-title">

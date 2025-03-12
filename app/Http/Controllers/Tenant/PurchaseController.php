@@ -146,7 +146,7 @@ class PurchaseController extends Controller
         // $charge_types = ChargeDiscountType::whereType('charge')->whereLevel('item')->get();
         // $attribute_types = AttributeType::whereActive()->orderByDescription()->get();
         $warehouses = Warehouse::all();
-
+        dd(compact('items', 'categories', 'taxes','warehouses'));
         return compact('items', 'categories', 'taxes','warehouses');
     }
 
@@ -173,7 +173,7 @@ class PurchaseController extends Controller
     public function store(PurchaseRequest $request)
     {
         $data = self::convert($request);
-
+        dd($data);
         $purchase = DB::connection('tenant')->transaction(function () use ($data) {
             $doc = Purchase::create($data);
             foreach ($data['items'] as $row)
@@ -183,6 +183,15 @@ class PurchaseController extends Controller
                 $p_item->fill($row);
                 $p_item->purchase_id = $doc->id;
                 $p_item->save();
+
+            // Update item sale price if provided
+            if(isset($row['sale_unit_price']) && $row['sale_unit_price'] > 0) {
+                $item = Item::find($row['item_id']);
+                if($item) {
+                    $item->sale_unit_price = $row['sale_unit_price'];
+                    $item->save();
+                }
+            }
 
                 if(array_key_exists('lots', $row)){
                     foreach ($row['lots'] as $lot){
@@ -267,6 +276,14 @@ class PurchaseController extends Controller
                 $p_item->purchase_id = $doc->id;
                 $p_item->save();
 
+                if(isset($row['sale_unit_price']) && $row['sale_unit_price'] > 0) {
+                    $item = Item::find($row['item_id']);
+                    if($item) {
+                        $item->sale_unit_price = $row['sale_unit_price'];
+                        $item->save();
+                    }
+                }
+                
                 if(array_key_exists('lots', $row)){
 
                     foreach ($row['lots'] as $lot){
