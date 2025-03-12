@@ -2,7 +2,7 @@
     <thead>
         <tr>
             <th colspan="6">Información Básica</th>
-            <th colspan="6">Detalles Financieros</th>
+            <th colspan="7">Detalles Financieros</th>
         </tr>
         <tr>
             <th>FECHA</th>
@@ -11,11 +11,12 @@
             <th>IDENTIFICACIÓN</th>
             <th>NOMBRE</th>
             <th>DIRECCIÓN</th>
-            <th>TOTAL BASE</th>
             <th>Total/Excento</th>
+            <th>Descuento</th>
+            <th>BASE</th>
             <th>Impuestos</th>
             <th>IVA Total</th>
-            <th>Descuento</th>
+            <th>Base + Impuesto</th>
             <th>Total pagar</th>
         </tr>
     </thead>
@@ -73,23 +74,25 @@
                 <td class="celda">{{ $customer ? $customer->number : ($row['customer_number'] ?? '') }}</td>
                 <td class="celda">{{ $customer ? $customer->name : ($row['customer_name'] ?? '') }}</td>
                 <td class="celda">{{ $customer ? $customer->address : ($row['customer_address'] ?? '') }}</td>
-                <td class="celda text-right-td">{{ number_format(floatval(str_replace(',', '', $row['net_total'])) * $multiplier, 2) }}</td>
-                <td class="celda text-right-td">{{ number_format(floatval(str_replace(',', '', $row['total_exempt'])) * $multiplier, 2) }}</td>
+                <td class="celda text-right-td">{{ number_format(floatval(str_replace(',', '', $row['total_exempt'])) * $multiplier, 2, '.', '') }}</td>
+                <td class="celda text-right-td">{{ number_format(floatval(str_replace(',', '', ($row['total_discount'] ?? 0))) * $multiplier, 2, '.', '') }}</td>
+                <td class="celda text-right-td">{{ number_format(floatval(str_replace(',', '', $row['net_total'])) * $multiplier, 2, '.', '') }}</td>
                 <td class="celda">{{ $tax_names }}</td>
-                <td class="celda text-right-td">{{ number_format($tax_totals['tax'], 2) }}</td>
-                <td class="celda text-right-td">{{ number_format(floatval(str_replace(',', '', ($row['total_discount'] ?? 0))) * $multiplier, 2) }}</td>
-                <td class="celda text-right-td">{{ number_format(floatval(str_replace(',', '', $row['total'])) * $multiplier, 2) }}</td>
+                <td class="celda text-right-td">{{ number_format($tax_totals['tax'], 2, '.', '') }}</td>
+                <td class="celda text-right-td">{{ number_format(floatval(str_replace(',', '', $row['net_total'])) * $multiplier + $tax_totals['tax'], 2, '.', '') }}</td>
+                <td class="celda text-right-td">{{ number_format(floatval(str_replace(',', '', $row['total'])) * $multiplier, 2, '.', '') }}</td>
             </tr>
         @endforeach
 
         <tr>
             <th colspan="6" class="celda text-right-td">TOTALES</th>
-            <th>{{ number_format($net_total, 2) }}</th>
-            <th>{{ number_format($total_exempt, 2) }}</th>
+            <th>{{ number_format($total_exempt, 2, '.', '') }}</th>
+            <th>{{ number_format($total_discount, 2, '.', '') }}</th>
+            <th>{{ number_format($net_total, 2, '.', '') }}</th>
             <th></th>
-            <th>{{ number_format($total_tax_amount, 2) }}</th>
-            <th>{{ number_format($total_discount, 2) }}</th>
-            <th>{{ number_format($total, 2) }}</th>
+            <th>{{ number_format($total_tax_amount, 2, '.', '') }}</th>
+            <th>{{ number_format($total_tax_base + $total_tax_amount, 2, '.', '') }}</th>
+            <th>{{ number_format($total, 2, '.', '') }}</th>
         </tr>
     </tbody>
 </table>
