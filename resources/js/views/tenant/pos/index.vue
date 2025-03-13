@@ -1433,6 +1433,31 @@ export default {
             // console.log("in:" + this.input_item)
 
             if (this.input_item.length > 1) {
+                let torreyData = this.parseTorreyEAN(this.input_item);
+                if (torreyData) {
+                    this.loading = true;
+                    let parameters = `input_item=${torreyData.ref}`;
+
+                    await this.$http.get(`/${this.resource}/search_items?${parameters}`)
+                        .then(response => {
+                            this.items = response.data.data;
+                            if (this.items.length === 1) {
+                                // Asignar el peso al item encontrado
+                                this.items[0].aux_quantity = torreyData.peso;
+                            }
+                            this.pagination = response.data.meta;
+                            this.pagination.per_page = parseInt(
+                                response.data.meta.per_page
+                            );
+
+                            this.enabledSearchItemsBarcode()
+                            this.loading = false;
+                            if (this.items.length == 0) {
+                                this.filterItems();
+                            }
+                        });
+                    return;
+                }
 
                 this.loading = true;
                 let parameters = `input_item=${this.input_item}`;
@@ -1461,6 +1486,23 @@ export default {
 
             }
 
+        },
+        parseTorreyEAN(ean) {
+            if (!ean || ean.length != 13 || ean.substring(0, 2) != "20") {
+                return false;
+            }
+            
+            const ref = ean.substring(2, 7);       
+            const pesoKg = parseInt(ean.substring(7, 9));  
+            const pesoGr = parseInt(ean.substring(9, 12)); 
+            
+            // Calcular el peso total
+            const pesoTotal = pesoKg + (pesoGr / 1000);
+            
+            return {
+                ref: ref,          
+                peso: pesoTotal   
+            };
         },
         enabledSearchItemsBarcode() {
 
