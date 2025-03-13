@@ -9,8 +9,21 @@
                                 Producto/Servicio
                                 <a href="#" @click.prevent="showDialogNewItem = true">[+ Nuevo]</a>
                             </label>
-                            <el-select v-model="form.item_id" @change="changeItem" filterable>
-                                <el-option v-for="option in items" :key="option.id" :value="option.id" :label="option.full_description"></el-option>
+                            <el-select 
+                                v-model="form.item_id" 
+                                @change="changeItem"
+                                filterable
+                                remote
+                                reserve-keyword
+                                :remote-method="remoteSearchItems"
+                                :loading="loading_search"
+                                placeholder="Buscar producto o servicio">
+                                <el-option 
+                                    v-for="option in items" 
+                                    :key="option.id" 
+                                    :value="option.id" 
+                                    :label="option.full_description">
+                                </el-option>
                             </el-select>
                             <small class="form-control-feedback" v-if="errors.item_id" v-text="errors.item_id[0]"></small>
                         </div>
@@ -217,6 +230,7 @@
                 titleAction: '',
                 showWeightedCalculation: false,
                 applyWeightedPrice: false,
+                loading_search: false,
             }
         },
         computed: {
@@ -439,7 +453,21 @@
 
                 const weightedPrice = ((currentStock * currentPrice) + (newQuantity * newPrice)) / (currentStock + newQuantity);
                 this.form.sale_unit_price = Number(weightedPrice.toFixed(2));
-            }
+            },
+            async remoteSearchItems(query) {
+                if (query.length > 2) {
+                    this.loading_search = true
+                    await this.$http.get(`/purchases/search-items?search=${query}`)
+                        .then(response => {
+                            this.items = response.data
+                            this.loading_search = false
+                        })
+                        .catch(error => {
+                            console.log(error)
+                            this.loading_search = false
+                        })
+                }
+            },
         },
         watch: {
             'form.quantity': function(newVal, oldVal) {
