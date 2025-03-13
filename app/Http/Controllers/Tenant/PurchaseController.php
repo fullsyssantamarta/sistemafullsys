@@ -146,7 +146,6 @@ class PurchaseController extends Controller
         // $charge_types = ChargeDiscountType::whereType('charge')->whereLevel('item')->get();
         // $attribute_types = AttributeType::whereActive()->orderByDescription()->get();
         $warehouses = Warehouse::all();
-
         return compact('items', 'categories', 'taxes','warehouses');
     }
 
@@ -170,19 +169,25 @@ class PurchaseController extends Controller
         return view('tenant.purchases.note', compact('resourceId'));
     }
 
-    public function store(PurchaseRequest $request)
-    {
+    public function store(PurchaseRequest $request) {
         $data = self::convert($request);
-
+        
         $purchase = DB::connection('tenant')->transaction(function () use ($data) {
             $doc = Purchase::create($data);
-            foreach ($data['items'] as $row)
-            {
-                // $doc->items()->create($row);
+            foreach ($data['items'] as $row) {
                 $p_item = new PurchaseItem;
                 $p_item->fill($row);
                 $p_item->purchase_id = $doc->id;
                 $p_item->save();
+
+                // Solo actualizar el precio de venta si viene en el request
+                if(isset($row['sale_unit_price'])) {
+                    $item = Item::find($row['item_id']);
+                    if($item) {
+                        $item->sale_unit_price = $row['sale_unit_price'];
+                        $item->save();
+                    }
+                }
 
                 if(array_key_exists('lots', $row)){
                     foreach ($row['lots'] as $lot){
@@ -267,6 +272,14 @@ class PurchaseController extends Controller
                 $p_item->purchase_id = $doc->id;
                 $p_item->save();
 
+                if(isset($row['sale_unit_price']) && $row['sale_unit_price'] > 0) {
+                    $item = Item::find($row['item_id']);
+                    if($item) {
+                        $item->sale_unit_price = $row['sale_unit_price'];
+                        $item->save();
+                    }
+                }
+                
                 if(array_key_exists('lots', $row)){
 
                     foreach ($row['lots'] as $lot){
@@ -408,6 +421,16 @@ class PurchaseController extends Controller
                 $items = Item::whereNotIsSet()->whereIsActive()->orderBy('name')->get(); //whereWarehouse()
                 return collect($items)->transform(function($row) {
                     $full_description = ($row->internal_id)?$row->internal_id.' - '.$row->name:$row->name;
+                    // Obtener el stock del almacén del usuario actual
+                    $establishment = Establishment::where('id', auth()->user()->establishment_id)->first();
+                    $stock = 0;
+                    if($establishment) {
+                        $warehouse = ItemWarehouse::where('item_id', $row->id)
+                                                ->where('warehouse_id', $establishment->id)
+                                                ->first();
+                        $stock = $warehouse ? $warehouse->stock : 0;
+                    }
+
                     return [
                         'id' => $row->id,
                         'item_code'  => $row->item_code,
@@ -449,6 +472,7 @@ class PurchaseController extends Controller
                         //         'stock' => $row->stock,
                         //     ];
                         // })
+                        'stock' => $stock,
                     ];
                 });
 //                return $items;
