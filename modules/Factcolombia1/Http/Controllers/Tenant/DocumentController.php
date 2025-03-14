@@ -203,7 +203,7 @@ class DocumentController extends Controller
     }
 
     public function sincronize_resolutions($identification_number){
-        $resolutions = $this->api_conection("table/resolutions/{$identification_number}", "GET")->resolutions;
+        $resolutions = $this->api_conection("table_resolutions/{$identification_number}", "GET")->resolutions;
         foreach($resolutions as $resolution){
             if(in_array($resolution->type_document_id, [1, 2, 4, 5])){
                 $r = TypeDocument::where('resolution_number', $resolution->resolution)->where('prefix', $resolution->prefix)->orderBy('resolution_date', 'desc')->get();
@@ -774,7 +774,18 @@ class DocumentController extends Controller
                         ];
                     }
                 }
-            }
+                else{
+                    try{
+                        return [
+                            'success' => false,
+                            'validation_errors' => true,
+                            'message' => "No se pudo actualizar el estado de la Factura Nro: #{$service_invoice['prefix']}{$service_invoice['number']}. La factura ya existe en la DIAN, pero los datos ingresados no corresponden a los datos registrados en la DIAN, consulte el cufe: {$response_model->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->XmlDocumentKey}",
+                        ];
+                    }catch(\Exception $f){
+                        \Log::debug($f->getMessage());
+                    }
+                }
+        }
             else{
                 if(isset($response_model->success) && ($response_model->success === true) && ($response_model->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->IsValid == "false") && ($response_model->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->ErrorMessage->string == 'Regla: 90, Rechazo: Documento procesado anteriormente.')){
                     $ch = curl_init("{$base_url}ubl2.1/xml/document/{$response_model->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->XmlDocumentKey}");
