@@ -200,21 +200,30 @@ class CashController extends Controller
     }
 
     //Se modifica la funcion report()
-    public function report($cashId, $only_head = null) {
+    public function report($cashId, $electronic_type = 'all') {
         $cash = Cash::findOrFail($cashId);
         $company = Company::first();
 
-        // Se Calcula $cashEgress, similar al de la funcion que estaba.
-        $cashEgress = $cash->cash_documents->sum(function ($cashDocument) {
+        // Filtrar los documentos según el tipo electrónico
+        $filtered_documents = $cash->cash_documents->filter(function ($document) use ($electronic_type) {
+            if (!$document->document_pos) return false;
+            
+            if ($electronic_type === 'all') return true;
+            
+            return $document->document_pos->electronic == $electronic_type;
+        });
+
+        // Calcular $cashEgress solo para documentos filtrados
+        $cashEgress = $filtered_documents->sum(function ($cashDocument) {
             return $cashDocument->expense_payment ? $cashDocument->expense_payment->payment : 0;
         });
 
-        // Se Recupera $expensePayments, similar como estaba.
-        $expensePayments = $cash->cash_documents->filter(function ($doc) {
+        // Filtrar expense_payments según el tipo
+        $expensePayments = $filtered_documents->filter(function ($doc) {
             return !is_null($doc->expense_payment_id);
         })->map->expense_payment;
 
-        // Inicialización de $methods_payment.
+        // Inicialización de methods_payment
         $methods_payment = PaymentMethodType::all()->map(function($row) {
             return (object)[
                 'id' => $row->id,
@@ -226,16 +235,32 @@ class CashController extends Controller
         // Se recuperan las categorías
         $categories = Category::all()->pluck('name', 'id');
 
-        // Se Recupera la Resolución
-        $resolutions_maquinas = ConfigurationPos::select('cash_type', 'plate_number', 'electronic')->get();
+        // Filtrar las máquinas según el tipo seleccionado
+        $query = ConfigurationPos::select('cash_type', 'plate_number', 'electronic');
+        if ($electronic_type !== 'all') {
+            $query->where('electronic', $electronic_type);
+        }
+        $resolutions_maquinas = $query->get();
 
-        set_time_limit(0); // Aumentar el tiempo de ejecución si los reportes son grandes.
+        // Determinar si es reporte resumido
+        $is_resumido = $electronic_type === 'resumido';
 
-        // Se Pasan todas las variables necesarias a la vista.
-        $pdf = PDF::loadView('tenant.cash.report_pdf', compact("cash", "company", "methods_payment", "cashEgress", "categories", "resolutions_maquinas", "expensePayments", "only_head"));
+        set_time_limit(0);
+
+        $pdf = PDF::loadView('tenant.cash.report_pdf', compact(
+            "cash", 
+            "company", 
+            "methods_payment", 
+            "cashEgress", 
+            "categories", 
+            "resolutions_maquinas", 
+            "expensePayments",
+            "electronic_type",
+            "is_resumido",
+            "filtered_documents" // Agregamos los documentos filtrados
+        ));
 
         $filename = "Reporte_POS - {$cash->user->name} - {$cash->date_opening} {$cash->time_opening}";
-
         return $pdf->stream($filename . '.pdf');
     }
 

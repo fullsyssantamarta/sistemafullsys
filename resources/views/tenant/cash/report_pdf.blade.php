@@ -10,9 +10,10 @@
     $cash_final_balance = 0;
     $document_count = 0;
     $cash_taxes = 0;
-    $cash_documents = $cash->cash_documents;
-    // dd($cash_documents);
-    $is_complete = $only_head === 'resumido' ? false : true;
+    $cash_documents = $filtered_documents; // Usar los documentos filtrados en lugar de todos
+    
+    $is_complete = !$is_resumido;  // Reemplazamos la referencia a only_head
+    
     $first_document = '';
     $last_document = '';
 
@@ -227,7 +228,7 @@
             </div>
         </div>
         @php
-            $is_complete = $only_head === 'resumido' ? false : true;
+            $is_complete = !$is_resumido;  // Reemplazar la referencia a only_head
         @endphp
         <!DOCTYPE html>
         <html lang="es">
@@ -723,13 +724,23 @@
                 </table>
 
                 <div style="margin: auto; width: 80%;">
-                    <h2 style="text-align: center;">Inventario de máquinas</h2>
+                    <h2 style="text-align: center;">
+                        Inventario de máquinas 
+                        @if($electronic_type === '1')
+                            (Electrónicas)
+                        @elseif($electronic_type === '0')  
+                            (No Electrónicas)
+                        @else
+                            (Todas)
+                        @endif
+                    </h2>
 
                     <table border="1" style="width: 100%; margin: auto;">
                         <thead>
                             <tr>
                                 <th style="text-align: center;">Tipo de caja</th>
                                 <th style="text-align: center;">Número de Caja o Serial</th>
+                                <th style="text-align: center;">Tipo</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -737,10 +748,13 @@
                                 <tr>
                                     <td style="text-align: center;">{{ $resolution->cash_type ?? 'N/A' }}</td>
                                     <td style="text-align: center;">{{ $resolution->plate_number ?? 'N/A' }}</td>
+                                    <td style="text-align: center;">
+                                        {{ $resolution->electronic ? 'Electrónica' : 'No Electrónica' }}
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="2" style="text-align: center;">No se encontraron máquinas.</td>
+                                    <td colspan="3" style="text-align: center;">No se encontraron máquinas del tipo seleccionado.</td>
                                 </tr>
                             @endforelse
                         </tbody>
