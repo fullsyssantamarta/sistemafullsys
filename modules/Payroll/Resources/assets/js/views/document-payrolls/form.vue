@@ -219,7 +219,7 @@
                                     <div class="col-md-3">
                                         <div class="form-group" :class="{'has-danger': errors['accrued.worked_days']}">
                                             <label class="control-label">Días trabajados<span class="text-danger"> *</span></label>
-                                            <el-input-number v-model="form.accrued.worked_days" :min="1" :max="30" :precision="0" controls-position="right" @change="changeWorkedDays"></el-input-number>
+                                            <el-input-number v-model="form.accrued.worked_days" :min="0" :max="30" :precision="0" controls-position="right" @change="changeWorkedDays"></el-input-number>
                                             <small class="form-control-feedback" v-if="errors['accrued.worked_days']" v-text="errors['accrued.worked_days'][0]"></small>
                                         </div>
                                     </div>
@@ -1993,12 +1993,7 @@
             },
             salaryValidation(){
 
-                if(parseFloat(this.form.accrued.salary) <= 0 || parseFloat(this.form.accrued.total_base_salary) <= 0){
-                    return {
-                        success : false,
-                        message : 'El campo Salario debe ser mayor a 0'
-                    }
-                }
+                
 
                 return {
                     success : true

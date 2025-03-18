@@ -128,6 +128,19 @@ class DocumentPayrollController extends Controller
 
     }
 
+    protected function processAccruedData($accrued)
+    {
+        $processedAccrued = $accrued;
+        
+        if (isset($processedAccrued['transportation_allowance']) && 
+            ($processedAccrued['transportation_allowance'] == 0 || 
+             $processedAccrued['transportation_allowance'] === null)) {
+            unset($processedAccrued['transportation_allowance']);
+        }
+        
+        return $processedAccrued;
+    }
+
     public function store(DocumentPayrollRequest $request)
     {
         try {
@@ -151,6 +164,11 @@ class DocumentPayrollController extends Controller
                     // inputs
                     $helper = new DocumentPayrollHelper();
                     $inputs = $helper->getInputs($request);
+
+                    // Procesar los datos de accrued antes de guardar
+                    if (isset($inputs['accrued'])) {
+                        $inputs['accrued'] = $this->processAccruedData($inputs['accrued']);
+                    }
 
                     // registrar nomina en bd
                     $document = DocumentPayroll::create($inputs);
