@@ -180,13 +180,13 @@ class PurchaseController extends Controller
                 $p_item->purchase_id = $doc->id;
                 $p_item->save();
 
-                // Solo actualizar el precio de venta si viene en el request
-                if(isset($row['sale_unit_price'])) {
-                    $item = Item::find($row['item_id']);
-                    if($item) {
+                $item = Item::find($row['item_id']);
+                if($item) {
+                    $item->purchase_unit_price = $row['unit_price'];
+                    if(isset($row['sale_unit_price'])) {
                         $item->sale_unit_price = $row['sale_unit_price'];
-                        $item->save();
                     }
+                    $item->save();
                 }
 
                 if(array_key_exists('lots', $row)){
@@ -495,17 +495,34 @@ class PurchaseController extends Controller
     public function searchItems(Request $request)
     {
         $search = $request->input('search');
+        $newItemId = $request->input('new_item_id');
         
-        $items = Item::whereNotIsSet()
-                    ->whereIsActive()
-                    ->where(function($query) use($search) {
-                        $query->where('name', 'like', "%{$search}%")
-                              ->orWhere('internal_id', 'like', "%{$search}%")
-                              ->orWhere('description', 'like', "%{$search}%");
-                    })
-                    ->orderBy('name')
-                    ->take(20)
-                    ->get();
+        $query = Item::whereNotIsSet()
+                    ->whereIsActive();
+                    
+        // Si hay un nuevo item, asegurarse de incluirlo
+        if ($newItemId) {
+            $query->where(function($q) use($search, $newItemId) {
+                $q->where('id', $newItemId)
+                  ->orWhere(function($sq) use($search) {
+                      if ($search) {
+                          $sq->where('name', 'like', "%{$search}%")
+                             ->orWhere('internal_id', 'like', "%{$search}%")
+                             ->orWhere('description', 'like', "%{$search}%");
+                      }
+                  });
+            });
+        } else if ($search) {
+            $query->where(function($q) use($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('internal_id', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        $items = $query->orderByDesc('id') // Ordenar por ID descendente para que el nuevo aparezca primero
+                       ->take(20)
+                       ->get();
 
         return collect($items)->transform(function($row) {
             $full_description = ($row->internal_id) ? $row->internal_id.' - '.$row->name : $row->name;

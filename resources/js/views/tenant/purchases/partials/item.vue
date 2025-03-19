@@ -343,7 +343,6 @@
                 this.form.item.unit_type_id = row.unit_type_id
             },
             changeItem() {
-
                 this.form.item = _.find(this.items, {'id': this.form.item_id})
                 this.form.unit_price = this.form.item.purchase_unit_price
                 // this.form.affectation_igv_type_id = this.form.item.purchase_affectation_igv_type_id
@@ -355,9 +354,12 @@
                 // Establecer el precio de venta inicial al cambiar item
                 this.form.sale_unit_price = this.form.item.sale_unit_price
                 
-                // Calcular precio ponderado solo si está activado
-                if(this.applyWeightedPrice) {
-                    this.calculateWeightedPrice()
+                // Si applyWeightedPrice está activo, calcular el precio ponderado
+                // después de establecer los valores iniciales
+                if(this.applyWeightedPrice && this.form.item.stock) {
+                    this.$nextTick(() => {
+                        this.calculateWeightedPrice()
+                    })
                 }
             },
 
@@ -433,13 +435,19 @@
                 return form
             },
             reloadDataItems(item_id) {
-                this.$http.get(`/${this.resource}/table/items`).then((response) => {
-                    this.items = response.data
-                    this.form.item_id = item_id
-                    this.changeItem()
-                    // this.filterItems()
-
-                })
+                // Modificar para que incluya el nuevo item en la búsqueda
+                this.loading_search = true
+                this.$http.get(`/purchases/search-items?new_item_id=${item_id}`)
+                    .then((response) => {
+                        this.items = response.data
+                        this.form.item_id = item_id
+                        this.changeItem()
+                        this.loading_search = false
+                    })
+                    .catch(error => {
+                        console.log(error)
+                        this.loading_search = false
+                    })
             },
             calculateWeightedPrice() {
                 if (!this.applyWeightedPrice || !this.form.item.stock || !this.form.quantity) {
