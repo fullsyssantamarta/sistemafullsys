@@ -212,7 +212,7 @@ class QuotationController extends Controller
         // $charge_types = ChargeDiscountType::whereType('charge')->whereLevel('item')->get();
         $company = Company::active();
         $payment_method_types = PaymentMethodType::orderBy('id','desc')->get();
-        $payment_destinations = $this->getPaymentDestinationsQuotation();
+        $payment_destinations = $this->getPaymentDestinationsAlternate();
         $currencies = Currency::all();
         $taxes = $this->table('taxes');
         return compact('customers', 'establishments','currencies', 'taxes',

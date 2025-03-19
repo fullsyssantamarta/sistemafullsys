@@ -10,8 +10,8 @@ use App\Models\Tenant\DocumentPayment;
 use App\Models\Tenant\PaymentMethodType;
 use Exception, Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade as PDF;
-use Modules\Finance\Traits\FinanceTrait; 
-use Modules\Finance\Traits\FilePaymentTrait; 
+use Modules\Finance\Traits\FinanceTrait;
+use Modules\Finance\Traits\FilePaymentTrait;
 
 class DocumentPaymentController extends Controller
 {
@@ -29,7 +29,7 @@ class DocumentPaymentController extends Controller
     {
         return [
             'payment_method_types' => PaymentMethodType::all(),
-            'payment_destinations' => $this->getPaymentDestinations()
+            'payment_destinations' => $this->getPaymentDestinationsAlternate()
         ];
     }
 

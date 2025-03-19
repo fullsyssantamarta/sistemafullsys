@@ -31,9 +31,9 @@ trait FinanceTrait
         return collect($bank_accounts)->push($cash);
     }
 
-    public function getPaymentDestinationsQuotation(){
+    public function getPaymentDestinationsAlternate(){
         $bank_accounts = self::getBankAccounts();
-        $cash = $this->getCashQuotation();
+        $cash = $this->getCashAlternate();
         // dd($cash);
         return collect($bank_accounts)->push($cash);
     }
@@ -79,7 +79,7 @@ trait FinanceTrait
 //        }
     }
 
-    public function getCashQuotation(){
+    public function getCashAlternate(){
         $cash =  Cash::where([['user_id',auth()->user()->id],['state',true]])->first();
         if($cash){
             return [

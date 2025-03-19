@@ -224,7 +224,6 @@
             },
 
             clickAddRow() {
-                console.log("A")
                 this.records.push({
                     id: null,
                     date_of_payment: moment().format('YYYY-MM-DD'),
@@ -237,7 +236,6 @@
                     errors: {},
                     loading: false
                 });
-                console.log("B")
                 this.showAddButton = false;
             },
 
