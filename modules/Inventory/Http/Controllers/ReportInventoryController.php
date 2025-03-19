@@ -157,7 +157,6 @@ class ReportInventoryController extends Controller
             ->whereHas('item', function($q){
                 $q->where([['item_type_id', '01'], ['unit_type_id', '!=','ZZ']]);
                 $q->whereNotIsSet();
-                $q->whereFilterByRelation($relation, $id);
             })
             ->latest()
             ->get();
