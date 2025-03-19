@@ -204,7 +204,6 @@ class QuotationController extends Controller
     }
 
     public function tables() {
-
         $customers = $this->table('customers');
         $establishments = Establishment::where('id', auth()->user()->establishment_id)->get();
         // $currency_types = CurrencyType::whereActive()->get();
@@ -213,14 +212,11 @@ class QuotationController extends Controller
         // $charge_types = ChargeDiscountType::whereType('charge')->whereLevel('item')->get();
         $company = Company::active();
         $payment_method_types = PaymentMethodType::orderBy('id','desc')->get();
-        $payment_destinations = $this->getPaymentDestinations();
-
+        $payment_destinations = $this->getPaymentDestinationsQuotation();
         $currencies = Currency::all();
         $taxes = $this->table('taxes');
-
         return compact('customers', 'establishments','currencies', 'taxes',
                         'company','payment_method_types', 'payment_destinations');
-
     }
 
     public function option_tables()

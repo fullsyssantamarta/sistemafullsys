@@ -24,18 +24,19 @@ use Modules\Sale\Models\RemissionPayment;
 
 trait FinanceTrait
 {
-
     public function getPaymentDestinations(){
-
         $bank_accounts = self::getBankAccounts();
         $cash = $this->getCash();
-
         // dd($cash);
-
         return collect($bank_accounts)->push($cash);
-
     }
 
+    public function getPaymentDestinationsQuotation(){
+        $bank_accounts = self::getBankAccounts();
+        $cash = $this->getCashQuotation();
+        // dd($cash);
+        return collect($bank_accounts)->push($cash);
+    }
 
     private static function getBankAccounts(){
 
@@ -46,22 +47,16 @@ trait FinanceTrait
                 'description' => "{$row->bank->description} - {$row->currency_type_id} - {$row->description}",
             ];
         });
-
     }
 
-
     public function getCash(){
-
         $cash =  Cash::where([['user_id',auth()->user()->id],['state',true]])->first();
-
         if($cash){
-
             return [
                 'id' => 'cash',
                 'cash_id' => $cash->id,
                 'description' => ($cash->reference_number) ? "CAJA CHICA - {$cash->reference_number}" : "CAJA CHICA",
             ];
-
         }
 //        else{
 //            $cash_create = Cash::create([
@@ -76,14 +71,42 @@ trait FinanceTrait
 //                                    'state' => true,
 //                                    'reference_number' => null
 //                                ]);
-//
 //            return [
 //                'id' => 'cash',
 //                'cash_id' => $cash_create->id,
 //                'description' => "CAJA CHICA"
 //            ];
 //        }
+    }
 
+    public function getCashQuotation(){
+        $cash =  Cash::where([['user_id',auth()->user()->id],['state',true]])->first();
+        if($cash){
+            return [
+                'id' => 'cash',
+                'cash_id' => $cash->id,
+                'description' => ($cash->reference_number) ? "CAJA CHICA - {$cash->reference_number}" : "CAJA CHICA",
+            ];
+        }
+        else{
+            $cash_create = Cash::create([
+                                    'user_id' => auth()->user()->id,
+                                    'date_opening' => date('Y-m-d'),
+                                    'time_opening' => date('H:i:s'),
+                                    'date_closed' => null,
+                                    'time_closed' => null,
+                                    'beginning_balance' => 0,
+                                    'final_balance' => 0,
+                                    'income' => 0,
+                                    'state' => true,
+                                    'reference_number' => null
+                                ]);
+            return [
+                'id' => 'cash',
+                'cash_id' => $cash_create->id,
+                'description' => "CAJA CHICA"
+            ];
+        }
     }
 
     public function createGlobalPayment($model, $row){

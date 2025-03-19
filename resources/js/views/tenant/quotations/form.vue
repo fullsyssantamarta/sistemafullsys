@@ -357,16 +357,25 @@ export default {
         await this.initForm()
         await this.$http.get(`/${this.resource}/tables`)
             .then(response => {
+//                console.log(response.data.currencies)
+//                console.log(response.data.establishments)
+//               console.log(response.data.customers)
+//                console.log(response.data.company)
                 this.taxes = response.data.taxes
                 this.currencies = response.data.currencies
                 this.establishments = response.data.establishments
                 this.all_customers = response.data.customers
                 this.company = response.data.company
                 let find_currency = _.find(this.currencies, { id: 170 })
+//                console.log(find_currency)
                 this.form.currency_id = find_currency ? find_currency.id : null
+//                console.log(this.form.currency_id)
                 this.form.establishment_id = (this.establishments.length > 0) ? this.establishments[0].id : null
+//                console.log(this.form.establishment_id)
                 this.payment_method_types = response.data.payment_method_types
+//                console.log(this.payment_method_types)
                 this.payment_destinations = response.data.payment_destinations
+//                console.log(this.payment_destinations)
                 this.changeEstablishment()
                 this.changeDateOfIssue()
                 this.changeCurrencyType()

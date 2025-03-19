@@ -77,7 +77,7 @@
                                     </td>
                                     <td>
                                         <div class="form-group mb-0">
-                                            
+
                                             <el-upload
                                                     :data="{'index': index}"
                                                     :headers="headers"
@@ -192,16 +192,16 @@
                 }
 
                 // console.log(this.records)
-            
+
             },
-            handleRemove(file, fileList) {       
-                
+            handleRemove(file, fileList) {
+
                 this.records[this.index_file].filename = null
                 this.records[this.index_file].temp_path = null
                 this.fileList = []
                 this.index_file = null
 
-            }, 
+            },
             initForm() {
                 this.records = [];
                 this.fileList = [];
@@ -222,7 +222,9 @@
                 this.$eventHub.$emit('reloadDataUnpaid')
 
             },
+
             clickAddRow() {
+                console.log("A")
                 this.records.push({
                     id: null,
                     date_of_payment: moment().format('YYYY-MM-DD'),
@@ -235,8 +237,10 @@
                     errors: {},
                     loading: false
                 });
+                console.log("B")
                 this.showAddButton = false;
             },
+
             clickCancel(index) {
                 this.records.splice(index, 1);
                 this.fileList = []
