@@ -2,7 +2,7 @@
     <thead>
         <tr>
             <th colspan="6">Información Básica</th>
-            <th colspan="7">Detalles Financieros</th>
+            <th colspan="9">Detalles Financieros</th>
         </tr>
         <tr>
             <th>FECHA</th>
@@ -15,6 +15,9 @@
             <th>Descuento</th>
             <th>BASE</th>
             <th>Impuestos</th>
+            @foreach($taxes as $tax)
+                <th>{{ $tax->name }}</th>
+            @endforeach
             <th>IVA Total</th>
             <th>Base + Impuesto</th>
             <th>Total pagar</th>
@@ -28,6 +31,10 @@
             $total_discount = 0;
             $total_tax_base = 0;
             $total_tax_amount = 0;
+            $tax_totals_by_type = [];
+            foreach($taxes as $tax) {
+                $tax_totals_by_type[$tax->id] = 0; 
+            }
         @endphp
 
         @foreach($records as $value)
@@ -78,6 +85,14 @@
                 <td class="celda text-right-td">{{ number_format(floatval(str_replace(',', '', ($row['total_discount'] ?? 0))) * $multiplier, 2, '.', '') }}</td>
                 <td class="celda text-right-td">{{ number_format(floatval(str_replace(',', '', $row['net_total'])) * $multiplier, 2, '.', '') }}</td>
                 <td class="celda">{{ $tax_names }}</td>
+                @foreach($taxes as $tax)
+                    @php
+                        $item_values = $value->getItemValuesByTax($tax->id);
+                        $tax_amount = floatval(str_replace(',', '', $item_values['tax_amount'])) * $multiplier;
+                        $tax_totals_by_type[$tax->id] += $tax_amount;
+                    @endphp
+                    <td class="celda text-right-td">{{ number_format($tax_amount, 2, '.', '') }}</td>
+                @endforeach
                 <td class="celda text-right-td">{{ number_format($tax_totals['tax'], 2, '.', '') }}</td>
                 <td class="celda text-right-td">{{ number_format(floatval(str_replace(',', '', $row['net_total'])) * $multiplier + $tax_totals['tax'], 2, '.', '') }}</td>
                 <td class="celda text-right-td">{{ number_format(floatval(str_replace(',', '', $row['total'])) * $multiplier, 2, '.', '') }}</td>
@@ -90,6 +105,9 @@
             <th>{{ number_format($total_discount, 2, '.', '') }}</th>
             <th>{{ number_format($net_total, 2, '.', '') }}</th>
             <th></th>
+            @foreach($taxes as $tax)
+                <th>{{ number_format($tax_totals_by_type[$tax->id], 2, '.', '') }}</th>
+            @endforeach
             <th>{{ number_format($total_tax_amount, 2, '.', '') }}</th>
             <th>{{ number_format($total_tax_base + $total_tax_amount, 2, '.', '') }}</th>
             <th>{{ number_format($total, 2, '.', '') }}</th>
