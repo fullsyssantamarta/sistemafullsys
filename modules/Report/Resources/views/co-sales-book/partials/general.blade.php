@@ -2,7 +2,7 @@
     <thead>
         <tr>
             <th colspan="6">Información Básica</th>
-            <th colspan="9">Detalles Financieros</th>
+            <th colspan="{{ 6 + ($taxes->count() * 2) }}">Detalles Financieros</th>
         </tr>
         <tr>
             <th>FECHA</th>
@@ -13,7 +13,9 @@
             <th>DIRECCIÓN</th>
             <th>Total/Excento</th>
             <th>Descuento</th>
-            <th>BASE</th>
+            @foreach($taxes as $tax)
+                <th>Base {{ str_contains($tax->name, '19') ? '19%' : (str_contains($tax->name, '5') ? '5%' : $tax->name) }}</th>
+            @endforeach
             <th>Impuestos</th>
             @foreach($taxes as $tax)
                 <th>{{ $tax->name }}</th>
@@ -32,8 +34,10 @@
             $total_tax_base = 0;
             $total_tax_amount = 0;
             $tax_totals_by_type = [];
+            $base_totals_by_type = [];
             foreach($taxes as $tax) {
                 $tax_totals_by_type[$tax->id] = 0; 
+                $base_totals_by_type[$tax->id] = 0;
             }
         @endphp
 
@@ -67,7 +71,7 @@
                 
                 foreach($taxes as $tax) {
                     $item_values = $value->getItemValuesByTax($tax->id);
-                    $tax_totals['base'] += floatval(str_replace(',', '', $item_values['taxable_amount'])) * $multiplier;
+                    $base_totals_by_type[$tax->id] += floatval(str_replace(',', '', $item_values['taxable_amount'])) * $multiplier;
                     $tax_totals['tax'] += floatval(str_replace(',', '', $item_values['tax_amount'])) * $multiplier;
                 }
                 
@@ -83,7 +87,13 @@
                 <td class="celda">{{ $customer ? $customer->address : ($row['customer_address'] ?? '') }}</td>
                 <td class="celda text-right-td">{{ number_format(floatval(str_replace(',', '', $row['total_exempt'])) * $multiplier, 2, '.', '') }}</td>
                 <td class="celda text-right-td">{{ number_format(floatval(str_replace(',', '', ($row['total_discount'] ?? 0))) * $multiplier, 2, '.', '') }}</td>
-                <td class="celda text-right-td">{{ number_format(floatval(str_replace(',', '', $row['net_total'])) * $multiplier, 2, '.', '') }}</td>
+                @foreach($taxes as $tax)
+                    @php
+                        $item_values = $value->getItemValuesByTax($tax->id);
+                        $base_amount = floatval(str_replace(',', '', $item_values['taxable_amount'])) * $multiplier;
+                    @endphp
+                    <td class="celda text-right-td">{{ number_format($base_amount, 2, '.', '') }}</td>
+                @endforeach
                 <td class="celda">{{ $tax_names }}</td>
                 @foreach($taxes as $tax)
                     @php
@@ -103,7 +113,9 @@
             <th colspan="6" class="celda text-right-td">TOTALES</th>
             <th>{{ number_format($total_exempt, 2, '.', '') }}</th>
             <th>{{ number_format($total_discount, 2, '.', '') }}</th>
-            <th>{{ number_format($net_total, 2, '.', '') }}</th>
+            @foreach($taxes as $tax)
+                <th>{{ number_format($base_totals_by_type[$tax->id], 2, '.', '') }}</th>
+            @endforeach
             <th></th>
             @foreach($taxes as $tax)
                 <th>{{ number_format($tax_totals_by_type[$tax->id], 2, '.', '') }}</th>
