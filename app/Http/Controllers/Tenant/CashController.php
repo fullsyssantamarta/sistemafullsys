@@ -204,14 +204,19 @@ class CashController extends Controller
         $cash = Cash::findOrFail($cashId);
         $company = Company::first();
 
-        // Filtrar los documentos según el tipo electrónico
-        $filtered_documents = $cash->cash_documents->filter(function ($document) use ($electronic_type) {
-            if (!$document->document_pos) return false;
-            
-            if ($electronic_type === 'all') return true;
-            
-            return $document->document_pos->electronic == $electronic_type;
-        });
+        // Si es resumido, ignorar el filtro de tipo electrónico
+        if ($electronic_type === 'resumido') {
+            $filtered_documents = $cash->cash_documents;
+        } else {
+            // Filtrar los documentos según el tipo electrónico
+            $filtered_documents = $cash->cash_documents->filter(function ($document) use ($electronic_type) {
+                if (!$document->document_pos) return false;
+                
+                if ($electronic_type === 'all') return true;
+                
+                return $document->document_pos->electronic == $electronic_type;
+            });
+        }
 
         // Calcular $cashEgress solo para documentos filtrados
         $cashEgress = $filtered_documents->sum(function ($cashDocument) {
@@ -237,7 +242,7 @@ class CashController extends Controller
 
         // Filtrar las máquinas según el tipo seleccionado
         $query = ConfigurationPos::select('cash_type', 'plate_number', 'electronic');
-        if ($electronic_type !== 'all') {
+        if ($electronic_type !== 'all' && $electronic_type !== 'resumido') {
             $query->where('electronic', $electronic_type);
         }
         $resolutions_maquinas = $query->get();
