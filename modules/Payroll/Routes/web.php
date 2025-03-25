@@ -18,6 +18,7 @@ if($hostname) {
                     Route::get('table/{table}', 'DocumentPayrollController@table');
                     Route::post('', 'DocumentPayrollController@store');
                     Route::get('record/{record}', 'DocumentPayrollController@record');
+                    Route::post('preeliminar-view', 'DocumentPayrollController@preeliminarview');
                     Route::get('downloadFile/{filename}', 'DocumentPayrollController@downloadFile');
                     Route::post('send-email', 'DocumentPayrollController@sendEmail');
                     Route::post('query-zipkey', 'DocumentPayrollController@queryZipkey');
