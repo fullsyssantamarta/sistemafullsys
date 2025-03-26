@@ -248,17 +248,19 @@
                     $tipoComprobante = 'Factura POS';
                     $numeroInicial = null;
                     $numeroFinal = null;
-
-                    foreach ($cash_documents as $cash_document) {
-                        if ($cash_document->document_pos) {
-                            $numeroActual = $cash_document->document_pos->number_full;
-                            if (!$numeroInicial || $numeroActual < $numeroInicial) {
-                                $numeroInicial = $numeroActual;
-                            }
-                            if (!$numeroFinal || $numeroActual > $numeroFinal) {
-                                $numeroFinal = $numeroActual;
-                            }
-                        }
+                    
+                    $documentos_ordenados = $cash_documents->filter(function($doc) {
+                        return $doc->document_pos !== null;
+                    })->sortBy(function($doc) {
+                        return $doc->document_pos->number;
+                    });
+                    
+                    if($documentos_ordenados->count() > 0) {
+                        $primerDoc = $documentos_ordenados->first();
+                        $ultimoDoc = $documentos_ordenados->last();
+                        
+                        $numeroInicial = $primerDoc->document_pos->series . '-' . $primerDoc->document_pos->number;
+                        $numeroFinal = $ultimoDoc->document_pos->series . '-' . $ultimoDoc->document_pos->number;
                     }
                 @endphp
 
@@ -270,8 +272,8 @@
                     </tr>
                     <tr>
                         <td class="celda">{{ $tipoComprobante }}</td>
-                        <td class="celda">{{ $numeroInicial }}</td>
-                        <td class="celda">{{ $numeroFinal }}</td>
+                        <td class="celda">{{ $numeroInicial ?: 'No hay documentos' }}</td>
+                        <td class="celda">{{ $numeroFinal ?: 'No hay documentos' }}</td>
                     </tr>
                 </table>
 
