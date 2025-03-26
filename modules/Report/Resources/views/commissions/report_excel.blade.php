@@ -113,11 +113,13 @@
                                 @endphp
                                 
                                 <tr>
-                                    <td class="celda" >{{$loop->iteration}}</td>
+                                    <td class="celda">{{$loop->iteration}}</td>
                                     <td class="celda">{{$row->name}}</td>
-                                    <td class="celda">{{$total_transactions}}</td>
-                                    <td class="celda">{{$acum_sales}}</td> 
-                                    <td class="celda">{{$total_commision}}</td> 
+                                    <td class="celda">{{$row->documents->count() + $row->sale_notes->count()}}</td>
+                                    <td class="celda">{{number_format($row->documents->sum('total') + $row->sale_notes->sum('total'), 2)}}</td>
+                                    <td class="celda">{{$row->user_commission ? number_format($row->user_commission->type == 'percentage' ? 
+                                        ($row->documents->sum('total') + $row->sale_notes->sum('total')) * ($row->user_commission->amount / 100) :
+                                        $row->user_commission->amount * ($row->documents->count() + $row->sale_notes->count()), 2) : '0.00'}}</td>
                                 </tr>
                             @endforeach
                         </tbody>
