@@ -270,7 +270,7 @@
 
         <tr>
             <td colspan="4" class="text-right font-bold desc">TOTAL A PAGAR: {{ $document->currency->symbol }}</td>
-            <td class="text-right font-bold desc">{{ number_format($document->total, 2) }}</td>
+            <td class="text-right font-bold desc">{{ number_format($document->total - $document->total_discount, 2) }}</td>
         </tr>
     </tbody>
 </table>
