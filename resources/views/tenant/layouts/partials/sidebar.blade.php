@@ -844,6 +844,21 @@
                     </li>
                     @endif --}}
 
+                    <li class="nav-parent {{$path[0] === 'accounting' && in_array($path[1], ['journal']) ? 'nav-active nav-expanded' : ''}}">
+                        <a class="nav-link" href="#">
+                            <span class="float-right badge badge-red badge-danger mr-3">Nuevo</span>
+                            <i class="fas fa-hand-holding-usd" aria-hidden="true"></i>
+                            <span>Contabilidad</span>
+                        </a>
+                        <ul class="nav nav-children" style="">
+                            <li class="{{(($path[0] === 'accounting') && ($path[1] == 'journal')) ? 'nav-active' : ''}}">
+                                <a class="nav-link" href="{{route('tenant.accounting.journal.entries.index')}}">
+                                    Asientos contables
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
                     @if(in_array('finance', $vc_modules))
 
                     <li class="nav-parent {{$path[0] === 'finances' && in_array($path[1], [
