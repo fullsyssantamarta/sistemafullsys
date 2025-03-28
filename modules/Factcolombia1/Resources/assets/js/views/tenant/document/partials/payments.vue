@@ -14,7 +14,7 @@
                                 <th>#</th>
                                 <th>Fecha de pago</th>
                                 <th>Método de pago</th>
-                                <th>Origen de Pago</th>
+                                <th>Destino</th>
                                 <th>Referencia</th>
                                 <th>Archivo</th>
                                 <th class="text-right">Monto</th>
