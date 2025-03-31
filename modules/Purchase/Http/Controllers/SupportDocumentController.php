@@ -138,6 +138,7 @@ class SupportDocumentController extends Controller
      */
     public function store(SupportDocumentRequest $request)
     {
+        //dd($request->all());
         try 
         {
             $support_document = DB::connection('tenant')->transaction(function () use ($request) {

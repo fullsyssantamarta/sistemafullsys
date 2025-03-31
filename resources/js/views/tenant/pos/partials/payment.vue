@@ -220,7 +220,7 @@
                     <div class="card card-default">
                         <div class="card-body text-center">
                             <div class="row col-lg-12">
-                                <div class="col-lg-6">
+                                <div class="col-lg-4">
                                     <div class="form-group">
                                         <h2>
                                             <el-switch v-model="enabled_discount"
@@ -230,10 +230,21 @@
                                         </h2>
                                     </div>
                                 </div>
-                                <div class="col-lg-6">
+                                <div class="col-lg-4">
+                                    <div class="form-group" v-if="enabled_discount">
+                                        <h2>
+                                            <el-switch v-model="is_percentage"
+                                                active-text="Por porcentaje"
+                                                class="control-label font-weight-semibold m-0 text-center m-b-0"
+                                                @change="changeDiscountType"></el-switch>
+                                        </h2>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4">
                                     <div class="form-group">
                                         <label class="control-label">
-                                            <template>Monto descuento</template>
+                                            <template v-if="is_percentage">Porcentaje descuento (%)</template>
+                                            <template v-else>Monto descuento</template>
                                             <el-tooltip class="item"
                                                 content="Descuento Global"
                                                 effect="dark"
@@ -241,9 +252,18 @@
                                                 <i class="fa fa-info-circle"></i>
                                             </el-tooltip>
                                         </label>
-                                        <el-input v-model="discount_amount"
+                                        <el-input 
+                                            v-if="is_percentage"
+                                            v-model="discount_percentage"  
                                             :disabled="!enabled_discount"
-                                            @change="inputDiscountAmount()">
+                                            @change="inputDiscountPercentage">
+                                            <template slot="append">%</template>
+                                        </el-input>
+                                        <el-input 
+                                            v-else
+                                            v-model="discount_amount"
+                                            :disabled="!enabled_discount"
+                                            @change="inputDiscountAmount">
                                             <template slot="prepend">{{ currencyTypeActive.symbol }}</template>
                                         </el-input>
                                     </div>
@@ -397,6 +417,8 @@
             return {
                 enabled_discount: false,
                 discount_amount:0,
+                is_percentage: false,
+                discount_percentage: 0,
                 loading_submit: false,
                 showDialogOptions:false,
                 showDialogMultiplePayment:false,
@@ -522,15 +544,72 @@
                 }                
                 if (!this.enabled_discount) {
                     this.discount_amount = 0
+                    this.discount_percentage = 0
                     this.form.total = parseFloat(this.form.total_without_discount)
                     this.form.allowance_charges = []
                     this.enter_amount = parseFloat(this.form.total)
                     this.enterAmount()
                     this.initFormPayment()
                 } else {
-                    if (this.discount_amount > 0) {
+                    if (this.discount_amount > 0 || this.discount_percentage > 0) {
                         this.inputDiscountAmount()
+                        this.inputDiscountPercentage()
                     }
+                }
+            },
+            changeDiscountType() {
+                // Al cambiar el tipo de descuento, reiniciar los valores
+                this.discount_amount = 0
+                this.discount_percentage = 0
+                if (this.form.total_without_discount) {
+                    this.form.total = parseFloat(this.form.total_without_discount)
+                    this.form.allowance_charges = []
+                    this.enter_amount = parseFloat(this.form.total)
+                    this.enterAmount()
+                    this.initFormPayment()
+                }
+            },
+            async inputDiscountPercentage() {
+                if (!this.enabled_discount) {
+                    this.discount_percentage = 0
+                    return
+                }
+
+                if (this.discount_percentage === 0 && this.form.total_without_discount != null) {
+                    this.form.total = parseFloat(this.form.total_without_discount)
+                }
+
+                if (this.discount_percentage && !isNaN(this.discount_percentage) && parseFloat(this.discount_percentage) > 0) {
+                    const percentage = parseFloat(this.discount_percentage)
+                    
+                    if (percentage > 100) {
+                        this.$message.error("El porcentaje de descuento no puede ser mayor a 100%")
+                        this.discount_percentage = 0
+                        return
+                    }
+
+                    // Calcular el monto basado en el porcentaje
+                    const total = this.form.total_without_discount || this.form.total
+                    const discount = (total * percentage) / 100
+
+                    // Actualizar el monto de descuento para mantener la consistencia
+                    this.discount_amount = discount.toFixed(2)
+                    
+                    this.form.allowance_charges = []
+                    this.form.allowance_charges = await this.createAllowanceCharge(
+                        discount,
+                        this.form.total_without_discount || this.form.total
+                    )
+                    this.form.total = parseFloat(this.form.total_without_discount - discount)
+                    this.enter_amount = parseFloat(this.form.total)
+                    this.enterAmount()
+                    this.initFormPayment()
+                } else {
+                    this.form.total = parseFloat(this.form.total_without_discount)
+                    this.form.allowance_charges = []
+                    this.enter_amount = parseFloat(this.form.total)
+                    this.enterAmount()
+                    this.initFormPayment()
                 }
             },
             async inputDiscountAmount() {
@@ -1112,6 +1191,8 @@
                 // Reiniciar flags y montos de descuento
                 this.enabled_discount = false
                 this.discount_amount = 0
+                this.is_percentage = false
+                this.discount_percentage = 0
                 
                 // Restaurar total original si existe descuento previo
                 if (this.form.hasOwnProperty('total_without_discount')) {
