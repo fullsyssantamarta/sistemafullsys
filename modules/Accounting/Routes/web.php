@@ -19,13 +19,21 @@ if($hostname) {
         Route::prefix('accounting')->middleware(['auth'])->group(function() {
             Route::get('/', 'AccountingController@index');
             Route::get('/columns', 'AccountingController@columns');
+
             // CRUD para Cuentas Contables
-            Route::apiResource('charts', 'ChartOfAccountController');
+            Route::get('charts/records', 'ChartOfAccountController@records');
+            Route::get('charts/columns', 'ChartOfAccountController@columns');
+            Route::get('charts/children/{parent_id}', 'ChartOfAccountController@getChildren');
+            Route::get('charts/parent/{parent_id}', 'ChartOfAccountController@getChildren');
+            Route::apiResource('charts', 'ChartOfAccountController')->names([
+                'index'   => 'tenant.accounting.charts.index',
+            ]);
 
             // CRUD para Prefijos de Asientos Contables
             Route::apiResource('journal/prefixes', 'JournalPrefixController');
 
             // CRUD para Asientos Contables
+            Route::get('journal/entries/columns', 'JournalEntryController@columns');
             Route::get('journal/entries/records', 'JournalEntryController@records');
             Route::apiResource('journal/entries', 'JournalEntryController')->names([
                 'index'   => 'tenant.accounting.journal.entries.index',

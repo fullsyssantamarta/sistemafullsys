@@ -9,21 +9,57 @@ use Modules\Accounting\Models\ChartOfAccount;
 
 class ChartOfAccountController extends Controller
 {
-    /**
-     * Retrieve all accounts
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index(Request $request)
     {
+        return view('accounting::chart_of_accounts.index');
+    }
+
+    public function columns()
+    {
+        return [
+            'level' => 'Jerarquía',
+        ];
+    }
+
+    public function records(Request $request)
+    {
+        $perPage = $request->input('per_page', 20); // Número de registros por página
+        $page = $request->input('page', 1); // Página actual
+        $column = $request->input('column', 'date'); // Columna para buscar (por defecto 'date')
+        $value = $request->input('value', ''); // Valor de búsqueda
+
+        // Construir la consulta base
         $query = ChartOfAccount::with('parent');
-        if ($request->has('level')) {
-            $query->where('level', $request->input('level'));
+
+        // Aplicar filtro si el valor no está vacío
+        if (!empty($value)) {
+            $query->where($column, 'like', "%$value%");
         }
 
+        // Ordenar por el código jerárquico
+        $query->orderBy('code', 'asc');
+
+        // Obtener datos paginados
+        $entries = $query->paginate($perPage, ['*'], 'page', $page);
+
+        // Construir respuesta con estructura específica
         return response()->json([
-            'success' => true,
-            'data' => $query->get(),
+            "data" => $entries->items(), // Lista de registros
+            "links" => [
+                "first" => $entries->url(1),
+                "last" => $entries->url($entries->lastPage()),
+                "prev" => $entries->previousPageUrl(),
+                "next" => $entries->nextPageUrl(),
+            ],
+            "meta" => [
+                "current_page" => $entries->currentPage(),
+                "from" => $entries->firstItem(),
+                "last_page" => $entries->lastPage(),
+                "path" => request()->url(),
+                "per_page" => (string) $entries->perPage(),
+                "to" => $entries->lastItem(),
+                "total" => $entries->total(),
+            ]
         ]);
     }
 
@@ -54,16 +90,29 @@ class ChartOfAccountController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'code' => 'required|unique:chart_of_accounts|max:8',
+            'code' => 'required|max:8', function ($attribute, $value, $fail) {
+                // Buscar manualmente en la base de datos del tenant
+                if (\DB::connection('tenant')->table('chart_of_accounts')->where('code', $value)->exists()) {
+                    $fail('El código ya está en uso.');
+                }
+            },
             'name' => 'required|string|max:255',
             'type' => 'required|in:Asset,Liability,Equity,Revenue,Expense,Cost',
-            'parent_id' => 'nullable|exists:chart_of_accounts,id',
-            'level' => 'required|integer|min:1|max:4',
-            'status' => 'boolean'
+            'parent_id' => 'nullable',
+            'level' => 'required|integer|min:1|max:4'
         ]);
 
-        $account = ChartOfAccount::create($request->all());
-        return response()->json($account, 201);
+        $request->merge([
+            'status' => 1
+        ]);
+
+        $account = ChartOfAccount::create($request->only(['code', 'name', 'type', 'parent_id', 'level', 'status']));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Asiento contable creado exitosamente',
+            'data' => $account
+        ], 201);
     }
 
     /**
@@ -77,7 +126,22 @@ class ChartOfAccountController extends Controller
     public function show($id)
     {
         $account = ChartOfAccount::with('children')->findOrFail($id);
-        return response()->json($account);
+        // Obtener jerarquías superiores (padres)
+        $parents = [];
+        $currentParent = $account->parent;
+
+        while ($currentParent) {
+            $parents[] = $currentParent;
+            $currentParent = $currentParent->parent; // Subir al siguiente nivel
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'account' => $account,
+                'parents' => array_reverse($parents), // Ordenar de nivel superior a inferior
+            ],
+        ]);
     }
 
     /**
@@ -107,15 +171,19 @@ class ChartOfAccountController extends Controller
         $account = ChartOfAccount::findOrFail($id);
 
         $request->validate([
-            'name' => 'string|max:255',
-            'type' => 'in:Asset,Liability,Equity,Revenue,Expense,Cost',
-            'parent_id' => 'nullable|exists:chart_of_accounts,id',
-            'level' => 'integer|min:1|max:4',
-            'status' => 'boolean'
+            'code' => 'required|max:8',
+            'name' => 'required|string|max:255',
+            'type' => 'required|in:Asset,Liability,Equity,Revenue,Expense,Cost',
+            'parent_id' => 'nullable',
+            'level' => 'required|integer|min:1|max:4'
         ]);
 
         $account->update($request->all());
-        return response()->json($account);
+        return response()->json([
+            'success' => true,
+            'message' => 'Asiento contable actualizado exitosamente',
+            'data' => $account
+        ], 200);
     }
 
     /**
@@ -130,5 +198,21 @@ class ChartOfAccountController extends Controller
         $account->delete();
 
         return response()->json(['message' => 'Account deleted successfully']);
+    }
+
+    public function getChildren($parent_id)
+    {
+        $children = ChartOfAccount::where('parent_id', $parent_id)->get();
+
+        // Si el padre no es 0, también enviamos sus datos
+        $parent = null;
+        if ($parent_id != 0) {
+            $parent = ChartOfAccount::find($parent_id);
+        }
+
+        return response()->json([
+            'parent' => $parent, // Información del nivel superior
+            'children' => $children, // Listado de cuentas hijas
+        ]);
     }
 }

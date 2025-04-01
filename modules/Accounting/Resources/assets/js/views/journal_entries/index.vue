@@ -63,8 +63,8 @@
                 </data-table>
             </div>
 
-            <journal-entry-form :showDialog.sync="showDialog" :recordId="recordId"></journal-entry-form>
         </div>
+        <journal-entry-form :showDialog.sync="showDialog" :recordId="recordId"></journal-entry-form>
     </div>
 </template>
 

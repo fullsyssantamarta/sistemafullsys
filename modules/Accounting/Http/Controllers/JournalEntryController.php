@@ -10,6 +10,14 @@ use Modules\Accounting\Models\JournalPrefix;
 
 class JournalEntryController extends Controller
 {
+
+    public function columns()
+    {
+        return [
+            'date' => 'Fecha generado',
+        ];
+    }
+
     public function records(Request $request)
     {
         $perPage = $request->input('per_page', 20); // Número de registros por página

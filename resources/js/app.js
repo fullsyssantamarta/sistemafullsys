@@ -377,6 +377,7 @@ Vue.component('system-update', require('./views/system/update/index.vue'));
 
 // contabilidad
 Vue.component('tenant-accounting-journal-entries-index', require('@viewsModuleAccounting/journal_entries/index.vue'));
+Vue.component('tenant-accounting-charts-index', require('@viewsModuleAccounting/chart_of_accounts/index.vue'));
 
 
 

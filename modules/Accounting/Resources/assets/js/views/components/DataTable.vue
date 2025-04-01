@@ -67,7 +67,7 @@
 
     export default {
         props: {
-            resource: String,
+            resource: { type: String, required: true },
             applyFilter:{
                 type: Boolean,
                 default: true,
@@ -94,8 +94,8 @@
         },
         async mounted () {
             let column_resource = _.split(this.resource, '/')
-           // console.log(column_resource)
-            await this.$http.get(`/${_.head(column_resource)}/columns`).then((response) => {
+            // console.log(column_resource)
+            await this.$http.get(`/${this.resource}/columns`).then((response) => {
                 this.columns = response.data
                 this.search.column = _.head(Object.keys(this.columns))
             });
