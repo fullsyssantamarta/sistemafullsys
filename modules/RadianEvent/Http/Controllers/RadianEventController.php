@@ -54,8 +54,8 @@ class RadianEventController extends Controller
 
     public function runEvent(Request $request)
     {
-        // enviar api para parsear xml y obtener data
-        $received_document = ReceivedDocument::findOrFail($request->id);
+        $received_document = ReceivedDocument::with('email_reading_detail')->findOrFail($request->id);
+        $from_address = $received_document->email_reading_detail ? $received_document->email_reading_detail->from_address : null;
 
         $url = "ubl2.1/send-event";
         $company = ServiceCompany::select('identification_number', 'api_token')->firstOrFail();
@@ -69,16 +69,15 @@ class RadianEventController extends Controller
             'event_id' => $request->event_code,
             'base64_attacheddocument_name' => $filename,
             'base64_attacheddocument' => base64_encode($xml),
+            'sendmail' => true,
+            'sendmailtome' => true,
+            'email_cc_list' => $from_address ? [['email' => $from_address]] : [],
         ];
 
         if($request->event_code === '2') $params['type_rejection_id'] = $request->type_rejection_id;
 
-        // dd($params, $received_document, $xml);
-
         $send_request_to_api = $connection_api->sendRequestToApi($url, $params, 'POST');
-        // dd($send_request_to_api);
 
-        //error validacion form request api
         if(isset($send_request_to_api['errors']))  return $this->getGeneralResponse(false, $connection_api->parseErrorsToString($send_request_to_api['errors']));
 
         if($send_request_to_api['success'])
@@ -86,7 +85,6 @@ class RadianEventController extends Controller
             return $this->validateResponseApi($send_request_to_api, $connection_api, $received_document, $request->event_code);
         }
 
-        //errores
         return $send_request_to_api;
     }
 

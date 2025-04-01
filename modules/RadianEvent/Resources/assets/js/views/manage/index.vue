@@ -13,13 +13,20 @@
                 <h3 class="my-0">Eventos RADIAN - Documentos recibidos</h3>
             </div>
             <div class="card-body">
+                <div class="mb-3">
+                    <h5>Leyenda de Estados:</h5>
+                    <div class="d-flex gap-3">
+                        <span><i class="fa fa-circle" style="color: black"></i> Sin acciones</span>
+                        <span><i class="fa fa-circle" style="color: blue"></i> Acuse de recibo</span>
+                        <span><i class="fa fa-circle" style="color: yellow"></i> Recepción de bienes</span>
+                        <span><i class="fa fa-circle" style="color: green"></i> Aceptación expresa</span>
+                        <span><i class="fa fa-circle" style="color: red"></i> Rechazado</span>
+                    </div>
+                </div>
 
                 <data-table :resource="resource">
                     <tr slot="heading">
                         <th>#</th>
-                        <th>Estado Actual</th>
-
-
                         <th>Tipo Documento</th>
                         <th>Fecha</th>
                         <th>Nit Empresa</th>
@@ -30,40 +37,14 @@
                         <th>Vr. Documento</th>
                         <th>Attached Document</th>
                         <th>PDF</th>
-
                         <th>Acuse Recibo</th>
                         <th>Recepcion Bienes</th>
                         <th>Aceptacion Expresa</th>
                         <th>Rechazo</th>
-
+                        <th>Estado Actual</th>
                     </tr>
                     <tr slot-scope="{ index, row }">
                         <td>{{ index }}</td>
-
-                        <td>
-                            <template v-if="row.aceptacion == 1">
-                                <i class="fa fa-circle" style="color: green"></i>
-                            </template>
-                            <template v-else>
-                                <template v-if="row.rechazo == 1">
-                                    <i class="fa fa-circle" style="color: red"></i>
-                                </template>
-                                <template v-else>
-
-                                    <template v-if="row.rec_bienes == 1">
-                                        <i class="fa fa-circle" style="color: yellow"></i>
-                                    </template>
-                                    <template v-else>
-                                        <template v-if="row.acu_recibo == 1">
-                                            <i class="fa fa-circle" style="color: blue"></i>
-                                        </template>
-                                        <template v-else>
-                                            <i class="fa fa-circle" style="color: black"></i>
-                                        </template>
-                                    </template>
-                                </template>
-                            </template>
-                        </td>
 
                         <td>{{ row.type_document_name }}</td>
 
@@ -89,7 +70,7 @@
                             <!-- Acuse Recibo -->
 
                             <el-tooltip class="item" effect="dark" content="Documento electrónico por el cual el Adquiriente manifiesta que ha recibido la factura electrónica, de conformidad con el artículo 774 del Código de Comercio." placement="bottom-end">
-                                <button type="button" class="btn waves-effect waves-light btn-xs btn-primary" @click.prevent="clickSendEvent(row.id, '1')">
+                                <button type="button" class="btn waves-effect waves-light btn-xs btn-primary" @click.prevent="clickSendEvent(row.id, '1')" :disabled="row.acu_recibo == 1">
                                     <i class="fas fa-file-import"></i>
                                 </button>
                             </el-tooltip>
@@ -102,7 +83,7 @@
                             <!-- Recepcion Bienes -->
 
                             <el-tooltip class="item" effect="dark" content="Documento electrónico por el cual el Adquiriente informa del recibo de los bienes o servicios adquiridos, de conformidad con el artículo 773 del Código de Comercio y en concordancia con el parágrafo 1 del artículo 2.2.2.53.4. del Decreto 1074 de 2015 Único Reglamentario del Sector Comercio, Industria y Turismo." placement="bottom-end">
-                                <button type="button" class="btn waves-effect waves-light btn-xs btn-primary" @click.prevent="clickSendEvent(row.id, '3')">
+                                <button type="button" class="btn waves-effect waves-light btn-xs btn-primary" @click.prevent="clickSendEvent(row.id, '3')" :disabled="row.rec_bienes == 1">
                                     <i class="fas fa-file-import"></i>
                                 </button>
                             </el-tooltip>
@@ -114,7 +95,7 @@
                             <!-- Aceptacion Expresa -->
 
                             <el-tooltip class="item" effect="dark" content="Documento electrónico por el cual el Adquiriente informa al Emisor que acepta expresamente el Documento Electrónico que origina este tipo de ApplicationResponse de conformidad con el artículo 773 del Código de Comercio y en concordancia con el numeral 1 del artículo 2.2.2.53.4. del Decreto 1074 de 2015, Único Reglamentario del Sector Comercio, Industria y Turismo." placement="bottom-end">
-                                <button type="button" class="btn waves-effect waves-light btn-xs btn-primary" @click.prevent="clickSendEvent(row.id, '4')">
+                                <button type="button" class="btn waves-effect waves-light btn-xs btn-primary" @click.prevent="clickSendEvent(row.id, '4')" :disabled="row.aceptacion == 1">
                                     <i class="fas fa-file-import"></i>
                                 </button>
                             </el-tooltip>
@@ -125,12 +106,35 @@
                             <!-- Rechazo -->
 
                             <el-tooltip class="item" effect="dark" content="Documento electrónico mediante el cual el Adquiriente manifiesta que no acepta el documento de conformidad con el artículo 773 del Código de Comercio y en concordancia con el artículo 2.2.2.53.4. del Decreto 1074 de 2015, Único Reglamentario del Sector Comercio, Industria y Turismo. Este documento es para desaveniencias de tipo comercial, dado que el documento sobre el cual manifiesta el desacuerdo fue efectivamente Validado por la DIAN, en el sistema de Validación Previa, Nota: Se debe solicitar una nota contable al emisor." placement="bottom-end">
-                                <button type="button" class="btn waves-effect waves-light btn-xs btn-primary" @click.prevent="clickRejected(row)">
+                                <button type="button" class="btn waves-effect waves-light btn-xs btn-primary" @click.prevent="clickRejected(row)" :disabled="row.rechazo == 1">
                                     <i class="fas fa-file-import"></i>
                                 </button>
                             </el-tooltip>
 
                             <!-- Rechazo -->
+                        </td>
+                        <td>
+                            <template v-if="row.aceptacion == 1">
+                                <i class="fa fa-circle" style="color: green"></i>
+                            </template>
+                            <template v-else>
+                                <template v-if="row.rechazo == 1">
+                                    <i class="fa fa-circle" style="color: red"></i>
+                                </template>
+                                <template v-else>
+                                    <template v-if="row.rec_bienes == 1">
+                                        <i class="fa fa-circle" style="color: yellow"></i>
+                                    </template>
+                                    <template v-else>
+                                        <template v-if="row.acu_recibo == 1">
+                                            <i class="fa fa-circle" style="color: blue"></i>
+                                        </template>
+                                        <template v-else>
+                                            <i class="fa fa-circle" style="color: black"></i>
+                                        </template>
+                                    </template>
+                                </template>
+                            </template>
                         </td>
 
                     </tr>
