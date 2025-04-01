@@ -8,6 +8,10 @@ use Illuminate\Routing\Controller;
 use Modules\Accounting\Models\JournalEntry;
 use Modules\Accounting\Models\JournalPrefix;
 
+/*
+ * Class JournalEntryController
+ * Controlador para gestionar los asientos contables
+ */
 class JournalEntryController extends Controller
 {
 

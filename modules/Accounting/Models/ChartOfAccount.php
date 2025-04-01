@@ -22,4 +22,9 @@ class ChartOfAccount extends ModelTenant
     {
         return $this->hasMany(ChartOfAccount::class, 'parent_id');
     }
+
+    public function journalEntryDetails()
+    {
+        return $this->hasMany(JournalEntryDetail::class, 'chart_of_account_id');
+    }
 }

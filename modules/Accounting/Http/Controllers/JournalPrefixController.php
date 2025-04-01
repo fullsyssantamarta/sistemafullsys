@@ -7,6 +7,10 @@ use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Modules\Accounting\Models\JournalPrefix;
 
+/*
+ * Class JournalPrefixController
+ * Controlador para gestionar los prefijos de asientos contables
+ */
 class JournalPrefixController extends Controller
 {
     public function index()

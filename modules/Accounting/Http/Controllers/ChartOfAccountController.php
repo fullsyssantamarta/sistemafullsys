@@ -7,6 +7,10 @@ use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Modules\Accounting\Models\ChartOfAccount;
 
+/*
+ * Clase ChartOfAccountController
+ * Controlador para gestionar las cuentas contables del sistema
+ */
 class ChartOfAccountController extends Controller
 {
     public function index(Request $request)

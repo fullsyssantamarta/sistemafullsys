@@ -16,4 +16,9 @@ class JournalEntryDetail extends ModelTenant
     {
         return $this->belongsTo(JournalEntry::class);
     }
+
+    public function chartOfAccount()
+    {
+        return $this->belongsTo(ChartOfAccount::class, 'chart_of_account_id');
+    }
 }

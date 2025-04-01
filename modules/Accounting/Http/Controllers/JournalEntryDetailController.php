@@ -6,6 +6,10 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 
+/*
+ * Class JournalEntryDetailController
+ * Controlador para gestionar los detalles de los asientos contables
+ */
 class JournalEntryDetailController extends Controller
 {
     public function index()

@@ -44,6 +44,15 @@ if($hostname) {
 
             // CRUD para Detalles de Asientos Contables
             Route::apiResource('journal/entry-details', 'JournalEntryDetailController');
+
+            // Reportes
+            // Reporte de Situación Financiera
+            Route::get('/financial-position', 'FinancialPositionController@index')->name('tenant.accounting.report.financial-position');
+            Route::get('/financial-position/records', 'FinancialPositionController@records');
+            // Reporte de Estado de Resultados
+            Route::get('/income-statement', 'IncomeStatementController@index')->name('tenant.accounting.report.income-statement');
+            Route::get('/income-statement/records', 'IncomeStatementController@records');
+
         });
     });
 }

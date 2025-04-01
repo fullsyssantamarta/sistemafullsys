@@ -100,7 +100,7 @@ export default {
             });
         },
         async loadAccounts() {
-            await this.$http.get("/accounting/charts?level=4").then((response) => {
+            await this.$http.get("/accounting/charts/records?column=level&value=4").then((response) => {
                 this.accounts = response.data.data;
             });
         },
