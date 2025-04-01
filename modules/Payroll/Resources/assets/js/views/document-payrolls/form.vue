@@ -513,7 +513,8 @@
                                                                     <small class="form-control-feedback"  v-text="errors[`accrued.severance.${index}.interest_payment`][0]"></small>
                                                                 </div>
                                                                 <div class="form-group mb-2 mr-2"  >
-                                                                    <el-input-number v-model="row.interest_payment" :min="0" controls-position="right" disabled></el-input-number>
+<!--                                                                    <el-input-number v-model="row.interest_payment" :min="0" controls-position="right" disabled></el-input-number>   -->
+                                                                    <el-input-number v-model="row.interest_payment" :min="0" controls-position="right"></el-input-number>
                                                                 </div>
                                                             </td>
 

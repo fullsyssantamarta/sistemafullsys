@@ -8,7 +8,7 @@ export const documentPayrollMixin = {
     methods: {
         // prima de servicio
         clickAddServiceBonus(){
-            
+
             const salary_validation = this.salaryValidation()
             if(!salary_validation.success) return this.$message.warning(salary_validation.message)
 
@@ -26,7 +26,7 @@ export const documentPayrollMixin = {
             this.calculateTotal()
         },
         changeQuantityServiceBonus(index){
-            
+
             this.setPaymentServiceBonus(index)
             this.calculateTotal()
 
@@ -65,6 +65,7 @@ export const documentPayrollMixin = {
             this.calculateTotal()
         },
         calculateInterestPayment(index){
+//            this.form.accrued.severance[index].interest_payment = this.roundNumber(this.form.accrued.severance[index].payment * this.percentageToFactor(this.form.accrued.severance[index].percentage))
             this.form.accrued.severance[index].interest_payment = this.roundNumber(this.form.accrued.severance[index].payment * this.percentageToFactor(this.form.accrued.severance[index].percentage))
             this.calculateTotal()
         },
@@ -111,13 +112,13 @@ export const documentPayrollMixin = {
                 moment().format('YYYY-MM-DD'),
                 moment().add(quantity, 'days').format('YYYY-MM-DD')
             ]
-        }, 
+        },
         clickCancelCommonVacation(index){
             this.form.accrued.common_vacation.splice(index, 1)
             this.calculateTotal()
         },
         changeCommonVacationStartEndDate(index){
-            
+
             const start_end_date = this.form.accrued.common_vacation[index].start_end_date
             const start_date = start_end_date[0]
             const end_date = start_end_date[1]
@@ -157,7 +158,7 @@ export const documentPayrollMixin = {
             this.calculateTotal()
         },
         changePaidVacationStartEndDate(index){
-            
+
             const start_end_date = this.form.accrued.paid_vacation[index].start_end_date
             const start_date = start_end_date[0]
             const end_date = start_end_date[1]
@@ -190,7 +191,7 @@ export const documentPayrollMixin = {
             this.calculateTotal()
         },
         // ayudas
-        
+
         // otros conceptos
         clickAddOtherConcepts(){
 
@@ -226,7 +227,7 @@ export const documentPayrollMixin = {
             this.calculateTotal()
         },
         // comisiones
-        
+
         // Bono EPCTVs
         clickAddEpctvBonus(){
 
@@ -263,7 +264,7 @@ export const documentPayrollMixin = {
             this.calculateTotal()
         },
         // pagos a terceros
-        
+
         // anticipos
         clickAddAdvance(){
 
@@ -280,7 +281,7 @@ export const documentPayrollMixin = {
             this.calculateTotal()
         },
         // anticipos
-        
+
         // compensaciones
         clickAddCompensation(){
 
