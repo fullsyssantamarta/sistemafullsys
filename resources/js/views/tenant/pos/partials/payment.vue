@@ -481,6 +481,8 @@
             await this.initLStoPayment()
             await this.getTables()
             this.initFormPayment()
+            // Forzar actualización de la fecha al crear el componente
+            this.form.date_of_issue = moment().format('YYYY-MM-DD')
             this.form.payments = []
             this.$eventHub.$on('reloadDataCardBrands', (card_brand_id) => {
                 this.reloadDataCardBrands(card_brand_id)
@@ -805,18 +807,22 @@
 
             },
             initFormPayment() {
-
+                // Asegurar que la fecha siempre es la actual
+                const currentDate = moment().format('YYYY-MM-DD')
                 this.difference = -this.form.total
                 this.form_payment = {
                     id: null,
-                    date_of_payment: moment().format('YYYY-MM-DD'),
+                    date_of_payment: currentDate,
                     payment_method_type_id: '01',
                     reference: null,
-                    card_brand_id:null,
-                    document_id:null,
-                    sale_note_id:null,
+                    card_brand_id: null,
+                    document_id: null,
+                    sale_note_id: null,
                     payment: 0
                 }
+
+                // Actualizar también la fecha del documento principal
+                this.form.date_of_issue = currentDate
 
                 this.form_cash_document = {
                     document_id:null,
