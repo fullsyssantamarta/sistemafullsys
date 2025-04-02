@@ -297,20 +297,27 @@ trait FinanceTrait
             $remission_payment = $this->getSumByPMT($row->remission_payments); 
             $document_pos_payment = $this->getSumByPMT($row->document_pos_payments);
 
+            // Convertir strings a números para el cálculo
+            $doc = $document_payment ?: 0;
+            $rem = $remission_payment ?: 0;
+            $pos = $document_pos_payment ?: 0;
+            $inc = $income_payment ?: 0;
+            $pur = $purchase_payment ?: 0;
+
             return [
 
                 'id' => $row->id,
                 'description' => $row->description, 
                 'expense_payment' => '-',
-                // 'sale_note_payment' => number_format($sale_note_payment,2, ".", ""),
-                'document_payment' => number_format($document_payment,2, ".", ""),
-                'purchase_payment' => number_format($purchase_payment,2, ".", ""),
-                'quotation_payment' => number_format($quotation_payment,2, ".", ""),
-                'contract_payment' => number_format($contract_payment,2, ".", ""),
-                'income_payment' => number_format($income_payment,2, ".", ""),
-                'remission_payment' => number_format($remission_payment,2, ".", ""),
-                'document_pos_payment' => number_format($document_pos_payment,2, ".", ""),
-                
+                'document_payment' => number_format($doc, 2, ".", ""),
+                'purchase_payment' => number_format($pur, 2, ".", ""),
+                'quotation_payment' => number_format($quotation_payment, 2, ".", ""),
+                'contract_payment' => number_format($contract_payment, 2, ".", ""),
+                'income_payment' => number_format($inc, 2, ".", ""),
+                'remission_payment' => number_format($rem, 2, ".", ""),
+                'document_pos_payment' => number_format($pos, 2, ".", ""),
+                'total_income' => number_format($doc + $rem + $pos + $inc, 2, ".", ""),
+                'total_expense' => number_format($pur, 2, ".", "")
             ];
 
         }); 
@@ -326,12 +333,13 @@ trait FinanceTrait
 
             // dd($row->expense_payments);
             $expense_payment = $this->getSumByPMT($row->expense_payments); 
+            $exp = $expense_payment ?: 0;
 
             return [
 
                 'id' => $row->id,
                 'description' => $row->description, 
-                'expense_payment' => number_format($expense_payment,2, ".", ""),
+                'expense_payment' => number_format($exp, 2, ".", ""),
                 'document_pos_payment' => '-',
                 // 'sale_note_payment' => '-',
                 'document_payment' => '-',
@@ -339,8 +347,9 @@ trait FinanceTrait
                 'contract_payment' => '-',
                 'income_payment' => '-',
                 'purchase_payment' => '-',
-                'remission_payment' => '-'
-                
+                'remission_payment' => '-',
+                'total_income' => '0.00',
+                'total_expense' => number_format($exp, 2, ".", "")
             ];
 
         }); 
@@ -397,6 +406,8 @@ trait FinanceTrait
             't_income' => number_format($t_income,2, ".", ""),
             't_remissions' => number_format($t_remissions,2, ".", ""),
             't_document_pos' => number_format($t_document_pos,2, ".", ""),
+            't_total_income' => number_format($t_documents + $t_remissions + $t_document_pos + $t_income, 2, ".", ""),
+            't_total_expense' => number_format($t_expenses + $t_purchases, 2, ".", "")
         ];
 
     }

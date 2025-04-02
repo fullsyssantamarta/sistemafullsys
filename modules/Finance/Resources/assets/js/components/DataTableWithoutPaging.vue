@@ -103,8 +103,10 @@
                                 <td class="text-center"> {{totals.t_quotations}}</td>
                                 <!-- <td class="text-center"> {{totals.t_contracts}}</td> -->
                                 <td class="text-center"> {{totals.t_income}}</td>
+                                <td class="text-center">{{ calculateTotalIncome(totals) }}</td>
                                 <td class="text-center"> {{totals.t_purchases}}</td>
                                 <td class="text-center"> {{totals.t_expenses}}</td>
+                                <td class="text-center">{{ calculateTotalExpense(totals) }}</td>
                             </tr>
                         </tfoot>
                     </table> 
@@ -254,6 +256,18 @@
                     this.form.date_end = moment().endOf('month').format('YYYY-MM-DD');
                 }
                 // this.loadAll();
+            },
+            calculateTotalIncome(row) {
+                const doc = row.t_documents !== '-' ? parseFloat(row.t_documents) : 0;
+                const rem = row.t_remissions !== '-' ? parseFloat(row.t_remissions) : 0;
+                const pos = row.t_document_pos !== '-' ? parseFloat(row.t_document_pos) : 0;
+                const inc = row.t_income !== '-' ? parseFloat(row.t_income) : 0;
+                return (doc + rem + pos + inc).toFixed(2);
+            },
+            calculateTotalExpense(row) {
+                const purchase = row.t_purchases !== '-' ? parseFloat(row.t_purchases) : 0;
+                const expense = row.t_expenses !== '-' ? parseFloat(row.t_expenses) : 0;
+                return (purchase + expense).toFixed(2);
             },
         }
     }
