@@ -17,7 +17,7 @@
                     <div class="form-group">
                         <label>{{ levelTitles[index] }}</label>
                         <el-select v-model="level.selected" @change="handleSublevelSelection(level.selected, index)">
-                            <el-option v-for="child in level.children" :key="child.id" :label="child.label" :value="child.id" :disabled="index === 2"/>
+                            <el-option v-for="child in level.children" :key="child.id" :label="child.label" :value="child.id" :disabled="index === 3"/>
                         </el-select>
                     </div>
                 </div>

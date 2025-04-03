@@ -5,6 +5,8 @@ namespace Modules\Accounting\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
+use Modules\Accounting\Models\JournalEntryDetail;
+use Modules\Accounting\Http\Resources\JournalEntryDetailResource;
 
 /*
  * Class JournalEntryDetailController
@@ -47,4 +49,16 @@ class JournalEntryDetailController extends Controller
         $detail->delete();
         return response()->json(['message' => 'Eliminado correctamente']);
     }
+
+    public function recordsDetail($id){
+        $entry = JournalEntryDetail::where('journal_entry_id', $id)
+            ->with('chartOfAccount')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => JournalEntryDetailResource::collection($entry)
+        ]);
+    }
+
 }

@@ -11,7 +11,14 @@ class JournalEntry extends ModelTenant
     // use UsesTenantConnection;
     protected $table = 'journal_entries';
 
-    protected $fillable = ['journal_prefix_id', 'date', 'description', 'status'];
+    protected $fillable = [
+        'journal_prefix_id',
+        'date',
+        'description',
+        'document_id',
+        'purchase_id',
+        'status'
+    ];
 
     public function details()
     {

@@ -44,6 +44,7 @@ if($hostname) {
 
             // CRUD para Detalles de Asientos Contables
             Route::apiResource('journal/entry-details', 'JournalEntryDetailController');
+            Route::get('journal/entries/{id}/records-detail', 'JournalEntryDetailController@recordsDetail');
 
             // Reportes
             // Reporte de Situación Financiera
