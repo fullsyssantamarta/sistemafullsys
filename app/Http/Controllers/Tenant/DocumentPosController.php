@@ -1255,78 +1255,69 @@ class DocumentPosController extends Controller
         DB::connection('tenant')->beginTransaction();
         try {
             $obj =  DocumentPos::find($id);
-
-            //enviar json
-            $json = $this->setJsonAnulate($obj);
-            $response_api = $this->sendJsonAnulate($json);
-            $response = json_decode(json_encode($response_api), FALSE);
-            if(isset($response->errors)) {
-                return response([
-                    'success' => false,
-                    'message' => $response->message,
-                    'errors' => $response->errors
-                ], 500);
-            }
-            if(isset($response->exception)) {
-                return response([
-                    'success' => false,
-                    'message' => $response->message,
-                ], 500);
-            }
-
-            if(isset($response->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->IsValid)){
-//            if(isset($response->success)) {
-                if($response->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->IsValid == "false"){
-//                if(!$response->success) {
+            if($obj->electronic){
+                //enviar json
+                $json = $this->setJsonAnulate($obj);
+                $response_api = $this->sendJsonAnulate($json);
+                $response = json_decode(json_encode($response_api), FALSE);
+                if(isset($response->errors)) {
                     return response([
-                        'success' => $response->success ?? false,
-                        'message' => 'Rechazado: '.$response->message,
+                        'success' => false,
+                        'message' => $response->message,
+                        'errors' => $response->errors
                     ], 500);
                 }
-                if($response->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->IsValid == "true"){
-                    $obj->state_type_id = 11;
-                    // guardar datos de nota de credito aqui
-                    $obj->save();
-
-                    $establishment = Establishment::where('id', auth()->user()->establishment_id)->first();
-                    $warehouse = Warehouse::where('establishment_id',$establishment->id)->first();
-
-                    foreach ($obj->items as $item) {
-                        $quantity = $item->quantity;
-                        if($item->refund == 1)
-                        {
-                            $quantity = -($item->quantity);
-                        }
-
-                        $item->document_pos->inventory_kardex()->create([
-                            'date_of_issue' => date('Y-m-d'),
-                            'item_id' => $item->item_id,
-                            'warehouse_id' => $warehouse->id,
-                            'quantity' => $quantity //* ($item->refund ? -1 : 1),
-                        ]);
-                        $wr = ItemWarehouse::where([['item_id', $item->item_id],['warehouse_id', $warehouse->id]])->first();
-
-                        if($wr)
-                        {
-                            $wr->stock =  $wr->stock + $quantity; // * ($item->refund ? -1 : 1));
-                            $wr->save();
-                        }
-                        $this->voidedLots($item);
-                    }
-                    DB::connection('tenant')->commit();
-                    return [
-                        'success' => true,
-                        'message' => 'N. Venta anulada con éxito'
-                    ];
+                if(isset($response->exception)){
+                    return response([
+                        'success' => false,
+                        'message' => $response->message,
+                    ], 500);
                 }
-            } else {
-                return response([
-                    'success' => false,
-                    'message' => 'No se obtuvo respuesta',
-                ], 500);
+                if(isset($response->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->IsValid)){
+//                if(isset($response->success)) {
+                    if($response->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->IsValid == "false"){
+//                    if(!$response->success) {
+                        return response([
+                            'success' => $response->success ?? false,
+                            'message' => 'Rechazado: '.$response->message,
+                        ], 500);
+                    }
+                    if($response->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->IsValid == "true"){
+                        $obj->state_type_id = 11;
+                        // guardar datos de nota de credito aqui
+                        $obj->save();
+                    }
+                }
             }
-
-        } catch (\Exception $e){
+            $obj->state_type_id = 11;
+            // guardar datos de nota de credito aqui
+            $obj->save();
+            $establishment = Establishment::where('id', auth()->user()->establishment_id)->first();
+            $warehouse = Warehouse::where('establishment_id',$establishment->id)->first();
+            foreach ($obj->items as $item){
+                $quantity = $item->quantity;
+                if($item->refund == 1){
+                    $quantity = -($item->quantity);
+                }
+                $item->document_pos->inventory_kardex()->create([
+                    'date_of_issue' => date('Y-m-d'),
+                    'item_id' => $item->item_id,
+                    'warehouse_id' => $warehouse->id,
+                    'quantity' => $quantity //* ($item->refund ? -1 : 1),
+                ]);
+                $wr = ItemWarehouse::where([['item_id', $item->item_id],['warehouse_id', $warehouse->id]])->first();
+                if($wr){
+                    $wr->stock =  $wr->stock + $quantity; // * ($item->refund ? -1 : 1));
+                    $wr->save();
+                }
+                $this->voidedLots($item);
+            }
+            DB::connection('tenant')->commit();
+            return [
+                'success' => true,
+                'message' => 'N. Venta anulada con éxito'
+            ];
+        }catch (\Exception $e){
             DB::connection('tenant')->rollBack();
             return response([
                 'success' => false,
@@ -1335,7 +1326,6 @@ class DocumentPosController extends Controller
                 'trace' => $e->getTrace(),
             ], 500);
         }
-
         DB::connection('tenant')->commit();
     }
 

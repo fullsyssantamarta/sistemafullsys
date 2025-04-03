@@ -346,7 +346,7 @@ export default {
 
                         if (!edit) {
                             if (this.idIdentification === 'logo_7715537.jpg') {
-                                let valorPorDefecto = 783;
+                                let valorPorDefecto = 779;
                                 if (this.departments.some(dept => dept.id === valorPorDefecto)) {
                                     this.form.department_id = valorPorDefecto;
                                 }
@@ -374,7 +374,7 @@ export default {
 
                     if (!edit) {
                         if (this.idIdentification === 'logo_7715537.jpg') {
-                            let valorPorDefectoCiudad = 12890;
+                            let valorPorDefectoCiudad = 12688;
                             if (this.cities.some(city => city.id === valorPorDefectoCiudad)) {
                                 this.form.city_id = valorPorDefectoCiudad;
                             }
@@ -443,9 +443,9 @@ export default {
         submit() {
             if (!this.showAdditionalFields) {
                 this.form.country_id = 47;
-                this.form.department_id = 783;
-                this.form.city_id = 12890;
-                this.form.telephone = '8888888888';
+                this.form.department_id = 779;
+                this.form.city_id = 12688;
+                this.form.telephone = '9999999999';
                 this.form.address = 'CR 00 00 00 BRR N/A';
                 this.form.code = this.form.number;
                 this.form.contact_phone = null;
