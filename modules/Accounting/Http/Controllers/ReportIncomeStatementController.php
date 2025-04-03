@@ -5,6 +5,7 @@ namespace Modules\Accounting\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
+use Modules\Accounting\Models\ChartOfAccount;
 
 /**
  * Class ReportIncomeStatementController
@@ -12,8 +13,14 @@ use Illuminate\Routing\Controller;
  */
 class ReportIncomeStatementController extends Controller
 {
+    public function index()
+    {
+        return view('accounting::reports.income_statement');
+    }
+
     public function records(Request $request)
     {
+        // ganancia / gastos
         $accounts = ChartOfAccount::whereIn('type', ['Revenue', 'Expense'])
             ->with(['journalEntryDetails' => function ($query) {
                 $query->selectRaw('chart_of_account_id, SUM(debit) as total_debit, SUM(credit) as total_credit')

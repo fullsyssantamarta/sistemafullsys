@@ -47,11 +47,12 @@ if($hostname) {
 
             // Reportes
             // Reporte de Situación Financiera
-            Route::get('/financial-position', 'FinancialPositionController@index')->name('tenant.accounting.report.financial-position');
-            Route::get('/financial-position/records', 'FinancialPositionController@records');
+            Route::get('/financial-position', 'ReportFinancialPositionController@index')->name('tenant.accounting.report.financial-position');
+            Route::get('/financial-position/records', 'ReportFinancialPositionController@records');
+            Route::get('/financial-position/export', 'ReportFinancialPositionController@export');
             // Reporte de Estado de Resultados
-            Route::get('/income-statement', 'IncomeStatementController@index')->name('tenant.accounting.report.income-statement');
-            Route::get('/income-statement/records', 'IncomeStatementController@records');
+            Route::get('/income-statement', 'ReportIncomeStatementController@index')->name('tenant.accounting.report.income-statement');
+            Route::get('/income-statement/records', 'ReportIncomeStatementController@records');
 
         });
     });

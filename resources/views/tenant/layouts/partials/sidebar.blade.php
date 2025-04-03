@@ -844,7 +844,7 @@
                     </li>
                     @endif --}}
 
-                    <li class="nav-parent {{$path[0] === 'accounting' && in_array($path[1], ['journal', 'charts']) ? 'nav-active nav-expanded' : ''}}">
+                    <li class="nav-parent {{$path[0] === 'accounting' && in_array($path[1], ['journal', 'charts', 'income-statement', 'financial-position']) ? 'nav-active nav-expanded' : ''}}">
                         <a class="nav-link" href="#">
                             <span class="float-right badge badge-red badge-danger mr-3">Nuevo</span>
                             <i class="fas fa-hand-holding-usd" aria-hidden="true"></i>
@@ -856,11 +856,19 @@
                                     Cuentas contables
                                 </a>
                             </li>
-                        </ul>
-                        <ul class="nav nav-children" style="">
                             <li class="{{(($path[0] === 'accounting') && ($path[1] == 'journal')) ? 'nav-active' : ''}}">
                                 <a class="nav-link" href="{{route('tenant.accounting.journal.entries.index')}}">
                                     Asientos contables
+                                </a>
+                            </li>
+                            <li class="{{(($path[0] === 'accounting') && ($path[1] == 'financial-position')) ? 'nav-active' : ''}}">
+                                <a class="nav-link" href="{{route('tenant.accounting.report.financial-position')}}">
+                                    Reporte de Situacion Financiera
+                                </a>
+                            </li>
+                            <li class="{{(($path[0] === 'accounting') && ($path[1] == 'income-statement')) ? 'nav-active' : ''}}">
+                                <a class="nav-link" href="{{route('tenant.accounting.report.income-statement')}}">
+                                    Reporte de Estado de resultado
                                 </a>
                             </li>
                         </ul>
