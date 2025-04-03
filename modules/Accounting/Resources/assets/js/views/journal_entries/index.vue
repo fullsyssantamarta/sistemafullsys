@@ -58,6 +58,10 @@
                                 @click.prevent="reject(row.id)">
                                 Rechazar
                             </button>
+                            <button v-if="row.status === 'posted'" class="btn btn-xs btn-info"
+                                @click.prevent="clickDetail(row.id)">
+                                Detalle
+                            </button>
                         </td>
                     </tr>
                 </data-table>
@@ -65,6 +69,12 @@
 
         </div>
         <journal-entry-form :showDialog.sync="showDialog" :recordId="recordId"></journal-entry-form>
+        
+        <journal-entry-detail 
+            :showDialog.sync="showDialogDetail" 
+            :recordId="recordId"
+            >
+        </journal-entry-detail>
     </div>
 </template>
 
@@ -72,13 +82,15 @@
 import JournalEntryForm from "./form.vue";
 import DataTable from "../components/DataTable.vue";
 import { deletable } from "@mixins/deletable";
+import JournalEntryDetail from "./partials/details.vue";
 
 export default {
     mixins: [deletable],
-    components: { JournalEntryForm, DataTable },
+    components: { JournalEntryForm, DataTable,JournalEntryDetail },
     data() {
         return {
             showDialog: false,
+            showDialogDetail: false,
             resource: "accounting/journal/entries",
             recordId: null,
             isAdmin: true, // Esto debería venir desde el backend con la sesión
@@ -115,6 +127,10 @@ export default {
                 rejected: "badge badge-danger",
             };
             return classes[status] || "badge badge-dark";
+        },
+        clickDetail(recordId = null) {
+            this.recordId = recordId;
+            this.showDialogDetail = true;
         },
     },
 };
