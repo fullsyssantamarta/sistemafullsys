@@ -94,7 +94,8 @@ class ReportInventoryController extends Controller
         $company = Company::first();
         $establishment = Establishment::first();
         ini_set('max_execution_time', 0);
-        [$relation, $id] = explode('_', $request->filter) + [null, null];
+//        [$relation, $id] = explode('_', $request->filter) + [null, null];
+        [$relation, $id] = array_pad(explode('_', $request->filter ?? ''), 2, null);
         if($request->warehouse_id && $request->warehouse_id != 'all'){
             $records = ItemWarehouse::with(['item'])
                 ->where('warehouse_id', $request->warehouse_id)
@@ -107,7 +108,7 @@ class ReportInventoryController extends Controller
                 ->latest()
                 ->get();
         }
-        else{
+        else {
             $records = ItemWarehouse::with(['item'])
                 ->whereFilterDate($request->date)
                 ->whereHas('item', function($q) use ($relation, $id) {
@@ -132,7 +133,8 @@ class ReportInventoryController extends Controller
         $company = Company::first();
         $establishment = Establishment::first();
         ini_set('max_execution_time', 0);
-        [$relation, $id] = explode('_', $request->filter) + [null, null];
+//        [$relation, $id] = explode('_', $request->filter) + [null, null];
+        [$relation, $id] = array_pad(explode('_', $request->filter ?? ''), 2, null);
         if($request->warehouse_id && $request->warehouse_id != 'all'){
             $records = ItemWarehouse::with(['item'])
                 ->where('warehouse_id', $request->warehouse_id)
@@ -147,14 +149,14 @@ class ReportInventoryController extends Controller
         }
         else {
             $records = ItemWarehouse::with(['item'])
-            ->whereFilterDate($request->date)
-            ->whereHas('item', function($q){
-                $q->where([['item_type_id', '01'], ['unit_type_id', '!=','ZZ']]);
-                $q->whereNotIsSet();
-                $q->whereFilterByRelation($relation, $id);
-            })
-            ->latest()
-            ->get();
+                ->whereFilterDate($request->date)
+                ->whereHas('item', function($q) use ($relation, $id) {
+                    $q->where([['item_type_id', '01'], ['unit_type_id', '!=','ZZ']]);
+                    $q->whereNotIsSet();
+                    $q->whereFilterByRelation($relation, $id);
+                })
+                ->latest()
+                ->get();
         }
         return (new InventoryExport)
             ->records($records)
