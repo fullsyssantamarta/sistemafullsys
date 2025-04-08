@@ -348,7 +348,7 @@ export default {
                 this.currencies = response.data.currencies
                 this.payment_methods = response.data.payment_methods
                 this.payment_forms = response.data.payment_forms
-                this.form.currency_id = (this.currencies.length > 0) ? this.currencies[0].id : null;
+                this.form.currency_id = 170
                 this.form.type_invoice_id = (this.type_invoices.length > 0) ? this.type_invoices[0].id : null;
                 this.form.payment_form_id = (this.payment_forms.length > 0) ? this.payment_forms[0].id : null;
                 this.form.payment_method_id = (this.payment_methods.length > 0) ? this.payment_methods[0].id : null;
@@ -480,10 +480,10 @@ export default {
         resetForm() {
             this.activePanel = 0
             this.initForm()
-            this.form.currency_id = (this.currencies.length > 0) ? this.currencies[0].id : null
+            this.form.currency_id = 170
             this.form.type_invoice_id = (this.type_invoices.length > 0) ? this.type_invoices[0].id : null
-            this.form.payment_form_id = (this.payment_forms.length > 0) ? this.payment_forms[0].id : null;
-            this.form.payment_method_id = (this.payment_methods.length > 0) ? this.payment_methods[0].id : null;
+            this.form.payment_form_id = (this.payment_forms.length > 0) ? this.payment_forms[0].id : null
+            this.form.payment_method_id = (this.payment_methods.length > 0) ? this.payment_methods[0].id : null
         },
         async changeOperationType() {
             await this.filterCustomers();
@@ -876,7 +876,8 @@ export default {
                     code: code,
                     type_item_identification_id: 4,
                     price_amount: this.cadenaDecimales(x.price),
-                    base_quantity: x.quantity
+                    base_quantity: x.quantity,
+                    notes: x.notes || ""
                 };
             });
             return data;
