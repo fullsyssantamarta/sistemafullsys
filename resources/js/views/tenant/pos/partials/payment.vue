@@ -256,14 +256,14 @@
                                             v-if="is_percentage"
                                             v-model="discount_percentage"  
                                             :disabled="!enabled_discount"
-                                            @change="inputDiscountPercentage">
+                                            @input="inputDiscountPercentage">
                                             <template slot="append">%</template>
                                         </el-input>
                                         <el-input 
                                             v-else
                                             v-model="discount_amount"
                                             :disabled="!enabled_discount"
-                                            @change="inputDiscountAmount">
+                                            @input="inputDiscountAmount">
                                             <template slot="prepend">{{ currencyTypeActive.symbol }}</template>
                                         </el-input>
                                     </div>
@@ -649,9 +649,17 @@
                     this.initFormPayment()
                 }
             },
-            back()
-            {
-                this.$emit('update:is_payment', false)
+            back() {
+                // Reset form and totals before going back
+                this.resetDiscount()
+                this.initFormPayment()
+                this.cleanLocalStoragePayment()
+                
+                // Force parent component to reload data
+                this.$nextTick(() => {
+                    this.$emit('update:is_payment', false)
+                    this.$emit('reload-data')
+                })
             },
             async initLStoPayment(){
 

@@ -359,7 +359,17 @@
             <item-form :showDialog.sync="showDialogNewItem" :external="true"></item-form>
         </div>
         <template v-else>
-            <payment-form :is_payment.sync="is_payment" :form="form" :items_refund="items_refund" :currency-type-id-active="form.currency_id" :currency-type-active="currency" :exchange-rate-sale="form.exchange_rate_sale" :customer="customer" :soapCompany="soapCompany"></payment-form>
+            <payment-form 
+                :is_payment.sync="is_payment" 
+                :form="form" 
+                :items_refund="items_refund" 
+                :currency-type-id-active="form.currency_id" 
+                :currency-type-active="currency" 
+                :exchange-rate-sale="form.exchange_rate_sale" 
+                :customer="customer" 
+                :soapCompany="soapCompany"
+                @reload-data="reloadTotals">
+            </payment-form>
         </template>
 
         <history-sales-form :showDialog.sync="showDialogHistorySales" :item_id="history_item_id" :customer_id="form.customer_id"></history-sales-form>
@@ -855,6 +865,14 @@ export default {
                 this.setFormPosLocalStorage()
                 this.items_refund = []
             });
+        },
+
+        reloadTotals() {
+            this.calculateTotal()
+            this.filterItems()
+            this.changeDateOfIssue()
+            this.changeExchangeRate()
+            this.setFormPosLocalStorage()
         },
 
         initForm() {
