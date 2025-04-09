@@ -23,86 +23,167 @@ use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 class CoDocumentsImport implements ToCollection, WithMultipleSheets
 {
     use Importable;
+    
     protected $data;
+    protected const DATE_BASE = '1900-01-01';
+    protected const SECONDS_PER_DAY = 86400;
+    protected const MAX_DAYS_DIFF = 10;
 
     public function sheets(): array
     {
-        // Procesar solo la primera hoja
-        return [
-            0 => $this, // La hoja 0 (primera)
-        ];
+        return [0 => $this];
     }
 
-    public function throwException($message)
+    private function throwException($message, $row = null)
     {
-        throw new Exception($message);
+        $prefix = $row ? "Registro nro. {$row}: " : "";
+        throw new Exception($prefix . $message);
     }
 
-    public function ExcelDateToPHP($value){
-        $BaseDate = new \DateTime('1900-01-01');
-        $PHPDate = clone $BaseDate;
-        $PHPDate->modify('+' . ($value - 2) . ' days');
-        return $PHPDate->format('Y-m-d');
-    }
-
-    public function ExcelTimeToPHP($value){
-        $daySeconds = 86400; // 60 segundos * 60 minutos * 24 horas
-        $secondsFrom19070 = $value * $daySeconds;
-        $PHPTime = new \DateTime('@' . $secondsFrom19070);
-        return $PHPTime->format('H:i:s');
-    }
-
-    public function validate(Collection $rows){
-        // unset($rows[0]);
-        // dd($rows);
-        $filteredRows = $rows->filter(function ($value, $key) {
-            return $key > 0; // Omite la primera fila
-        });
-        // dd($filteredRows);
-        $row_number = 1;
-        foreach ($filteredRows as $row){
-            \Log::info($row);
-            $document = Document::where('prefix', $row[4])->where('number', $row[0])->get();
-            if(count($document) > 0)
-                $this->throwException('Registro nro.: '.$row_number.', El documento '.$row[4].'-'.$row[0].' ya fue registrado en la base de datos...');
-            $person = Person::where('number', $row[10])->get();
-            if(count($person) == 0)
-                $this->throwException('Registro nro.: '.$row_number.', Error en el campo idetificacion_cliente, No existe el documento '.$row[10].' en la base de datos...');
-            $item = Item::where('internal_id', $row[23])->get();
-            if(count($item) == 0)
-                $this->throwException('Registro nro.: '.$row_number.', Error en el campo codigo_linea, No existe el item '.$row[23].' en la base de datos...');
-            $municipality = Municipality::where('code', $row[8])->get();
-            if(count($municipality) > 0)
-                $this->throwException('Registro nro.: '.$row_number.', Error en el campo municipio_establecimiento, No existe el item '.$row[8].' en la base de datos...');
-            $actual_date = new DateTime(Carbon::now()->format('Y-m-d'));
-            $document_date = new DateTime(Carbon::parse(str_replace("/", "-", $this->ExcelDateToPHP($row[1])))->format('Y-m-d'));
-            $interval = $actual_date->diff($document_date);
-            if($interval->days >= 10)
-                $this->throwException('Registro nro.: '.$row_number.', Error en el campo fecha, No puede ser mayor o igual a 10 dias antes de la fecha actual...');
-            $row_number++;
+    private function ExcelDateToPHP($value)
+    {
+        try {
+            $baseDate = new \DateTime(self::DATE_BASE);
+            return $baseDate->modify('+' . ($value - 2) . ' days')->format('Y-m-d');
+        } catch (\Exception $e) {
+            throw new Exception("Error al convertir fecha Excel: " . $e->getMessage());
         }
     }
 
-    public function collection(Collection $rows){
-        // \Log::debug('repite');
-        // unset($rows[0]);
-        $filteredRows = $rows->filter(function ($value, $key) {
-            return $key > 0; // Omite la primera fila
-        });
+    private function ExcelTimeToPHP($value)
+    {
+        try {
+            $secondsFrom19070 = $value * self::SECONDS_PER_DAY;
+            return (new \DateTime('@' . $secondsFrom19070))->format('H:i:s');
+        } catch (\Exception $e) {
+            throw new Exception("Error al convertir hora Excel: " . $e->getMessage());
+        }
+    }
+
+    private function validateRow($row, $rowNumber)
+    {
+        if (empty($row[10])) {
+            $this->throwException('El campo identificación cliente es obligatorio', $rowNumber);
+        }
+
+        $this->validateDocument($row, $rowNumber);
+        $this->validatePerson($row, $rowNumber);
+        $this->validateItem($row, $rowNumber);
+        $this->validateMunicipality($row, $rowNumber);
+        $this->validateDate($row, $rowNumber);
+    }
+
+    private function validateDocument($row, $rowNumber)
+    {
+        if (Document::where('prefix', $row[4])->where('number', $row[0])->exists()) {
+            $this->throwException("El documento {$row[4]}-{$row[0]} ya fue registrado", $rowNumber);
+        }
+    }
+
+    private function validatePerson($row, $rowNumber)
+    {
+        $personNumber = strval(trim($row[10]));
+        if (!Person::where('number', $personNumber)->exists()) {
+            $this->throwException("No existe el documento {$personNumber} en la base de datos", $rowNumber);
+        }
+    }
+
+    private function validateItem($row, $rowNumber)
+    {
+        if (!empty($row[23]) && !Item::where('internal_id', $row[23])->exists()) {
+            $this->throwException("No existe el item {$row[23]} en la base de datos", $rowNumber);
+        }
+    }
+
+    private function validateMunicipality($row, $rowNumber)
+    {
+        if (!empty($row[8]) && !Municipality::where('id', $row[8])->exists()) {
+            $this->throwException("Código de municipio inválido: {$row[8]}", $rowNumber);
+        }
+    }
+
+    private function validateDate($row, $rowNumber)
+    {
+        if (!empty($row[1])) {
+            $actualDate = Carbon::now();
+            $documentDate = Carbon::parse($this->ExcelDateToPHP($row[1]));
+            
+            if ($actualDate->diffInDays($documentDate) >= self::MAX_DAYS_DIFF) {
+                $this->throwException('La fecha no puede ser mayor o igual a 10 días antes de la fecha actual', $rowNumber);
+            }
+        }
+    }
+
+    private function processUserInfo($userInfoString)
+    {
+        return array_map(function($user) {
+            $userData = explode(',', $user);
+            return [
+                'provider_code' => $userData[0],
+                'health_type_document_identification_id' => $userData[1],
+                'identification_number' => $userData[2],
+                'surname' => $userData[3],
+                'second_surname' => $userData[4],
+                'first_name' => $userData[5],
+                'middle_name' => $userData[6],
+                'health_type_user_id' => $userData[7],
+                'health_contracting_payment_method_id' => $userData[8],
+                'health_coverage_id' => $userData[9],
+                'autorization_numbers' => $userData[10],
+                'mipres' => $userData[11],
+                'mipres_delivery' => $userData[12],
+                'contract_number' => $userData[13],
+                'policy_number' => $userData[14],
+                'co_payment' => $userData[15],
+                'moderating_fee' => $userData[16],
+                'recovery_fee' => $userData[17],
+                'shared_payment' => $userData[18],
+            ];
+        }, explode('%', $userInfoString));
+    }
+
+    public function collection(Collection $rows)
+    {
+        $filteredRows = $rows->filter(fn($value, $key) => $key > 0 && !empty(array_filter($value->toArray())));
+        
+        $rowNumber = 1;
+        foreach ($filteredRows as $row) {
+            $this->validateRow($row, $rowNumber);
+            $rowNumber++;
+        }
+
         $total = count($filteredRows);
         $registered = 0;
         $send = new DocumentController();
         $request = new DocumentRequest();
         $previos_prefix_number = "";
-        $this->validate($filteredRows);
-        foreach ($filteredRows as $row){
-            if($row[4].$row[0] != $previos_prefix_number){
-                if($previos_prefix_number != ""){
-//                    \Log::debug(json_encode($json));
-                    $send->store($request, json_encode($json));
+        $json = [];
+
+        foreach ($filteredRows as $row) {
+            if ($row[4] . $row[0] != $previos_prefix_number) {
+                if ($previos_prefix_number != "") {
+                    $result = $send->store($request, json_encode($json));
+                    
+                    // Verificar si la factura fue aprobada y enviar el correo
+                    if ($result['success'] && isset($result['data']['id'])) {
+                        $document = Document::find($result['data']['id']);
+                        if ($document && $document->state_document_id == 5) { // 5 = ACCEPTED
+                            // Obtener el email de la empresa desde establishment
+                            $establishment = \App\Models\Tenant\Establishment::where('id', auth()->user()->establishment_id)->first();
+                            $company_email = $establishment->email;
+                            
+                            // Enviar correo al email de la empresa
+                            $send->sendEmailCoDocument(new \Illuminate\Http\Request([
+                                'number' => $document->number,
+                                'email' => $company_email,
+                                'number_full' => $document->prefix.'-'.$document->number
+                            ]));
+                        }
+                    }
+                    
                     sleep(5);
                 }
-                $previos_prefix_number = $row[4].$row[0];
+                $previos_prefix_number = $row[4] . $row[0];
                 $number = $row[0];
                 $date = $this->ExcelDateToPHP($row[1]);
                 $time = $this->ExcelTimeToPHP($row[2]);
@@ -133,8 +214,8 @@ class CoDocumentsImport implements ToCollection, WithMultipleSheets
                     'merchant_registration' => "00000000",
                 ];
                 $payment_form = [
-                    'payment_form_id' => is_string($row[11]) ? PaymentForm::where('name', 'like', '%'.str_replace('_x000D_', '', $row[11]).'%')->firstOrFail()->id : $row[11],
-                    'payment_method_id' => is_string($row[12]) ? PaymentMethod::where('name', 'like', '%'.str_replace('_x000D_', '', $row[12]).'%')->firstOrFail()->id : $row[12],
+                    'payment_form_id' => is_string($row[11]) ? PaymentForm::where('name', 'like', '%' . str_replace('_x000D_', '', $row[11]) . '%')->firstOrFail()->id : $row[11],
+                    'payment_method_id' => is_string($row[12]) ? PaymentMethod::where('name', 'like', '%' . str_replace('_x000D_', '', $row[12]) . '%')->firstOrFail()->id : $row[12],
                     'payment_due_date' => $this->ExcelDateToPHP($row[13]),
                     'duration_measure' => $row[14],
                 ];
@@ -146,39 +227,13 @@ class CoDocumentsImport implements ToCollection, WithMultipleSheets
                     'charge_total_amount' => $row[19],
                     'payable_amount' => $row[20],
                 ];
-                if($row[28] != '' && $row[29] != '' && $row[30] != ''){
+                if ($row[28] != '' && $row[29] != '' && $row[30] != '') {
                     $health_fields = [
                         'invoice_period_start_date' => $this->ExcelDateToPHP($row[28]),
                         'invoice_period_end_date' => $this->ExcelDateToPHP($row[29]),
                     ];
 
-                    $us_i = explode("%", $row[30]);
-                    $users_info = [];
-                    foreach($us_i as $u){
-                        $u_i = explode(",", $u);
-                        $arr_u_i = [
-                            'provider_code' => $u_i[0],
-                            'health_type_document_identification_id' => $u_i[1],
-                            'identification_number' => $u_i[2],
-                            'surname' => $u_i[3],
-                            'second_surname' => $u_i[4],
-                            'first_name' => $u_i[5],
-                            'middle_name' => $u_i[6],
-                            'health_type_user_id' => $u_i[7],
-                            'health_contracting_payment_method_id' => $u_i[8],
-                            'health_coverage_id' => $u_i[9],
-                            'autorization_numbers' => $u_i[10],
-                            'mipres' => $u_i[11],
-                            'mipres_delivery' => $u_i[12],
-                            'contract_number' => $u_i[13],
-                            'policy_number' => $u_i[14],
-                            'co_payment' => $u_i[15],
-                            'moderating_fee' => $u_i[16],
-                            'recovery_fee' => $u_i[17],
-                            'shared_payment' => $u_i[18],
-                        ];
-                        $users_info[] = $arr_u_i;
-                    }
+                    $users_info = $this->processUserInfo($row[30]);
                 }
                 $invoice_lines = [];
             }
@@ -198,7 +253,7 @@ class CoDocumentsImport implements ToCollection, WithMultipleSheets
                 'line_extension_amount' => $row[22],
                 'free_of_charge_indicator' => false,
                 'description' => $item->description,
-                'code' => $row[23],
+                'code' => strval($row[23]),
                 'type_item_identification_id' => 4,
                 'price_amount' => $row[24],
                 'base_quantity' => 1,
@@ -228,17 +283,18 @@ class CoDocumentsImport implements ToCollection, WithMultipleSheets
             );
             $registered += 1;
             $this->data = compact('total', 'registered');
-            if($row[28] != '' && $row[29] != '' && $row[30] != ''){
+            if ($row[28] != '' && $row[29] != '' && $row[30] != '') {
                 $json['health_fields'] = $health_fields;
                 $json['users_info'] = $users_info;
             }
         }
-        if($row[28] != '' && $row[29] != '' && $row[30] != ''){
+        if ($row[28] != '' && $row[29] != '' && $row[30] != '') {
             $json['health_fields'] = $health_fields;
             $json['users_info'] = $users_info;
         }
         \Log::debug(json_encode($json));
-        $send->store($request, json_encode($json));
+        $result = $send->store($request, json_encode($json));
+
         $this->data = compact('total', 'registered');
         return;
     }
