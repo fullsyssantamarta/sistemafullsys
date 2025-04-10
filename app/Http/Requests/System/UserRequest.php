@@ -29,7 +29,8 @@ class UserRequest extends FormRequest
                 'numeric',
                 'nullable',
             ],
-
+            'address_contact' => 'nullable|string|max:255',
+            'introduction' => 'nullable|string'
         ];
     }
 }

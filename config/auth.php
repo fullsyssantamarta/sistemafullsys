@@ -50,11 +50,11 @@ return [
             'driver' => 'session',
             'provider' => 'admins',
         ],
-//
-//        'api_' => [
-//            'driver' => 'token',
-//            'provider' => 'users',
-//        ],
+
+        'system' => [
+            'driver' => 'session',
+            'provider' => 'system_users',
+        ],
     ],
 
     /*
@@ -83,6 +83,11 @@ return [
         'admins' => [
             'driver' => 'eloquent',
             'model' => App\Models\System\User::class,
+        ],
+
+        'system_users' => [
+            'driver' => 'eloquent',
+            'model' => Modules\Factcolombia1\Models\System\User::class,
         ],
         // 'users' => [
         //     'driver' => 'database',

@@ -51,6 +51,11 @@
         </div>
     </div>
     <div class="header-right">
+        <li class="d-inline-block">
+        <a role="menuitem"  class="nav-link"  onclick="toggleSupportSidebar()">
+            <i class="fas fa-headset"></i>
+        </a>
+        </li>
         <span class="separator"></span>
         <div id="userbox" class="userbox">
             <a href="#" data-toggle="dropdown">
@@ -80,3 +85,31 @@
         </div>
     </div>
 </header>
+
+<!-- Sidebar de Soporte -->
+<div id="supportSidebar" class="support-sidebar">
+        @inject('systemUser', 'Modules\Factcolombia1\Models\System\User')
+        @php
+            $user = $systemUser::first();
+        @endphp
+    <div class="support-header">
+        <h5>{{ $user->introduction }}</h5>
+        <button class="close-btn" onclick="toggleSupportSidebar()">&times;</button>
+    </div>
+    <div class="support-body">
+    <p><strong>Email:</strong> <a class="support-link" href="https://mail.google.com/mail/?view=cm&fs=1&to={{ $user->address_contact }}" target="_blank">{{ $user->address_contact }}</a></p>
+    <p><strong>Teléfono:</strong> <a class="support-link" href="https://wa.me/{{ $user->phone }}" target="_blank">{{ $user->phone }}</a></p>
+    </div>
+</div>
+<div id="supportBackdrop" class="support-backdrop" onclick="toggleSupportSidebar()"></div>
+
+
+
+<script>
+function toggleSupportSidebar() {
+    const sidebar = document.getElementById('supportSidebar');
+    const backdrop = document.getElementById('supportBackdrop');
+    sidebar.classList.toggle('show');
+    backdrop.classList.toggle('show');
+}
+</script>

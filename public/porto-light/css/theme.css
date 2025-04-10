@@ -20952,3 +20952,176 @@ ul.nav-main li.nav-description{
 html.dark ul.nav-main li.nav-description{
     color: #d0d2d6;
 }
+/* Support Sidebar */
+.support-sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 350px;
+    height: 100vh;
+    background: #ffffff;
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+    z-index: 1050;
+    transform: translateX(100%);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 1.5rem;
+    overflow-y: auto;
+    border-radius: 20px 0 0 20px;
+}
+
+.support-sidebar.show {
+    transform: translateX(0);
+}
+
+.support-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.support-header h5 {
+    margin: 0;
+    color: #2c3e50;
+    font-weight: 600;
+    font-size: 1.25rem;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    transition: color 0.2s ease;
+    border-radius: 50%;
+}
+
+.close-btn:hover {
+    color: #dc3545;
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+.support-body {
+    color: #495057;
+}
+
+.support-body p {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background-color: #fff;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.support-body p:hover {
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+.support-body strong {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-right: 0.5rem;
+}
+
+.support-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(3px);
+    z-index: 1049;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.support-backdrop.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Dark Theme Support */
+html.dark .support-sidebar {
+    background: #1d2127;
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
+}
+
+html.dark .support-header {
+    border-bottom-color: #2f3139;
+}
+
+html.dark .support-header h5 {
+    color: #fff;
+}
+
+html.dark .close-btn {
+    color: #ccc;
+}
+
+html.dark .close-btn:hover {
+    color: #dc3545;
+    background-color: rgba(220, 53, 69, 0.2);
+}
+
+html.dark .support-body {
+    color: #ccc;
+}
+
+html.dark .support-body p {
+    background-color: #2f3139;
+    border-color: #2f3139;
+}
+
+html.dark .support-body p:hover {
+    background-color: #383f48;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+html.dark .support-body strong {
+    color: #fff;
+}
+
+@media (max-width: 576px) {
+    .support-sidebar {
+        width: 100%;
+        border-radius: 20px 20px 0 0;
+        height: 80vh;
+        bottom: 0;
+        top: auto;
+    }
+}
+.support-body a.support-link {
+    color: #2c3e50; /* Color oscuro para enlaces en fondo claro */
+    text-decoration: none; /* Opcional, si no quieres subrayar los enlaces */
+    transition: color 0.3s ease;
+}
+
+.support-body a.support-link:hover {
+    color: #007bff; /* Color cuando el enlace está en hover */
+    text-decoration: underline; /* Opcional: subraya el enlace al pasar el ratón */
+}
+
+/* Estilo para enlaces en el modo oscuro */
+html.dark .support-body a.support-link {
+    color: #ccc; /* Color claro para enlaces en fondo oscuro */
+}
+
+html.dark .support-body a.support-link:hover {
+    color: #66b2ff; /* Color cuando el enlace está en hover en el modo oscuro */
+}
+/* Estilo para el ícono en el modo claro */
+.nav-link i {
+    color: #2c3e50; /* Color oscuro para el ícono en fondo claro */
+    transition: color 0.3s ease;
+}
+
+/* Estilo para el ícono en el modo oscuro */
+html.dark .nav-link i {
+    color: #fff; /* Color blanco para el ícono en fondo oscuro */
+}

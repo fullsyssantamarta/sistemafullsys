@@ -13,17 +13,6 @@
                 <h3 class="my-0">Eventos RADIAN - Documentos recibidos</h3>
             </div>
             <div class="card-body">
-                <div class="mb-3">
-                    <h5>Leyenda de Estados:</h5>
-                    <div class="d-flex gap-3">
-                        <span><i class="fa fa-circle" style="color: black"></i> Sin acciones</span>
-                        <span><i class="fa fa-circle" style="color: blue"></i> Acuse de recibo</span>
-                        <span><i class="fa fa-circle" style="color: yellow"></i> Recepción de bienes</span>
-                        <span><i class="fa fa-circle" style="color: green"></i> Aceptación expresa</span>
-                        <span><i class="fa fa-circle" style="color: red"></i> Rechazado</span>
-                    </div>
-                </div>
-
                 <data-table :resource="resource">
                     <tr slot="heading">
                         <th>#</th>
@@ -42,6 +31,7 @@
                         <th>Aceptacion Expresa</th>
                         <th>Rechazo</th>
                         <th>Estado Actual</th>
+                        <th>Historial</th>
                     </tr>
                     <tr slot-scope="{ index, row }">
                         <td>{{ index }}</td>
@@ -114,29 +104,44 @@
                             <!-- Rechazo -->
                         </td>
                         <td>
-                            <template v-if="row.aceptacion == 1">
-                                <i class="fa fa-circle" style="color: green"></i>
-                            </template>
-                            <template v-else>
-                                <template v-if="row.rechazo == 1">
-                                    <i class="fa fa-circle" style="color: red"></i>
+                            <el-tooltip effect="dark" placement="top">
+                                <div slot="content">
+                                    <template v-if="row.aceptacion == 1">Aceptación expresa</template>
+                                    <template v-else-if="row.rechazo == 1">Rechazado</template>
+                                    <template v-else-if="row.rec_bienes == 1">Recepción de bienes</template>
+                                    <template v-else-if="row.acu_recibo == 1">Acuse de recibo</template>
+                                    <template v-else>Sin acciones</template>
+                                </div>
+                                <template v-if="row.aceptacion == 1">
+                                    <i class="fa fa-circle" style="color: green"></i>
                                 </template>
                                 <template v-else>
-                                    <template v-if="row.rec_bienes == 1">
-                                        <i class="fa fa-circle" style="color: yellow"></i>
+                                    <template v-if="row.rechazo == 1">
+                                        <i class="fa fa-circle" style="color: red"></i>
                                     </template>
                                     <template v-else>
-                                        <template v-if="row.acu_recibo == 1">
-                                            <i class="fa fa-circle" style="color: blue"></i>
+                                        <template v-if="row.rec_bienes == 1">
+                                            <i class="fa fa-circle" style="color: yellow"></i>
                                         </template>
                                         <template v-else>
-                                            <i class="fa fa-circle" style="color: black"></i>
+                                            <template v-if="row.acu_recibo == 1">
+                                                <i class="fa fa-circle" style="color: blue"></i>
+                                            </template>
+                                            <template v-else>
+                                                <i class="fa fa-circle" style="color: black"></i>
+                                            </template>
                                         </template>
                                     </template>
                                 </template>
+                            </el-tooltip>
+                        </td>
+                        <td>
+                            <template v-if="row.aceptacion == 1 || row.rechazo == 1 || row.rec_bienes == 1 || row.acu_recibo == 1">
+                                <el-button type="text" @click="showHistory(row)">
+                                    <i class="fas fa-history"></i>
+                                </el-button>
                             </template>
                         </td>
-
                     </tr>
                 </data-table>
 
@@ -145,6 +150,39 @@
 
         <rejected-form :showDialog.sync="showDialogRejected"
                             :record="record"></rejected-form>
+        <!-- Nuevo componente para el historial -->
+        <el-dialog
+            title="Historial de Acciones"
+            :visible.sync="showHistoryDialog"
+            width="70%">
+            <div v-if="selectedRecord">
+                <el-timeline>
+                    <el-timeline-item v-if="selectedRecord.acu_recibo" 
+                        timestamp="Acuse de Recibo" 
+                        type="primary">
+                        <p>CUDE: {{ getCudeFromResponse('response_acu_recibo') }}</p>
+                    </el-timeline-item>
+                    
+                    <el-timeline-item v-if="selectedRecord.rec_bienes"
+                        timestamp="Recepción de Bienes"
+                        type="warning">
+                        <p>CUDE: {{ getCudeFromResponse('response_rec_bienes') }}</p>
+                    </el-timeline-item>
+
+                    <el-timeline-item v-if="selectedRecord.aceptacion"
+                        timestamp="Aceptación Expresa"
+                        type="success">
+                        <p>CUDE: {{ getCudeFromResponse('response_aceptacion') }}</p>
+                    </el-timeline-item>
+
+                    <el-timeline-item v-if="selectedRecord.rechazo"
+                        timestamp="Rechazo"
+                        type="danger">
+                        <p>CUDE: {{ getCudeFromResponse('response_rechazo') }}</p>
+                    </el-timeline-item>
+                </el-timeline>
+            </div>
+        </el-dialog>
     </div>
 </template>
 <script>
@@ -160,6 +198,8 @@
                 loading: false,
                 showDialogRejected: false,
                 record: null,
+                showHistoryDialog: false,
+                selectedRecord: null,
             }
         },
         created() {
@@ -202,6 +242,25 @@
                     .then(() => {
                         this.loading = false
                     })
+            },
+            showHistory(record) {
+                this.selectedRecord = record
+                this.showHistoryDialog = true
+            },
+            getCudeFromResponse(responseString) {
+                const record = this.selectedRecord;
+                switch(true) {
+                    case responseString === 'response_acu_recibo':
+                        return record.cude_acu_recibo || 'No disponible';
+                    case responseString === 'response_rec_bienes':
+                        return record.cude_rec_bienes || 'No disponible';
+                    case responseString === 'response_aceptacion':
+                        return record.cude_aceptacion || 'No disponible';
+                    case responseString === 'response_rechazo':
+                        return record.cude_rechazo || 'No disponible';
+                    default:
+                        return 'No disponible';
+                }
             }
         }
     }

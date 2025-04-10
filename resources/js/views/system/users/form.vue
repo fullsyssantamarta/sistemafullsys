@@ -47,6 +47,22 @@
                                 <small class="form-control-feedback" v-if="errors.phone" v-text="errors.phone[0]"></small>
                             </div>
                         </div>
+                        <div class="col-md-6">
+                            <div class="form-group" :class="{'has-danger': errors.address_contact}">
+                                <label class="control-label">Correo de Contacto</label>
+                                <el-input v-model="form.address_contact"></el-input>
+                                <small class="form-control-feedback" v-if="errors.address_contact" v-text="errors.address_contact[0]"></small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group" :class="{'has-danger': errors.introduction}">
+                                <label class="control-label">Presentación</label>
+                                <el-input type="textarea" :rows="3" v-model="form.introduction"></el-input>
+                                <small class="form-control-feedback" v-if="errors.introduction" v-text="errors.introduction[0]"></small>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="form-actions text-right pt-2">
@@ -89,6 +105,8 @@
                     password: null,
                     password_confirmation: null,
                     phone: null,
+                    address_contact: null,
+                    introduction: null,
                 }
             },
             submit() {

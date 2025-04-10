@@ -123,33 +123,44 @@ class RadianEventController extends Controller
     {
         $data_update = [];
 
+        // Extraer el CUDE de XmlDocumentKey
+        $cude = $send_request_to_api['ResponseDian']['Envelope']['Body']['SendEventUpdateStatusResponse']['SendEventUpdateStatusResult']['XmlDocumentKey'] ?? null;
+        
+        if (!$cude) {
+            // Intentar obtener de la propiedad cude si existe
+            $cude = $send_request_to_api['cude'] ?? null;
+        }
         switch ($event_code) 
         {
             case '1':
                 $data_update = [
                     'acu_recibo' => 1,
-                    // 'response_api' => $send_request_to_api, //@todo cada evento genera un response, debe haber un campo para cada uno
+                    'response_acu_recibo' => json_encode($send_request_to_api),
+                    'cude_acu_recibo' => $cude,
                 ];
                 break;
             
             case '2':
                 $data_update = [
                     'rechazo' => 1,
-                    // 'response_api' => $send_request_to_api,
+                    'response_rechazo' => json_encode($send_request_to_api),
+                    'cude_rechazo' => $cude,
                 ];
                 break;
 
             case '3':
                 $data_update = [
                     'rec_bienes' => 1,
-                    // 'response_api' => $send_request_to_api,
+                    'response_rec_bienes' => json_encode($send_request_to_api),
+                    'cude_rec_bienes' => $cude,
                 ];
                 break;
 
             case '4':
                 $data_update = [
                     'aceptacion' => 1,
-                    // 'response_api' => $send_request_to_api,
+                    'response_aceptacion' => json_encode($send_request_to_api),
+                    'cude_aceptacion' => $cude,
                 ];
                 break;
         }
