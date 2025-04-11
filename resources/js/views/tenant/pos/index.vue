@@ -990,7 +990,33 @@ export default {
                 this.form_item.quantity = 1;
                 this.form_item.aux_quantity = 1;
 
-                let unit_price = this.form_item.unit_price_value;
+                try {
+                    // Realiza la petición directamente a la ruta de configuración avanzada
+                    const response = await this.$http.get('/co-advanced-configuration/record');
+                    // Guarda la configuración en la propiedad local (no en el prop directamente)
+                    this.localConfiguration = response.data.data;
+                    // Si item_tax_included es false, significa que el precio actual ya trae IVA incluido,
+                    // por lo tanto se debe calcular el precio base (sin IVA) y asignarlo.
+                    if (!this.localConfiguration.item_tax_included) {
+                        // Verifica que existan los datos del impuesto
+                        if (this.form_item.item.tax &&
+                            this.form_item.item.tax.rate &&
+                            this.form_item.item.tax.conversion) {
+                            
+                            const taxRate = parseFloat(this.form_item.item.tax.rate);
+                            const conversion = parseFloat(this.form_item.item.tax.conversion);
+                            // Calcula el precio base quitando el IVA: precio_con_iva / (1 + tasa efectiva)
+                            unit_price = unit_price / (1 + (taxRate / conversion));
+                        } else {
+                            console.warn('Datos de impuesto no encontrados.');
+                        }
+                        // Se asigna el precio calculado sin IVA al campo sale_unit_price
+                        this.form_item.item.sale_unit_price = unit_price;
+                    }
+                    // Si item_tax_included es true, se deja el precio tal cual (porque significa que el precio base no incluye IVA y se supone que se le sumará IVA en otro proceso)
+                } catch (error) {
+                    console.error("Error al obtener la configuración avanzada:", error);
+                }
 
                 this.form_item.unit_price = unit_price;
                 this.form_item.item.unit_price = unit_price;
@@ -1080,7 +1106,36 @@ export default {
                     this.form_item.quantity = 1;
                     this.form_item.aux_quantity = 1;
 
+
                     let unit_price = this.form_item.unit_price_value;
+
+                    try {
+                        // Realiza la petición directamente a la ruta de configuración avanzada
+                        const response = await this.$http.get('/co-advanced-configuration/record');
+                        // Guarda la configuración en la propiedad local (no en el prop directamente)
+                        this.localConfiguration = response.data.data;
+                        // Si item_tax_included es false, significa que el precio actual ya trae IVA incluido,
+                        // por lo tanto se debe calcular el precio base (sin IVA) y asignarlo.
+                        if (!this.localConfiguration.item_tax_included) {
+                            // Verifica que existan los datos del impuesto
+                            if (this.form_item.item.tax &&
+                                this.form_item.item.tax.rate &&
+                                this.form_item.item.tax.conversion) {
+                                
+                                const taxRate = parseFloat(this.form_item.item.tax.rate);
+                                const conversion = parseFloat(this.form_item.item.tax.conversion);
+                                // Calcula el precio base quitando el IVA: precio_con_iva / (1 + tasa efectiva)
+                                unit_price = unit_price / (1 + (taxRate / conversion));
+                            } else {
+                                console.warn('Datos de impuesto no encontrados.');
+                            }
+                            // Se asigna el precio calculado sin IVA al campo sale_unit_price
+                            this.form_item.item.sale_unit_price = unit_price;
+                        }
+                        // Si item_tax_included es true, se deja el precio tal cual (porque significa que el precio base no incluye IVA y se supone que se le sumará IVA en otro proceso)
+                    } catch (error) {
+                        console.error("Error al obtener la configuración avanzada:", error);
+                    }
 
                     this.form_item.unit_price = unit_price;
                     this.form_item.item.unit_price = unit_price;
