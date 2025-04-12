@@ -43,13 +43,11 @@
                                     <el-select @change="changeResolution" v-model="form.resolution_id"
                                         popper-class="el-select-document_type" dusk="type_invoice_id"
                                         class="border-left rounded-left border-info">
-                                        <!-- Modifica el v-if para incluir la lógica basada en ambientId por cristian ok -->
                                         <el-option 
-                                            v-for="option in resolutions" 
+                                            v-for="option in filteredResolutions" 
                                             :key="option.id" 
                                             :value="option.id" 
-                                            :label="`${option.prefix} / ${option.resolution_number} / ${option.from} / ${option.to} / ${option.description === '1' ? 'Activa' : 'Inactiva'}`"
-                                            v-if="shouldShowResolution(option)">
+                                            :label="`${option.prefix} / ${option.resolution_number} / ${option.from} / ${option.to} / ${option.description === '1' ? 'Activa' : 'Inactiva'}`">
                                         </el-option>
                                     </el-select>
                                     <!-- Texto con estilos CSS para mejorar la presentación -->
@@ -592,6 +590,12 @@ export default {
             await this.generatedFromExternalDocument()
         },
         computed: {
+
+            // Filtra las resoluciones para incluir únicamente aquellas que cumplan la condición
+            filteredResolutions() {
+                return this.resolutions.filter(option => this.shouldShowResolution(option));
+            },
+            
             generatedFromPos()
             {
                 const form_exceed_uvt = this.$getStorage('form_exceed_uvt')
