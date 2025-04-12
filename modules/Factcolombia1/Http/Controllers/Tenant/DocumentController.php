@@ -1770,6 +1770,27 @@ class DocumentController extends Controller
         }
     }
 
+    public function invoiceCorrelative(Request $request)
+    {
+        // Se espera que se envíe "type_document_id" y "prefix" en el cuerpo del request.
+        $type_document_id = $request->input('type_document_id');
+        $prefix = $request->input('prefix');
+        
+        // Puedes definir si deseas ignorar el estado del documento (ajusta según tus requerimientos)
+        $ignore_state_document_id = false;
+        
+        // Llama a tu método interno para obtener el correlativo
+        $number = $this->getCorrelativeInvoice($type_document_id, $prefix, $ignore_state_document_id);
+        
+        // Devuelve la respuesta en formato JSON
+        return response()->json([
+            'success'          => true,
+            'type_document_id' => $type_document_id,
+            'prefix'           => $prefix,
+            'correlative'      => $number
+        ]);
+    }
+
     public function setStateDocument($type_service, $DocumentNumber)
     {
         $company = ServiceTenantCompany::firstOrFail();
@@ -1874,13 +1895,41 @@ class DocumentController extends Controller
 
     public function health_tables()
     {
-        $health_type_document_identifications = $this->api_conection("table/health_type_document_identifications", "GET")->health_type_document_identifications;
-        $health_type_users = $this->api_conection("table/health_type_users", "GET")->health_type_users;
-        $health_contracting_payment_methods = $this->api_conection("table/health_contracting_payment_methods", "GET")->health_contracting_payment_methods;
-        $health_coverages = $this->api_conection("table/health_coverages", "GET")->health_coverages;
-
-        return compact('health_type_document_identifications', 'health_type_users', 'health_contracting_payment_methods', 'health_coverages');
+        try {
+            // Realizamos las llamadas a la API externa
+            $health_type_document_identifications = $this->api_conection("table/health_type_document_identifications", "GET");
+            $health_type_users = $this->api_conection("table/health_type_users", "GET");
+            $health_contracting_payment_methods = $this->api_conection("table/health_contracting_payment_methods", "GET");
+            $health_coverages = $this->api_conection("table/health_coverages", "GET");
+    
+            // Puedes hacer un dd() o log para ver la respuesta cruda y confirmar la estructura.
+            // dd($health_type_document_identifications);
+    
+            // Si la respuesta es diferente a lo esperado, ajusta aquí para leer la propiedad correcta.
+            return response()->json([
+                'success' => true,
+                'health_type_document_identifications' => isset($health_type_document_identifications->health_type_document_identifications)
+                    ? $health_type_document_identifications->health_type_document_identifications 
+                    : $health_type_document_identifications,
+                'health_type_users' => isset($health_type_users->health_type_users)
+                    ? $health_type_users->health_type_users 
+                    : $health_type_users,
+                'health_contracting_payment_methods' => isset($health_contracting_payment_methods->health_contracting_payment_methods)
+                    ? $health_contracting_payment_methods->health_contracting_payment_methods 
+                    : $health_contracting_payment_methods,
+                'health_coverages' => isset($health_coverages->health_coverages)
+                    ? $health_coverages->health_coverages 
+                    : $health_coverages,
+            ]);
+        } catch (\Exception $e) {
+            // Devuelve el error para ayudarte a identificar el problema
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
+    
 
 
     public function table($table)

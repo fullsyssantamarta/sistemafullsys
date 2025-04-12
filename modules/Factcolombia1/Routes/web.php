@@ -41,6 +41,7 @@ if($current_hostname) {
                 Route::post('query-zipkey', 'Tenant\DocumentController@queryZipkey');
                 Route::post('sincronize', 'Tenant\DocumentController@sincronize');
                 Route::post('import', 'Tenant\DocumentController@co_import');
+                Route::post('invoice-correlative', 'Tenant\DocumentController@invoiceCorrelative');
             });
 
             Route::prefix('co-documents-health')->group(function () {

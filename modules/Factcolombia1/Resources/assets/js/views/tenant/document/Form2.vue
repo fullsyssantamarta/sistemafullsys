@@ -122,7 +122,7 @@
                                         v-text="errors.payment_form_id[0]"></small>
                                 </div>
                             </div>
-
+                            <!--
                             <template v-if="!is_contingency_3">
                                 <div class="col-lg-2">
                                     <div class="form-group">
@@ -131,7 +131,7 @@
                                     </div>
                                 </div>
                             </template>
-
+                            -->
                             <template v-if="is_edit">
                                 <div class="col-lg-2">
                                     <div class="form-group">
@@ -527,6 +527,7 @@ export default {
                 duplicated_health_fields: {},
                 duplicated_health_users: [],
                 companies: null,
+                is_contingency_4: false,
                 correlative_api: null, // Aquí almacenarás el siguiente número consecutivo
                 currentPrefix: null,
                 global_discount_is_amount: true,
@@ -759,10 +760,14 @@ export default {
                         this.form.payment_form_id = 2
             },
             async fetchCorrelative() {
-                const typeService = 1; // supongo que es el Id del tipo de documento que para este caso es 1 factura de venta 
+                const typeService = 1; // Por ejemplo: Id del tipo de documento, como factura de venta
                 if (this.currentPrefix) {
                     try {
-                        const response = await this.$http.get(`/${this.resource}/invoice-correlative/${typeService}/${this.currentPrefix}`);
+                        const response = await this.$http.post(`/${this.resource}/invoice-correlative`, {
+                            type_document_id: typeService,
+                            prefix: this.currentPrefix
+                        });
+                        // Se espera que la respuesta retorne la propiedad 'correlative'
                         this.correlative_api = response.data.correlative;
                     } catch (error) {
                         console.error('Error al obtener el correlativo:', error);
