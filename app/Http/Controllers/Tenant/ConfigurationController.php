@@ -12,6 +12,7 @@ use App\Models\Tenant\FormatTemplate;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Tenant\Catalogs\AffectationIgvType;
+use App\Models\Tenant\ConfigurationPos;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Client;
 
@@ -197,6 +198,15 @@ class ConfigurationController extends Controller
 //            $configuration->save();
 //        }
         return 'error';
+    }
+
+    public function getPosResolution()
+    {
+        $pos_configs = ConfigurationPos::where('electronic', true)
+                        ->where('generated', '<', 'to') // Solo mostrar las que aún tienen números disponibles
+                        ->get();
+                        
+        return $pos_configs;
     }
 
 }

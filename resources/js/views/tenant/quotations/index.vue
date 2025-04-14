@@ -89,6 +89,15 @@
                                 </button>
                             </el-tooltip>
 
+                            <el-tooltip class="item" effect="dark" content="Generar factura POS" placement="top-start">
+                                <button v-if="row.state_type_id != '11' && row.btn_generate && typeUser == 'admin'"
+                                        type="button"
+                                        class="btn waves-effect waves-light btn-xs btn-warning"
+                                        @click.prevent="clickGeneratePos(row.id)" >
+                                    POS
+                                </button>
+                            </el-tooltip>
+
                             <el-tooltip class="item" effect="dark" content="Generar remisión" placement="top-start">
                                 <button v-if="row.state_type_id != '11' && row.btn_generate_remission && typeUser == 'admin'"
                                         type="button"
@@ -122,6 +131,9 @@
 
             <quotation-generate-remission :showDialog.sync="showDialogGenerateRemission"
                               :recordId="recordId"></quotation-generate-remission>
+
+            <quotation-generate-pos :showDialog.sync="showDialogGeneratePos"
+                              :recordId="recordId"></quotation-generate-pos>
         </div>
     </div>
 </template>
@@ -137,11 +149,12 @@
     import DataTable from '../../../components/DataTable.vue'
     import {deletable} from '../../../mixins/deletable'
     import QuotationGenerateRemission from './partials/generate_remission.vue'
+    import QuotationGeneratePos from './partials/generate_pos.vue'
 
     export default {
         props:['typeUser', 'soapCompany'],
         mixins: [deletable],
-        components: {DataTable,QuotationOptions, QuotationOptionsPdf, QuotationGenerateRemission},
+        components: {DataTable,QuotationOptions, QuotationOptionsPdf, QuotationGenerateRemission, QuotationGeneratePos},
         data() {
             return {
                 resource: 'quotations',
@@ -149,6 +162,7 @@
                 showDialogOptions: false,
                 showDialogOptionsPdf: false,
                 showDialogGenerateRemission: false,
+                showDialogGeneratePos: false,
                 state_types: [],
                 columns: {
                     delivery_date: {
@@ -213,6 +227,10 @@
 
                 })
                 this.$eventHub.$emit('reloadData')
+            },
+            clickGeneratePos(recordId) {
+                this.recordId = recordId
+                this.showDialogGeneratePos = true
             }
         }
     }
