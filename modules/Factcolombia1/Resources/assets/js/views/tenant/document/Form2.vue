@@ -528,6 +528,7 @@ export default {
                 is_contingency_4: false,
                 correlative_api: null, // Aquí almacenarás el siguiente número consecutivo
                 currentPrefix: null,
+                localConfiguration: null,
                 global_discount_is_amount: true,
                 lastResolutionId: null, // Para almacenar el último ID de resolución seleccionado
                 expirationAlertShown: false, // Para evitar mostrar la alerta de vencimiento más de una vez
@@ -588,6 +589,11 @@ export default {
             })
 //            console.log(this.customers)
             await this.generatedFromExternalDocument()
+            
+            // Realiza la petición a la configuración avanzada
+            const response = await this.$http.get('/co-advanced-configuration/record');
+            // Guarda la configuración en la propiedad local
+            this.localConfiguration = response.data.data;
         },
         computed: {
 
@@ -1065,23 +1071,32 @@ export default {
             // }
         },
 
-        addRow(row) {
-            // si no selecciona la casilla de "impuesto incluido en el precio" se debe sumar el impuesto al precio
-            if(row.tax_included_in_price) {
-                const tax_caculable = parseFloat(row.tax.rate) / row.tax.conversion;
-                const price_without_tax = row.price / (1 + tax_caculable);
-                row.price = price_without_tax;
+        async addRow(row) {
+        // Verificamos que exista la configuración avanzada y los datos del impuesto
+        if (this.localConfiguration && row.item.tax && row.item.tax.rate && row.item.tax.conversion) {
+            const taxRate = parseFloat(row.item.tax.rate);          // Ejemplo: 19.00
+            const conversion = parseFloat(row.item.tax.conversion);   // Ejemplo: 100.00
+
+            if (this.localConfiguration.item_tax_included === false) {
+            // Caso: El precio que llega ya incluye IVA y se debe extraer
+            // Para obtener el precio base: precio_base = precio_final / (1 + (taxRate / conversion))
+            row.price = row.price / (1 + (taxRate / conversion));
             }
-            if (this.recordItem) {
-                //this.form.items.$set(this.recordItem.indexi, row)
-                this.form.items[this.recordItem.indexi] = row
-                this.recordItem = null
-            }
-            else {
-                this.form.items.push(JSON.parse(JSON.stringify(row)));
-            }
-            // console.log(this.form)
-            this.calculateTotal();
+            // Si item_tax_included es true, no hacemos ningún ajuste aquí,
+            // porque el precio ya es la base y las demás funciones agregarán el IVA.
+        } else {
+            console.warn("Faltan datos de configuración avanzada o de impuesto.");
+        }
+        
+        // Se agrega el ítem a la factura
+        if (this.recordItem) {
+            this.form.items[this.recordItem.indexi] = row;
+            this.recordItem = null;
+        } else {
+            this.form.items.push(JSON.parse(JSON.stringify(row)));
+        }
+        
+        this.calculateTotal();
         },
         addHealthData(health_fields) {
             this.form.health_fields = health_fields

@@ -2151,16 +2151,12 @@ class DocumentController extends Controller
      * @param  $decimal_quantity
      * @return double
      */
+    
     private function getSaleUnitPriceWithTax($item)
     {
-        $advanced_config = AdvancedConfiguration::first();
-        $is_tax_included = $advanced_config->item_tax_included;
-        if($is_tax_included) {
-            return number_format($item->sale_unit_price * ( 1 + ($item->tax->rate ?? 0) / ($item->tax->conversion ?? 1)), 2, ".","");
-        }
-        return $item->sale_unit_price;
+        // Siempre retorna el precio base sin aplicar IVA por que en la factura se hace la validación.
+        return number_format($item->sale_unit_price, 2, ".", "");
     }
-
 
     public function searchItems(Request $request)
     {
