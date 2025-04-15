@@ -167,12 +167,12 @@
                                     <tr>
                                         <td>TOTAL VENTA</td>
                                         <td>:</td>
-                                        <td class="text-right">{{ ratePrefix() }} {{ form.sale }}</td>
+                                        <td class="text-right">{{ ratePrefix() }} {{ getFormatDecimal(form.sale) }}</td>
                                     </tr>
                                     <tr>
                                         <td>TOTAL DESCUENTO (-)</td>
                                         <td>:</td>
-                                        <td class="text-right">{{ ratePrefix() }} {{ form.total_discount }}</td>
+                                        <td class="text-right">{{ ratePrefix() }} {{ getFormatDecimal(form.total_discount) }}</td>
                                     </tr>
                                     <template v-for="(tax, index) in form.taxes">
                                         <tr v-if="((tax.total > 0) && (!tax.is_retention))" :key="index">
@@ -180,21 +180,21 @@
                                                 {{ tax.name }}(+)
                                             </td>
                                             <td>:</td>
-                                            <td class="text-right">{{ ratePrefix() }} {{ Number(tax.total).toFixed(2) }}
+                                            <td class="text-right">{{ ratePrefix() }} {{ getFormatDecimal(tax.total) }}
                                             </td>
                                         </tr>
                                     </template>
                                     <tr>
                                         <td>SUBTOTAL</td>
                                         <td>:</td>
-                                        <td class="text-right">{{ ratePrefix() }} {{ form.subtotal }}</td>
+                                        <td class="text-right">{{ ratePrefix() }} {{ getFormatDecimal(form.subtotal) }}</td>
                                     </tr>
                                     <template v-for="(tax, index) in form.taxes">
                                         <tr v-if="((tax.is_retention) && (tax.apply))" :key="index">
                                             <td>{{ tax.name }}(-)</td>
                                             <td>:</td>
                                             <!-- <td class="text-right">
-                                                {{ratePrefix()}} {{Number(tax.retention).toFixed(2)}}
+                                                {{ratePrefix()}} {{Number(tax.retention).toFixed(4)}}
                                             </td> -->
                                             <td class="text-right" width=35%>
                                                 <el-input v-model="tax.retention" readonly>
@@ -208,7 +208,7 @@
                                     </template>
                                 </table>
                                 <template>
-                                    <h3 class="text-right"><b>TOTAL: </b>{{ ratePrefix() }} {{ form.total }}</h3>
+                                    <h3 class="text-right"><b>TOTAL: </b>{{ ratePrefix() }} {{ getFormatDecimal(form.total) }}</h3>
                                 </template>
                             </div>
                         </div>
@@ -300,28 +300,42 @@ export default {
                     value: 'FB'
                 }
             ],
+            localConfiguration: null,
         }
     },
     async created() {
-        await this.initForm()
+        await this.initForm();
         await this.$http.get(`/${this.resource}/tables`)
             .then(response => {
-                this.all_customers = response.data.customers
-                this.taxes = response.data.taxes
-                this.currencies = response.data.currencies
-                this.payment_methods = response.data.payment_methods
-                this.payment_forms = response.data.payment_forms
-                this.form.currency_id = (this.currencies.length > 0) ? 170 : null
-                this.form.payment_method_id = 10
-                this.form.payment_form_id = 1
-                this.filterCustomers()
-            })
-        this.loading_form = true
+                this.all_customers = response.data.customers;
+                this.taxes = response.data.taxes;
+                this.currencies = response.data.currencies;
+                this.payment_methods = response.data.payment_methods;
+                this.payment_forms = response.data.payment_forms;
+                this.form.currency_id = (this.currencies.length > 0) ? 170 : null;
+                this.form.payment_method_id = 10;
+                this.form.payment_form_id = 1;
+                this.filterCustomers();
+            });
+        // Cargamos la configuración avanzada y la guardamos en localConfiguration
+        const responseConfig = await this.$http.get('/co-advanced-configuration/record');
+        this.localConfiguration = responseConfig.data.data;
+
+        this.loading_form = true;
         this.$eventHub.$on('reloadDataPersons', (customer_id) => {
-            this.reloadDataCustomers(customer_id)
-        })
+            this.reloadDataCustomers(customer_id);
+        });
     },
     methods: {
+        getFormatDecimal(value) {
+        const numericValue = parseFloat(value);
+        if (isNaN(numericValue)) return '0.00';
+        return numericValue.toLocaleString('en-US', {
+            style: 'decimal',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        },
         ratePrefix(tax = null) {
             if ((tax != null) && (!tax.is_fixed_value)) return null;
             return (this.company.currency != null) ? this.company.currency.symbol : '$';
@@ -334,10 +348,28 @@ export default {
             return _.round(unit_price, 6)
         },
         ediItem(row, index) {
-            row.indexi = index
-            this.recordItem = row
-            this.showDialogAddItem = true
-        },
+    // Asignamos el índice del ítem que se va a editar
+    row.indexi = index;
+    
+    // Validamos que exista la configuración avanzada y los datos del impuesto
+    if (this.localConfiguration && row.tax && row.tax.rate && row.tax.conversion) {
+        // Si en la configuración global el precio recibido se guardó como base (sin IVA)
+        if (this.localConfiguration.item_tax_included === false) {
+            // Calculamos la tasa de IVA
+            let ivaRate = parseFloat(row.tax.rate) / parseFloat(row.tax.conversion);
+            // Se calcula el precio con IVA sumándole el porcentaje del impuesto
+            let precioConIVA = row.price * (1 + ivaRate);
+            // Redondeamos a dos decimales
+            precioConIVA = Number(precioConIVA);
+            // Actualizamos el precio en el ítem que se va a editar
+            row.price = precioConIVA;
+        }
+    }
+    
+    // Establecemos el ítem a editar y mostramos el diálogo de edición
+    this.recordItem = row;
+    this.showDialogAddItem = true;
+},
         searchRemoteCustomers(input) {
             if (input.length > 0) {
                 this.loading_search = true
@@ -400,20 +432,29 @@ export default {
             this.customers = this.all_customers
         },
         addRow(row) {
-            if(row.tax_included_in_price) {
-                const tax_caculable = parseFloat(row.tax.rate) / row.tax.conversion;
-                const price_without_tax = row.price / (1 + tax_caculable);
-                row.price = price_without_tax.toFixed(2);
+            // Verifica que se tenga la configuración avanzada y los datos del impuesto
+            if (this.localConfiguration && row.tax && row.tax.rate && row.tax.conversion) {
+                const taxRate = parseFloat(row.tax.rate);        // Ejemplo: 19.00
+                const conversion = parseFloat(row.tax.conversion); // Ejemplo: 100.00
+
+                if (this.localConfiguration.item_tax_included === false) {
+                    // Si el precio recibido ya incluye IVA, extraemos la base imponible
+                    // Fórmula: precio_base = precio_final / (1 + (taxRate / conversion))
+                    row.price = row.price / (1 + (taxRate / conversion));
+                }
             } else {
-                row.price = row.price;
+                console.warn("Faltan datos de configuración avanzada o de impuesto.");
+                row.price = row.price; // Mantenemos el precio sin modificar
             }
+            
+            // Se agrega el ítem a la remisión
             if (this.recordItem) {
-                this.form.items[this.recordItem.indexi] = row
-                this.recordItem = null
-            }
-            else {
+                this.form.items[this.recordItem.indexi] = row;
+                this.recordItem = null;
+            } else {
                 this.form.items.push(JSON.parse(JSON.stringify(row)));
             }
+            
             this.calculateTotal();
         },
         clickRemoveItem(index) {
@@ -443,30 +484,30 @@ export default {
                         total_discount = ((item.unit_price * item.discount_percentage) / 100) * item.quantity;
                     }
                 }
-                this.$set(item, "discount", Number(total_discount).toFixed(2));
-                this.$set(item, "total_discount", Number(total_discount).toFixed(2));
+                this.$set(item, "discount", Number(total_discount).toFixed(4));
+                this.$set(item, "total_discount", Number(total_discount).toFixed(4));
                 item.total_tax = 0;
                 if (item.tax != null) {
                     let tax = val.taxes.find(tax => tax.id == item.tax.id);
                     if (item.tax.is_fixed_value) {
-                        item.total_tax = ((item.tax.rate * item.quantity) - total_discount).toFixed(2);
+                        item.total_tax = ((item.tax.rate * item.quantity) - total_discount).toFixed(4);
                     }
                     if (item.tax.is_percentage) {
-                        item.total_tax = (((item.price * item.quantity) - total_discount) * (item.tax.rate / item.tax.conversion)).toFixed(2);
+                        item.total_tax = (((item.price * item.quantity) - total_discount) * (item.tax.rate / item.tax.conversion)).toFixed(4);
                     }
                     if (!tax.hasOwnProperty("total")) {
-                        tax.total = Number(0).toFixed(2);
+                        tax.total = Number(0).toFixed(4);
                     }
-                    tax.total = (Number(tax.total) + Number(item.total_tax)).toFixed(2);
+                    tax.total = (Number(tax.total) + Number(item.total_tax)).toFixed(4);
                 }
-                item.subtotal = (Number(item.price * item.quantity) + Number(item.total_tax)).toFixed(2);
-                this.$set(item, "total", (Number(item.subtotal) - Number(total_discount)).toFixed(2));
+                item.subtotal = (Number(item.price * item.quantity) + Number(item.total_tax)).toFixed(4);
+                this.$set(item, "total", (Number(item.subtotal) - Number(total_discount)).toFixed(4));
             });
-            val.total_tax = val.items.reduce((p, c) => Number(p) + Number(c.total_tax), 0).toFixed(2);
-            let total = val.items.reduce((p, c) => Number(p) + Number(c.total), 0).toFixed(2);
-            val.subtotal = val.items.reduce((p, c) => Number(p) + (Number(c.subtotal) - Number(c.total_discount)), 0).toFixed(2);
-            val.sale = val.items.reduce((p, c) => Number(p) + Number(c.price * c.quantity) - Number(c.total_discount), 0).toFixed(2);
-            val.total_discount = val.items.reduce((p, c) => Number(p) + Number(c.total_discount), 0).toFixed(2);
+            val.total_tax = val.items.reduce((p, c) => Number(p) + Number(c.total_tax), 0).toFixed(4);
+            let total = val.items.reduce((p, c) => Number(p) + Number(c.total), 0).toFixed(4);
+            val.subtotal = val.items.reduce((p, c) => Number(p) + (Number(c.subtotal) - Number(c.total_discount)), 0).toFixed(4);
+            val.sale = val.items.reduce((p, c) => Number(p) + Number(c.price * c.quantity) - Number(c.total_discount), 0).toFixed(4);
+            val.total_discount = val.items.reduce((p, c) => Number(p) + Number(c.total_discount), 0).toFixed(4);
             let totalRetentionBase = Number(0);
             // this.taxes.forEach(tax => {
             val.taxes.forEach(tax => {
@@ -474,12 +515,12 @@ export default {
                     tax.retention = (
                         Number(val.sale) *
                         (tax.rate / tax.conversion)
-                    ).toFixed(2);
+                    ).toFixed(4);
                     totalRetentionBase =
                         Number(totalRetentionBase) + Number(tax.retention);
                     if (Number(totalRetentionBase) >= Number(val.sale))
-                        this.$set(tax, "retention", Number(0).toFixed(2));
-                    total -= Number(tax.retention).toFixed(2);
+                        this.$set(tax, "retention", Number(0).toFixed(4));
+                    total -= Number(tax.retention).toFixed(4);
                 }
                 if (
                     tax.is_retention &&
@@ -490,14 +531,14 @@ export default {
                     let row = val.taxes.find(row => row.id == tax.in_tax);
                     tax.retention = Number(
                         Number(row.total) * (tax.rate / tax.conversion)
-                    ).toFixed(2);
+                    ).toFixed(4);
                     if (Number(tax.retention) > Number(row.total))
-                        this.$set(tax, "retention", Number(0).toFixed(2));
-                    row.retention = Number(tax.retention).toFixed(2);
-                    total -= Number(tax.retention).toFixed(2);
+                        this.$set(tax, "retention", Number(0).toFixed(4));
+                    row.retention = Number(tax.retention).toFixed(4);
+                    total -= Number(tax.retention).toFixed(4);
                 }
             });
-            val.total = Number(total).toFixed(2)
+            val.total = Number(total).toFixed(4)
         },
         close() {
             location.href = `/${this.resource}`
