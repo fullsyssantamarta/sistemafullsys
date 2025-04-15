@@ -41,6 +41,7 @@ if($current_hostname) {
                 Route::post('query-zipkey', 'Tenant\DocumentController@queryZipkey');
                 Route::post('sincronize', 'Tenant\DocumentController@sincronize');
                 Route::post('import', 'Tenant\DocumentController@co_import');
+                Route::get('downloadFileCoupon/{id}', 'Tenant\DocumentController@downloadFileCoupon');
             });
 
             Route::prefix('co-documents-health')->group(function () {
@@ -120,6 +121,16 @@ if($current_hostname) {
                 Route::get('record', 'Tenant\AdvancedConfigurationController@record');
                 Route::post('', 'Tenant\AdvancedConfigurationController@store');
                 Route::post('/delete-documents', 'Tenant\AdvancedConfigurationController@deleteDocumentByResolution');
+            });
+
+            Route::prefix('co-coupon')->group(function () {
+                Route::get('', 'Tenant\CouponController@index')->name('tenant.co-coupon.index');
+                Route::get('records', 'Tenant\CouponController@records');
+                Route::get('record/{id}', 'Tenant\CouponController@record');
+                Route::get('tables', 'Tenant\CouponController@tables');
+                Route::post('', 'Tenant\CouponController@store');
+                Route::put('{id}', 'Tenant\CouponController@update');
+                Route::delete('{id}', 'Tenant\CouponController@destroy');
             });
 
         });

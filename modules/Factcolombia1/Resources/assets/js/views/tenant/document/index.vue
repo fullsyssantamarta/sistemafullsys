@@ -79,6 +79,9 @@
                             <button type="button" style="min-width: 41px" class="btn waves-effect waves-light btn-xs btn-info m-1__2"
                                     @click.prevent="clickDownload(row.download_pdf)"
                                    >PDF</button>
+                            <button v-if="row.has_coupon" type="button" style="min-width: 41px" class="btn waves-effect waves-light btn-xs btn-info m-1__2"
+                                    @click.prevent="clickDownloadCoupon(row.id)"
+                                   >Cupon</button>
 
                         </td>
                         <td class="text-right" >
@@ -254,7 +257,29 @@
                     return c.split('').reverse().join('');
               }
               return c.split('').reverse().join('');
+            },
+            clickDownloadCoupon(id) {
+                this.$http.get(`/${this.resource}/downloadFileCoupon/${id}`).then((response) => {
+                    const res_data = response.data;
+
+                    if (!res_data.success) return this.$message.error(res_data.message);
+
+                    const byteCharacters = atob(res_data.filebase64);
+                    const byteNumbers = new Array(byteCharacters.length);
+                    for (let i = 0; i < byteCharacters.length; i++) {
+                        byteNumbers[i] = byteCharacters.charCodeAt(i);
+                    }
+                    const byteArray = new Uint8Array(byteNumbers);
+
+                    const file = new Blob([byteArray], { type: 'application/pdf' });
+                    const fileURL = URL.createObjectURL(file);
+                    window.open(fileURL, '_blank');
+                }).catch((err) => {
+                    this.$message.error('Error al descargar el cupón');
+                    console.error(err);
+                });
             }
+
         }
     }
 </script>

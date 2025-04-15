@@ -21,7 +21,9 @@ use Modules\Factcolombia1\Models\Tenant\{
     Item,
     Tax,
     PaymentMethod,
-    PaymentForm
+    PaymentForm,
+    ConfigurationPurchaseCoupon,
+    CustomerPurchaseCoupon,
 };
 use Carbon\Carbon;
 use Mpdf\Mpdf;
@@ -877,6 +879,9 @@ class DocumentController extends Controller
             }
             $this->document = DocumentHelper::createDocument($request, $nextConsecutive, $correlative_api, $this->company, $response, $response_status, $company->type_environment_id);
             $payments = (new DocumentHelper())->savePayments($this->document, $request->payments);
+            // Registrar cupón
+            $this->registerCustomerCoupon($this->document);
+
         }
         catch (\Exception $e) {
             DB::connection('tenant')->rollBack();
@@ -2099,6 +2104,60 @@ class DocumentController extends Controller
         }
     }
 
+    public function downloadFileCoupon($id)
+    {
+        $purchaseCoupon = CustomerPurchaseCoupon::where('document_id',$id)->where('status',1)->first();
+        if (!$purchaseCoupon) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cupón no encontrado'
+            ], 404);
+        }
+        
+        $coupon = ConfigurationPurchaseCoupon::where('id',$purchaseCoupon->configuration_purchase_coupon_id)->where('status',1)->first();
+
+        if (!$coupon) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cupón no encontrado'
+            ], 404);
+        }
+
+        $data = [
+            'title' => $coupon->title,
+            'description' => $coupon->description,
+            'establishment' => $coupon->establishment,
+            'coupon_date' => $coupon->coupon_date,
+            'document_number' => $purchaseCoupon->document_number,
+            'customer_name' => $purchaseCoupon->customer_name,
+            'customer_number' => $purchaseCoupon->customer_number,
+            'customer_phone' => $purchaseCoupon->customer_phone,
+            'customer_email' => $purchaseCoupon->customer_email,
+        ];
+
+        $html = View::make('factcolombia1::coupon.cupon', $data)->render();
+
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => [72, 297], // 72mm de ancho (tirilla), altura variable
+            'margin_left' => 5,
+            'margin_right' => 5,
+            'margin_top' => 5,
+            'margin_bottom' => 5,
+        ]);
+
+        $mpdf->WriteHTML($html);
+
+        $pdfContent = $mpdf->Output('', 'S'); // 'S' devuelve el string del contenido
+
+        return response()->json([
+            'success' => true,
+            'filebase64' => base64_encode($pdfContent),
+            'filename' => 'cupon-'.$purchaseCoupon->document_number.'.pdf'
+        ]);
+
+    }
+
     public function searchCustomerById($id)
     {
 
@@ -2473,4 +2532,24 @@ class DocumentController extends Controller
            //'data' => $data_document
         ];
     }
+
+    private function registerCustomerCoupon($document) {
+
+        $activeCoupon = ConfigurationPurchaseCoupon::where('status',1)->first();
+        $customer = Person::where('id',$document->customer_id)->first();
+
+        if($activeCoupon && $customer && $document->total >= $activeCoupon->minimum_purchase_amount){
+            CustomerPurchaseCoupon::create([
+                'configuration_purchase_coupon_id'  => $activeCoupon->id,
+                'document_id'  => $document->id,
+                'customer_name'  => $customer->name,
+                'customer_number'  => $customer->number,
+                'customer_phone'  => $customer->telephone,
+                'customer_email'  => $customer->email,
+                'document_amount'  => $document->total,
+                'status'  => 1
+            ]);
+        }
+    }
+
 }
