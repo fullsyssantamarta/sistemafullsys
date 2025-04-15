@@ -51,6 +51,7 @@ use Modules\Factcolombia1\Http\Resources\Tenant\DocumentResource;
 use App\Imports\CoDocumentsImport;
 use App\Imports\CoDocumentsImportTwoFormat;
 use Maatwebsite\Excel\Excel;
+use Illuminate\Support\Facades\View;
 
 use Modules\Factcolombia1\Helpers\DocumentHelper;
 use Exception;
@@ -2135,7 +2136,7 @@ class DocumentController extends Controller
             'customer_email' => $purchaseCoupon->customer_email,
         ];
 
-        $html = View::make('factcolombia1::coupon.cupon', $data)->render();
+        $html = View::make('factcolombia1::coupon.coupon', $data)->render();
 
         $mpdf = new Mpdf([
             'mode' => 'utf-8',
@@ -2144,6 +2145,7 @@ class DocumentController extends Controller
             'margin_right' => 5,
             'margin_top' => 5,
             'margin_bottom' => 5,
+            'default_font' => 'symbola'
         ]);
 
         $mpdf->WriteHTML($html);
@@ -2542,6 +2544,7 @@ class DocumentController extends Controller
             CustomerPurchaseCoupon::create([
                 'configuration_purchase_coupon_id'  => $activeCoupon->id,
                 'document_id'  => $document->id,
+                'document_number'  => $document->prefix.'-'.$document->number,
                 'customer_name'  => $customer->name,
                 'customer_number'  => $customer->number,
                 'customer_phone'  => $customer->telephone,

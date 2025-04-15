@@ -14,6 +14,7 @@ class CustomerPurchaseCoupon extends Model
     protected $fillable = [
         'configuration_purchase_coupon_id',
         'document_id',
+        'document_number',
         'customer_name',
         'customer_number',
         'customer_phone',

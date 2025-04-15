@@ -3,7 +3,6 @@
 namespace App\Http\Resources\Tenant;
 
 use Illuminate\Http\Resources\Json\ResourceCollection;
-use Modules\Factcolombia1\Models\Tenant\CustomerPurchaseCoupon;
 
 class DocumentCollection extends ResourceCollection
 {
@@ -77,7 +76,6 @@ class DocumentCollection extends ResourceCollection
 
             $total_payment = $row->payments->sum('payment');
             $balance = number_format($row->total - $total_payment,2, ".", "");
-            $hasCoupon = CustomerPurchaseCoupon::where('document_id',$row->id)->where('status',1)->first();
 
             return [
                 'id' => $row->id,
@@ -141,8 +139,7 @@ class DocumentCollection extends ResourceCollection
                         'description' => $row->document->number_full,
                     ];
                 }) : null,
-                'balance' => $balance,
-                'has_coupon' => ($hasCoupon)? true : false,
+                'balance' => $balance
             ];
         });
     }

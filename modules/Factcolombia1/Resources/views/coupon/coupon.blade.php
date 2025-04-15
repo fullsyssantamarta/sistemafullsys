@@ -33,19 +33,19 @@
 <body>
     <div class="contenedor">
         <div class="titulo">
-            🎟️ {{$title}} 🎟️
+            {{$title}}
         </div>
 
         <p>{{$description}}</p>
 
-        <div class="campo"><span class="icono">🏬</span> Tienda: {{$establishment}}</div>
-        <div class="campo"><span class="icono">📅</span> Fecha: {{$coupon_date}}</div>
-        <div class="campo"><span class="icono">🧾</span> Factura No.: {{$document_number}}</div>
+        <div class="campo"><span class="icono"></span> Tienda: {{$establishment}}</div>
+        <div class="campo"><span class="icono"></span> Fecha: {{$coupon_date}}</div>
+        <div class="campo"><span class="icono"></span> Factura No.: {{$document_number}}</div>
         <hr>
-        <div class="campo"><span class="icono">👤</span> Nombre: {{$customer_name}}</div>
-        <div class="campo"><span class="icono">🆔</span> Cédula/NIT: {{$customer_number}}</div>
-        <div class="campo"><span class="icono">📞</span> Teléfono: {{$customer_phone}}</div>
-        <div class="campo"><span class="icono">📧</span> Correo: {{$customer_email}}</div>
+        <div class="campo"><span class="icono"></span> Nombre: {{$customer_name}}</div>
+        <div class="campo"><span class="icono"></span> Cédula/NIT: {{$customer_number}}</div>
+        <div class="campo"><span class="icono"></span> Teléfono: {{$customer_phone}}</div>
+        <div class="campo"><span class="icono"></span> Correo: {{$customer_email}}</div>
     </div>
 </body>
 </html>

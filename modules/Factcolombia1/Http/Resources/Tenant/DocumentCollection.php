@@ -6,6 +6,7 @@ use Illuminate\Http\Resources\Json\ResourceCollection;
 use Modules\Factcolombia1\Models\TenantService\{
     Company as ServiceTenantCompany
 };
+use Modules\Factcolombia1\Models\Tenant\CustomerPurchaseCoupon;
 
 class DocumentCollection extends ResourceCollection
 {
@@ -36,6 +37,8 @@ class DocumentCollection extends ResourceCollection
                 $btn_query = true;
             }
 
+            $hasCoupon = CustomerPurchaseCoupon::where('document_id',$row->id)->where('status',1)->first();
+
             return [
                 'id' => $row->id,
                 'date_of_issue' => $row->date_of_issue->format('Y-m-d'),
@@ -58,7 +61,7 @@ class DocumentCollection extends ResourceCollection
                 'type_environment_id' => $row->type_environment_id,
                 'state_document_id' => $row->state_document_id,
                 'btn_query' => $btn_query,
-
+                'has_coupon' => ($hasCoupon)? true : false,
             ];
 
         });
