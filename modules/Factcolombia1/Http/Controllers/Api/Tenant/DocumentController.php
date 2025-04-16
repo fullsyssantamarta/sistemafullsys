@@ -275,8 +275,8 @@ class DocumentController extends Controller
         ];
 
         $service_invoice['number'] = $this->getNextConsecutive($to_get_number);
-        $service_invoice['foot_note'] = "Modo de operación: Software Propio - by ".env('APP_NAME', 'FACTURALATAM');
-        $service_invoice['web_site'] = env('APP_NAME', 'FACTURALATAM');
+        $service_invoice['foot_note'] = "Modo de operación: Software Propio - by ".env('APP_NAME', 'FACTURADOR');
+        $service_invoice['web_site'] = env('APP_NAME', 'FACTURADOR');
         $service_invoice['notes'] = $request->observation;
         $service_invoice['date'] = date('Y-m-d', strtotime($request->date_issue));
         $service_invoice['time'] = date('H:i:s');
