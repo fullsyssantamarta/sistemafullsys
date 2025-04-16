@@ -164,6 +164,7 @@ if ($hostname) {
             Route::get('customer-by-id/{id}', 'Tenant\PersonController@searchCustomerById');
             Route::get('persons-search-suppliers', 'Tenant\PersonController@searchSuppliers');
             Route::get('person-by-id/{id}', 'Tenant\PersonController@searchPersonById');
+            Route::post('/persons/query-dian', 'Tenant\PersonController@queryDian');
 
 
             //Documents

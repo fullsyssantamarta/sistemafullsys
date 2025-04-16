@@ -27,6 +27,7 @@ use Modules\Factcolombia1\Models\Tenant\{
 use App\Exports\PersonExport;
 use Carbon\Carbon;
 use Goutte\Client as ClientScrap;
+use Modules\Factcolombia1\Models\TenantService\Company as ServiceTenantCompany;
 
 
 
@@ -388,6 +389,71 @@ class PersonController extends Controller
                     ->get()->transform(function($row){
                         return $row->getRowSearchResource();
                     });
+    }
+
+        /**
+     * Consulta el API DIAN y retorna la información del contribuyente.
+     * 
+     * Se espera recibir en el request:
+     * - identification_number: Número de identificación del contribuyente.
+     * - type_document_id: Tipo de documento (p. ej.: 3 para cédula o NIT según lo requiera el API).
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function queryDian(Request $request)
+    {
+        // Validación de entrada: se requiere un número de identificación y el tipo de documento.
+        $data = $request->validate([
+            'identification_number' => 'required|string',
+            'type_document_id'       => 'required|integer',
+        ]);
+
+        // Se obtiene la información de la empresa para recuperar el token de API DIAN
+        $company = ServiceTenantCompany::firstOrFail();
+
+        // Construcción de la URL del servicio DIAN a partir de la variable de entorno configurada.
+        // La URL base se define en config/tenant.php como 'service_fact'
+        $baseUrl = config('tenant.service_fact'); // Obtiene la URL base: SERVICE_FACT
+        $url = $baseUrl . 'ubl2.1/query_rut';       // Concatena la ruta específica del endpoint DIAN
+
+        // Configuración de las cabeceras HTTP requeridas para la solicitud.
+        $headers = [
+            'Content-Type: application/json',
+            'Accept: application/json',
+            // Se incluye el token de autorización obtenido de la configuración de la empresa.
+            "Authorization: Bearer {$company->api_token}"
+        ];
+
+        // Convierte los datos de entrada a formato JSON para enviarlos en la solicitud
+        $payload = json_encode($data);
+
+        // Inicializa cURL y establece las opciones para la solicitud
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);      // Para capturar la respuesta
+        // Se utiliza el método GET. Si el API requiere POST, cambiar el método aquí.
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);          
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);          
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);       
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+
+        // Ejecuta la llamada al API DIAN
+        $response = curl_exec($ch);
+        $err = curl_error($ch); 
+        curl_close($ch);       
+
+        if ($err) {
+            return response()->json([
+                'success' => false,
+                'message' => "Error al conectar con el API DIAN: " . $err
+            ], 500);
+        }
+
+        $decodedResponse = json_decode($response, true);
+
+        // Retorna la respuesta decodificada sin modificaciones adicionales
+        return response()->json($decodedResponse);
     }
 
 }
