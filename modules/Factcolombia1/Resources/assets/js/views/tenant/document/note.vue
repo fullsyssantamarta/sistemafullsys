@@ -814,7 +814,7 @@
                 this.form.note_service = this.noteService;
                 // return
                 this.loading_submit = true
-//                console.log(this.form)
+               console.log(this.form)
                 this.$http.post(`/${this.resource}/note`, this.form).then(response => {
                     if (response.data.success) {
                         this.resetForm();
@@ -857,9 +857,15 @@
             async generateNoteService() {
                 // let contex = this
                 this.noteService.number = 0;
-                this.noteService.type_document_id = await this.getTypeDocumentService(),
+                this.noteService.type_document_id = await this.getTypeDocumentService();
                 this.noteService.date = "";
                 this.noteService.time = "";
+
+                // Obtener el tipo de documento para obtener el prefijo
+                const typeDocument = this.type_documents.find(x => x.id == this.form.type_document_id);
+                this.noteService.prefix = typeDocument ? typeDocument.prefix : '';
+                this.noteService.resolution_number = typeDocument ? typeDocument.resolution_number : '';
+
                 if(!this.note){
                     this.noteService.type_operation_id = "8"
                     this.noteService.invoice_period = {
@@ -885,7 +891,8 @@
                     this.noteService.legal_monetary_totals = await this.getLegacyMonetaryTotal();
                     this.noteService.credit_note_lines = await this.getCreditNoteLines();
                     this.noteService.allowance_charges = await this.createAllowanceCharge(
-                        this.noteService.legal_monetary_totals.allowance_total_amount, this.noteService.legal_monetary_totals.line_extension_amount
+                        this.noteService.legal_monetary_totals.allowance_total_amount, 
+                        this.noteService.legal_monetary_totals.line_extension_amount
                     );
                 }
                 else if(this.noteService.type_document_id == 5){
