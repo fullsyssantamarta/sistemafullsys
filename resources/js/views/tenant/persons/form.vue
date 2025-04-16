@@ -539,7 +539,11 @@
                     // La respuesta exitosa contendrá el ID del cliente ya existente o el creado
                     this.$message.success(response.data.message);
                     // Emitir el evento para que el componente de factura cargue el cliente
-                    this.$eventHub.$emit('reloadDataPersons', response.data.id);
+                    if (this.external) {
+                        this.$eventHub.$emit('reloadDataPersons', response.data.id);
+                    } else {
+                        this.$eventHub.$emit('reloadData');
+                    }
                     this.close();
                 } else {
                     this.$message.error(response.data.message);
