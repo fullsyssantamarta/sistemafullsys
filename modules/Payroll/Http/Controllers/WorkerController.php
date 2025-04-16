@@ -19,7 +19,8 @@ use Modules\Factcolombia1\Models\TenantService\{
     PayrollTypeDocumentIdentification,
     PayrollPeriod,
     TypeContract,
-    Municipality
+    Municipality,
+    Department
 };
 use Modules\Factcolombia1\Models\Tenant\{
     PaymentMethod,
@@ -54,10 +55,17 @@ class WorkerController extends Controller
             'type_contracts' => TypeContract::get(),
             'payroll_periods' => PayrollPeriod::get(),
             'payment_methods' => PaymentMethod::get(),
+            'departments' => Department::get(),
             'municipalities' => Municipality::get(),
         ];
     }
 
+    public function getMunicipalities($department_id)
+    {
+        return [
+            'municipalities' => Municipality::where('department_id', $department_id)->get()
+        ];
+    }
 
     public function records(Request $request)
     {

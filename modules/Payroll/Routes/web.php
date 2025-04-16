@@ -48,6 +48,7 @@ if($hostname) {
                     Route::get('search', 'WorkerController@searchWorkers');
                     Route::get('search-by-id/{worker}', 'WorkerController@searchWorkerById');
                     Route::post('import', 'WorkerController@import');
+                    Route::get('municipalities/{department_id}', 'WorkerController@getMunicipalities');
                 });
 
 
