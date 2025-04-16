@@ -517,43 +517,45 @@
         });
       },
       submit() {
-        if (!this.showAdditionalFields) {
-          this.form.country_id = 47;
-          this.form.department_id = 779;
-          this.form.city_id = 12688;
-          this.form.telephone = '9999999999';
-          this.form.address = 'CR 00 00 00 BRR N/A';
-          this.form.code = this.form.number;
-          this.form.contact_phone = null;
-          this.form.contact_name = null;
-        }
-    
-        this.loading_submit = true;
-        this.$http.post(`/${this.resource}`, this.form)
-          .then(response => {
-            if (response.data.success) {
-              this.$message.success(response.data.message);
-              if (this.external) {
-                this.$eventHub.$emit('reloadDataPersons', response.data.id);
-              } else {
-                this.$eventHub.$emit('reloadData');
-              }
-              this.close();
-            } else {
-              this.$message.error(response.data.message);
+            // Si no se muestran campos adicionales se asignan valores predeterminados.
+            if (!this.showAdditionalFields) {
+                this.form.country_id = 47;
+                this.form.department_id = 779;
+                this.form.city_id = 12688;
+                this.form.telephone = '9999999999';
+                this.form.address = 'CR 00 00 00 BRR N/A';
+                this.form.code = this.form.number;
+                this.form.contact_phone = null;
+                this.form.contact_name = null;
             }
-          })
-          .catch(error => {
-            if (error.response.status === 422) {
-              this.errors = error.response.data;
-            } else {
-              console.log(error);
-            }
-          })
-          .then(() => {
-            this.loading_submit = false;
-          });
-      },
+            
+            // Agregamos el flag que indica que la request proviene de la factura
+            this.form.from_invoice = true;
+            
+            this.loading_submit = true;
+            this.$http.post(`/${this.resource}`, this.form)
+            .then(response => {
+                if (response.data.success) {
+                    // La respuesta exitosa contendrá el ID del cliente ya existente o el creado
+                    this.$message.success(response.data.message);
+                    // Emitir el evento para que el componente de factura cargue el cliente
+                    this.$eventHub.$emit('reloadDataPersons', response.data.id);
+                    this.close();
+                } else {
+                    this.$message.error(response.data.message);
+                }
+            })
+            .catch(error => {
+                if (error.response.status === 422) {
+                    this.errors = error.response.data;
+                } else {
+                    console.log(error);
+                }
+            })
+            .then(() => {
+                this.loading_submit = false;
+            });
+        },
       changeIdentityDocType() {
         (this.recordId == null) ? this.setDataDefaultCustomer() : null;
       },

@@ -8,8 +8,12 @@
                             <div class="col-lg-6 pb-2">
                                 <div class="form-group" :class="{ 'has-danger': errors.customer_id }">
                                     <label class="control-label">
-                                        Cliente
-                                        <a href="#" @click.prevent="showDialogNewPerson = true">[+ Nuevo]</a>
+                                    Cliente
+                                    <el-tooltip class="item" effect="dark" content="Buscar cliente existente o crear uno nuevo" placement="top">
+                                        <a href="#" @click.prevent="showDialogNewPerson = true" class="cliente-link">
+                                        <i class="fas fa-search-plus search-icon"></i> [+ Buscar o Crear Cliente]
+                                        </a>
+                                    </el-tooltip>
                                     </label>
                                     <el-select v-model="form.customer_id" filterable remote
                                         class="border-left rounded-left border-info" popper-class="el-select-customers"
@@ -463,7 +467,26 @@
     top: 5px;
     color: #66789C;
 }
+/*busqueda de cliente*/
+.cliente-link {
+  color: #409EFF;             /* Color principal (azul) */
+  font-weight: bold;          /* Texto en negrita */
+  font-size: 12px;            /* Tamaño de fuente */
+  text-decoration: none;      /* Sin subrayado */
+  transition: color 0.2s;
+}
+
+.cliente-link:hover {
+  color: #66b1ff;
+}
+
+.search-icon {
+  font-size: 20px;    /* Icono más grande para mejor visibilidad */
+  margin-right: 5px;  /* Espacio entre el icono y el texto */
+}
+
 </style>
+
 <script>
 import DocumentFormItem from './partials/item.vue'
 import DocumentFormRetention from './partials/retention.vue'

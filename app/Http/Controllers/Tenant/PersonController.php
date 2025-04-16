@@ -92,38 +92,51 @@ class PersonController extends Controller
         return $record;
     }
 
+    /**
+     * Guarda (o actualiza) un cliente.
+     * Antes de crear un nuevo cliente, se verifica si ya existe uno con el mismo número
+     * y tipo de documento. Si existe, se retorna su ID para cargarlo en la factura.
+     *
+     * @param PersonRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function store(PersonRequest $request)
     {
-
-        if($request->state){
-            if($request->state != "ACTIVO"){
-                return [
-                    'success' => false,
-                    'message' =>'El estado del contribuyente no es activo, no puede registrarlo',
-                ];
-            }
+        // Verificamos si existe ya un registro con el mismo número y tipo de documento.
+        $existing = Person::where('number', $request->number)
+                          ->where('identity_document_type_id', $request->identity_document_type_id)
+                          ->first();
+    
+        if ($existing) {
+            // Si ya existe, retornamos el cliente existente para que se cargue en la factura.
+            return response()->json([
+                'success' => true,
+                'message' => 'El cliente ya existe, se cargará Automaticamente',
+                'id' => $existing->id
+            ]);
         }
-
+    
+        // Si no existe, se procede a crear el cliente.
         $id = $request->input('id');
         $person = Person::firstOrNew(['id' => $id]);
         $person->fill($request->all());
         $person->save();
-
+    
+        // Se eliminan las direcciones viejas y se guardan las nuevas
         $person->addresses()->delete();
         $addresses = $request->input('addresses');
-        foreach ($addresses as $row)
-        {
-            $person->addresses()->updateOrCreate( ['id' => $row['id']], $row);
+        foreach ($addresses as $row) {
+            $person->addresses()->updateOrCreate(['id' => $row['id']], $row);
         }
-
-        $person_type = ($person->type == 'customers') ? 'Cliente':'Proveedor';
-
-        return [
+    
+        $person_type = ($person->type == 'customers') ? 'Cliente' : 'Proveedor';
+    
+        return response()->json([
             'success' => true,
-            'message' => ($id)? "{$person_type} editado con éxito":"{$person_type} registrado con éxito",
+            'message' => ($id) ? "{$person_type} editado con éxito" : "{$person_type} registrado con éxito",
             'id' => $person->id
-        ];
-    }
+        ]);
+    }    
 
     public function destroy($id)
     {
