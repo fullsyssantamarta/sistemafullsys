@@ -40,6 +40,11 @@ use Modules\Factcolombia1\Models\Tenant\{
     Tax,
 };
 use Barryvdh\DomPDF\Facade as PDF;
+use Modules\Accounting\Models\JournalEntry;
+use Modules\Accounting\Models\JournalPrefix;
+use Modules\Accounting\Models\ChartOfAccount;
+use Modules\Accounting\Models\ChartAccountSaleConfiguration;
+use Modules\Accounting\Models\AccountingChartAccountConfiguration;
 
 class PurchaseController extends Controller
 {
@@ -217,6 +222,10 @@ class PurchaseController extends Controller
                     $this->createGlobalPayment($record_payment, $payment);
                 }
             }
+
+            // Registrar asientos contables
+            $this->registerAccountingPurchaseEntries($doc);
+
             return $doc;
         });
 
@@ -227,6 +236,58 @@ class PurchaseController extends Controller
                 'number_full' => "{$purchase->series}-{$purchase->number}",
             ],
         ];
+    }
+
+    private function registerAccountingPurchaseEntries($document) {
+        $total = $document->total;
+        $iva = $document->total_tax;
+        $subtotal = $document->sale; // Neto de la compra
+
+        $accountConfiguration = AccountingChartAccountConfiguration::first();
+        if($accountConfiguration){
+            $accountIdInventory = ChartOfAccount::where('code',$accountConfiguration->inventory_account)->first();
+        }
+
+        $taxIva = Tax::where('name','IVA5')->first();
+        if($taxIva){
+            $accountIdIva = ChartOfAccount::where('code',$taxIva->chart_account_purchase)->first();
+        }
+
+        if($accountConfiguration){
+            $accountIdLiability = ChartOfAccount::where('code',$accountConfiguration->supplier_payable_account)->first();
+        }
+
+        //1 Registrar la entrada en el libro diario
+        $entry = JournalEntry::create([
+            'date' => date('Y-m-d'),
+            'journal_prefix_id' => 2, // Prefijo para compras
+            'description' => 'Factura de Compra #'.$document->series . '-' . $document->number,
+            'purchase_id' => $document->id,
+            'status' => 'posted'
+        ]);
+    
+        // 2 Registrar los detalles contables
+    
+        //Inventario de Mercancías (Activo)
+        $entry->details()->create([
+            'chart_of_account_id' => $accountIdInventory->id, // ID de cuenta de inventario
+            'debit' => $subtotal,
+            'credit' => 0,
+        ]);
+    
+        //IVA descontable (Activo)
+        $entry->details()->create([
+            'chart_of_account_id' => $accountIdIva->id, // ID de cuenta de IVA descontable
+            'debit' => $iva,
+            'credit' => 0,
+        ]);
+    
+        //Cuentas por pagar a proveedores (Pasivo)
+        $entry->details()->create([
+            'chart_of_account_id' => $accountIdLiability->id, // ID de cuenta de cuentas por pagar
+            'debit' => 0,
+            'credit' => $total,
+        ]);
     }
 
     public function update(PurchaseRequest $request)
