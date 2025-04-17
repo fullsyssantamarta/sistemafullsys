@@ -16,7 +16,7 @@ class CreateAccountsTable extends Migration
     {
         Schema::create('chart_of_accounts', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('code', 8)->unique(); // Código contable (Ej: 11050501)
+            $table->string('code', 10)->unique(); // Código contable (Ej: 11050501)
             $table->string('name'); // Nombre de la cuenta (Ej: Caja General)
             $table->enum('type', ['Asset', 'Liability', 'Equity', 'Revenue', 'Expense', 'Cost']); // Tipo de cuenta
             $table->unsignedBigInteger('parent_id')->nullable(); // Relación padre-hijo
@@ -28,7 +28,7 @@ class CreateAccountsTable extends Migration
             $table->foreign('parent_id')->references('id')->on('chart_of_accounts');
         });
 
-        $this->createAccounts();
+        $this->importAccountsFromCSV();
     }
 
     /**
@@ -43,59 +43,80 @@ class CreateAccountsTable extends Migration
         });
         Schema::dropIfExists('chart_of_accounts');
     }
-
-    private function createAccounts()
+    
+    private function importAccountsFromCSV()
     {
-        $accounts = [
-            ['code' => '1', 'name' => 'ACTIVO', 'type' => 'Asset', 'level' => 1, 'parent_code' => null],
-            ['code' => '11', 'name' => 'DISPONIBLE', 'type' => 'Asset', 'level' => 2, 'parent_code' => '1'],
-            ['code' => '1105', 'name' => 'CAJA', 'type' => 'Asset', 'level' => 3, 'parent_code' => '11'],
-            ['code' => '110505', 'name' => 'Caja General', 'type' => 'Asset', 'level' => 4, 'parent_code' => '1105'],
-            ['code' => '110510', 'name' => 'Caja Menor', 'type' => 'Asset', 'level' => 4, 'parent_code' => '1105'],
-            ['code' => '1110', 'name' => 'BANCOS', 'type' => 'Asset', 'level' => 3, 'parent_code' => '11'],
-            ['code' => '111005', 'name' => 'Bancos Nacionales', 'type' => 'Asset', 'level' => 4, 'parent_code' => '1110'],
-            ['code' => '111010', 'name' => 'Bancos del Exterior', 'type' => 'Asset', 'level' => 4, 'parent_code' => '1110'],
-            ['code' => '12', 'name' => 'INVERSIONES', 'type' => 'Asset', 'level' => 2, 'parent_code' => '1'],
-            ['code' => '1205', 'name' => 'Acciones', 'type' => 'Asset', 'level' => 3, 'parent_code' => '12'],
-            ['code' => '1210', 'name' => 'Bonos', 'type' => 'Asset', 'level' => 3, 'parent_code' => '12'],
+        $file = public_path('csv/cuentas_contables.csv');
+        if (!file_exists($file)) {
+            throw new Exception("El archivo cuentas.csv no fue encontrado en la carpeta public.");
+        }
 
-            ['code' => '2', 'name' => 'PASIVO', 'type' => 'Liability', 'level' => 1, 'parent_code' => null],
-            ['code' => '21', 'name' => 'OBLIGACIONES FINANCIERAS', 'type' => 'Liability', 'level' => 2, 'parent_code' => '2'],
-            ['code' => '2105', 'name' => 'Bancos Nacionales', 'type' => 'Liability', 'level' => 3, 'parent_code' => '21'],
-            ['code' => '210505', 'name' => 'Sobregiros Bancarios', 'type' => 'Liability', 'level' => 4, 'parent_code' => '2105'],
-            ['code' => '210510', 'name' => 'Préstamos Bancarios', 'type' => 'Liability', 'level' => 4, 'parent_code' => '2105'],
+        $handle = fopen($file, 'r');
+        $header = fgetcsv($handle, 1000, ','); // Leer cabecera
 
-            ['code' => '3', 'name' => 'PATRIMONIO', 'type' => 'Equity', 'level' => 1, 'parent_code' => null],
-            ['code' => '31', 'name' => 'CAPITAL SOCIAL', 'type' => 'Equity', 'level' => 2, 'parent_code' => '3'],
-            ['code' => '3105', 'name' => 'Aportes de Socios', 'type' => 'Equity', 'level' => 3, 'parent_code' => '31'],
+        // Eliminar cualquier BOM (Byte Order Mark) de la cabecera
+        $header = array_map('trim', $header);
 
-            ['code' => '4', 'name' => 'INGRESOS', 'type' => 'Revenue', 'level' => 1, 'parent_code' => null],
-            ['code' => '41', 'name' => 'VENTAS', 'type' => 'Revenue', 'level' => 2, 'parent_code' => '4'],
-            ['code' => '4105', 'name' => 'Venta de Mercancías', 'type' => 'Revenue', 'level' => 3, 'parent_code' => '41'],
+        // Verificar que la cabecera esté correctamente leída
+        if (!$header || count($header) < 5) {
+            throw new Exception("El archivo CSV no tiene el formato esperado.");
+        }
 
-            ['code' => '5', 'name' => 'GASTOS', 'type' => 'Expense', 'level' => 1, 'parent_code' => null],
-            ['code' => '51', 'name' => 'GASTOS OPERACIONALES', 'type' => 'Expense', 'level' => 2, 'parent_code' => '5'],
-            ['code' => '5105', 'name' => 'Gastos de Administración', 'type' => 'Expense', 'level' => 3, 'parent_code' => '51'],
-            ['code' => '510505', 'name' => 'Sueldos y Salarios', 'type' => 'Expense', 'level' => 4, 'parent_code' => '5105'],
-            ['code' => '510510', 'name' => 'Arriendos', 'type' => 'Expense', 'level' => 4, 'parent_code' => '5105'],
-        ];
+        $accounts = [];
+        while (($row = fgetcsv($handle, 1000, ',')) !== false) {
+            // Eliminar cualquier BOM de los datos de la fila
+            $row = array_map('trim', $row);
 
-        foreach ($accounts as $account) {
-            // Buscar el ID del padre basado en el código del padre
-            $parentId = null;
-            if (!is_null($account['parent_code'])) {
-                $parent = ChartOfAccount::where('code', $account['parent_code'])->first();
-                $parentId = $parent ? $parent->id : null;
+            // Verificar que la fila tenga el mismo número de columnas que la cabecera
+            if (count($row) !== count($header)) {
+                continue;
             }
 
-            // Crear la cuenta con el ID del padre correcto
-            ChartOfAccount::create([
-                'code' => $account['code'],
-                'name' => $account['name'],
-                'type' => $account['type'],
-                'level' => $account['level'],
-                'parent_id' => $parentId,
+            $data = [
+                'code' => $row[0],
+                'name' => $row[1],
+                'type' => $row[2],
+                'level' => $row[3],
+                'parent_code'=> $row[4]
+            ];
+
+            // Verificar que la clave 'code' esté presente y no vacía
+            if (!isset($data['code']) || empty($data['code'])) {
+                continue;
+            }
+
+            // Asignar la cuenta por su código
+            $accounts[$data['code']] = $data;
+        }
+
+        fclose($handle);
+
+        // dd($accounts);
+        // Insertar cuentas respetando jerarquía
+        $inserted = [];
+
+        foreach ($accounts as $code => $data) {
+            // Verificar si 'parent_code' está vacío, y asignar parentId si es necesario
+            $parentId = null;
+
+            // Si 'parent_code' está vacío, no se asigna un 'parent_id'
+            if (!empty($data['parent_code']) && isset($inserted[$data['parent_code']])) {
+                $parentId = $inserted[$data['parent_code']];
+            }
+
+            // Crear la cuenta
+            $account = ChartOfAccount::create([
+                'code' => $data['code'],
+                'name' => $data['name'],
+                'type' => $data['type'],
+                'level' => $data['level'],
+                'parent_id' => $parentId,  // Asignar 'parent_id' cuando sea aplicable
+                'status' => true,
             ]);
+
+            // Registrar la cuenta insertada
+            $inserted[$code] = $account->id;
         }
     }
+
 }

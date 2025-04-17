@@ -13,12 +13,38 @@
                 </div>
 
                 <!-- Selectores de Niveles -->
-                <div class="col-12" v-for="(level, index) in hierarchy" :key="index">
+                <!-- <div class="col-12" v-for="(level, index) in hierarchy" :key="index">
                     <div class="form-group">
                         <label>{{ levelTitles[index] }}</label>
                         <el-select v-model="level.selected" @change="handleSublevelSelection(level.selected, index)">
-                            <el-option v-for="child in level.children" :key="child.id" :label="child.label" :value="child.id" :disabled="index === 3"/>
+                            <el-option v-for="child in level.children" :key="child.id" :label="child.label" :value="child.id" :disabled="index === 4"/>
                         </el-select>
+                    </div>
+                </div> -->
+
+                <!-- Selectores de Niveles -->
+                <div class="col-12" v-for="(level, index) in hierarchy" :key="index">
+                    <div class="form-group">
+                        <label>{{ levelTitles[index] }}</label>
+                        <el-select
+                            v-model="level.selected"
+                            :loading="level.loading"
+                            @change="handleSublevelSelection(level.selected, index)"
+                        >
+                            <el-option
+                                v-for="child in level.children"
+                                :key="child.id"
+                                :label="child.label"
+                                :value="child.id"
+                                :disabled="index === 4"
+                            />
+                        </el-select>
+                        <!-- Spinner encima del select -->
+                        <div v-if="level.loading"
+                            class="custom-spinner-overlay d-flex align-items-center justify-content-center"
+                            >
+                            <i class="el-icon-loading spinner-icon"></i>
+                        </div>
                     </div>
                 </div>
 
@@ -45,20 +71,6 @@
                         <el-input v-model="form.level" type="number" readonly />
                     </div>
                 </div>
-
-                <!-- Selector de Tipo -->
-                <div class="col-6">
-                    <div class="form-group">
-                        <label>Tipo</label>
-                        <el-select v-model="form.type" placeholder="Seleccione">
-                            <el-option label="Activo" value="Asset" />
-                            <el-option label="Pasivo" value="Liability" />
-                            <el-option label="Patrimonio" value="Equity" />
-                            <el-option label="Ingreso" value="Revenue" />
-                            <el-option label="Gasto" value="Expense" />
-                        </el-select>
-                    </div>
-                </div>
             </div>
 
             <!-- Botones -->
@@ -69,7 +81,23 @@
         </form>
     </el-dialog>
 </template>
+<style scoped>
+    .custom-spinner-overlay {
+    position: absolute;
+    top: 35px; /* Ajusta si tu label es más alto */
+    left: 0;
+    width: 100%;
+    height: 38px;
+    background: rgba(255, 255, 255, 0.6);
+    pointer-events: none;
+    z-index: 2;
+    }
 
+    .spinner-icon {
+    font-size: 18px;
+    color: #409EFF;
+    }
+</style>
 <script>
 export default {
     props: ["showDialog", "recordId"],
@@ -83,7 +111,7 @@ export default {
             hierarchy: [],
             parentCode: "",
             errors: {},
-            levelTitles: ["Grupo", "Cuenta", "Subcuenta"], // Títulos dinámicos para los niveles
+            levelTitles: ["Grupo", "Cuenta", "Subcuenta",'Auxiliar','Detalle'], // Títulos dinámicos para los niveles
         };
     },
     computed: {
@@ -98,8 +126,12 @@ export default {
                     return "Cuenta";
                 case 4:
                     return "Subcuenta";
+                case 5:
+                    return "Auxiliar";
+                case 6:
+                    return "Detalle";
                 default:
-                    return "Nombre";
+                    return "Detalle";
             }
         }
     },
@@ -156,11 +188,14 @@ export default {
 
                     // Si hay un siguiente nivel en parents, cargar sus hijos
                     if (i < parents.length - 1) {
+                        this.$set(this.hierarchy[i-1], 'loading', true);
                         const children = await this.fetchChildren(parent.id);
+                        this.$set(this.hierarchy[i-1], 'loading', false);
+
                         if (this.hierarchy[i]) {
                             this.hierarchy[i].children = children;
                         } else {
-                            this.hierarchy.push({ selected: null, children });
+                            this.hierarchy.push({ selected: null, children,loading: false });
                         }
                     }
                 }
@@ -187,10 +222,11 @@ export default {
             if (selectedParent) {
                 this.parentCode = selectedParent.code;
                 this.form.code = this.parentCode;
+                this.form.type = selectedParent.type;
             }
 
             const children = await this.fetchChildren(this.form.parent_id);
-            this.hierarchy = [{ selected: null, children }];
+            this.hierarchy = [{ selected: null, children, loading: false }];
             this.form.level = 2;
         },
 
@@ -207,13 +243,24 @@ export default {
                 this.form.code = this.parentCode;
             }
 
+            //Mostrar loading
+            this.$set(this.hierarchy[index], 'loading', true);
+
             const children = await this.fetchChildren(parent_id);
+            //Ocultar loading
+            this.$set(this.hierarchy[index], 'loading', false);
+
             this.hierarchy = this.hierarchy.slice(0, index + 1);
+
+
             if (children.length) {
-                this.hierarchy.push({ selected: null, children });
+                // this.hierarchy.push({ selected: null, children });
+                if (this.hierarchy.length <= 5) {
+                    this.hierarchy.push({ selected: null, children, loading: false });
+                }
             } else {
-                if(this.hierarchy.length < 4) {
-                    this.hierarchy.push({ selected: null, children: [] });
+                if(this.hierarchy.length < 6) {
+                    this.hierarchy.push({ selected: null, children: [], loading: false });
                 }
             }
             this.form.level = this.hierarchy.length + 1;
@@ -239,7 +286,7 @@ export default {
         },
 
         getMaxCodeLength() {
-            const levels = [1, 2, 4, 8];
+            const levels = [1, 2, 4, 6, 8 , 10];
             return levels[this.form.level - 1] || 1;
         },
 

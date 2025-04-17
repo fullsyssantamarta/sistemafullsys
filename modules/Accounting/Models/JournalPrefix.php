@@ -9,7 +9,8 @@ use Hyn\Tenancy\Traits\UsesTenantConnection;
 
 class JournalPrefix extends ModelTenant
 {
-    use UsesTenantConnection;
+    // use UsesTenantConnection;
+    protected $table = 'journal_prefixes';
 
     protected $fillable = ['prefix', 'description', 'modifiable'];
 

@@ -43,6 +43,8 @@ use Barryvdh\DomPDF\Facade as PDF;
 use Modules\Accounting\Models\JournalEntry;
 use Modules\Accounting\Models\JournalPrefix;
 use Modules\Accounting\Models\ChartOfAccount;
+use Modules\Accounting\Models\ChartAccountSaleConfiguration;
+use Modules\Accounting\Models\AccountingChartAccountConfiguration;
 
 class PurchaseController extends Controller
 {
@@ -240,9 +242,20 @@ class PurchaseController extends Controller
         $total = $document->total;
         $iva = $document->total_tax;
         $subtotal = $document->sale; // Neto de la compra
-        $accountIdInventory = ChartOfAccount::where('code','143505')->first();
-        $accountIdIva = ChartOfAccount::where('code','135515')->first();
-        $accountIdLiability = ChartOfAccount::where('code','220505')->first();
+
+        $accountConfiguration = AccountingChartAccountConfiguration::first();
+        if($accountConfiguration){
+            $accountIdInventory = ChartOfAccount::where('code',$accountConfiguration->inventory_account)->first();
+        }
+
+        $taxIva = Tax::where('name','IVA5')->first();
+        if($taxIva){
+            $accountIdIva = ChartOfAccount::where('code',$taxIva->chart_account_purchase)->first();
+        }
+
+        if($accountConfiguration){
+            $accountIdLiability = ChartOfAccount::where('code',$accountConfiguration->supplier_payable_account)->first();
+        }
 
         //1 Registrar la entrada en el libro diario
         $entry = JournalEntry::create([

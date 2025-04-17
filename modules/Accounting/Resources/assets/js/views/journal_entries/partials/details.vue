@@ -74,9 +74,6 @@
                 await this.$http.get(`/${this.resource}/${this.recordId}`)
                     .then(response => {
                         this.journal = response.data.data;
-                        console.log(this.journal.journal_prefix)
-                        console.log(this.journal)
-                        console.log(response.data.data.journal_prefix.prefix)
                         this.title = 'Detalle asiento contable: '+ this.journal.journal_prefix.prefix +' - '+this.journal.journal_prefix.description;
                     });
                 await this.$http.get(`/${this.resource}/${this.recordId}/records-detail`)

@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Modules\Accounting\Models\ChartOfAccount;
+use Modules\Accounting\Models\ChartAccountSaleConfiguration;
+use Modules\Accounting\Models\AccountingChartAccountConfiguration;
 
 /*
  * Clase ChartOfAccountController
@@ -94,7 +96,7 @@ class ChartOfAccountController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'code' => 'required|max:8', function ($attribute, $value, $fail) {
+            'code' => 'required|max:10', function ($attribute, $value, $fail) {
                 // Buscar manualmente en la base de datos del tenant
                 if (\DB::connection('tenant')->table('chart_of_accounts')->where('code', $value)->exists()) {
                     $fail('El código ya está en uso.');
@@ -103,7 +105,7 @@ class ChartOfAccountController extends Controller
             'name' => 'required|string|max:255',
             'type' => 'required|in:Asset,Liability,Equity,Revenue,Expense,Cost',
             'parent_id' => 'nullable',
-            'level' => 'required|integer|min:1|max:4'
+            'level' => 'required|integer|min:1|max:6'
         ]);
 
         $request->merge([
@@ -218,5 +220,84 @@ class ChartOfAccountController extends Controller
             'parent' => $parent, // Información del nivel superior
             'children' => $children, // Listado de cuentas hijas
         ]);
+    }
+
+    public function tree()
+    {
+        $accounts = ChartOfAccount::orderBy('code')->get();
+
+        $tree = $this->buildTree($accounts);
+
+        return response()->json($tree);
+    }
+
+    private function buildTree($accounts)
+    {
+        $items = [];
+        $tree = [];
+
+        // Mapeo por ID
+        foreach ($accounts as $account) {
+            $items[$account->id] = [
+                'id' => $account->id,
+                'code' => $account->code,
+                'label' => $account->name,
+                'level' => $account->level,
+                'children' => []
+            ];
+        }
+
+        // Construir jerarquía
+        foreach ($accounts as $account) {
+            if ($account->parent_id && isset($items[$account->parent_id])) {
+                $items[$account->parent_id]['children'][] = &$items[$account->id];
+            } else {
+                $tree[] = &$items[$account->id];
+            }
+        }
+
+        return $tree;
+    }
+
+    public function tables() {
+
+        return [
+            'chart_accounts_sales'=> ChartOfAccount::where('level','>=',4)->get(),
+            'chart_accounts_purchases' => ChartOfAccount::where('level','>=',4)->get(),
+            'account_sale_configurations' => ChartAccountSaleConfiguration::all(),
+            'chart_account_configurations' => AccountingChartAccountConfiguration::first(),
+        ];
+    }
+
+    public function accountConfiguration(Request $request)
+    {
+        $request->validate([
+            'inventory_account' => 'nullable',
+            'inventory_adjustment_account' => 'nullable',
+            'sale_cost_account' => 'nullable',
+            'customer_receivable_account' => 'nullable',
+            'customer_returns_account' => 'nullable',
+            'supplier_payable_account' => 'nullable',
+            'supplier_returns_account' => 'nullable',
+            'retained_earning_account' => 'nullable',
+            'profit_period_account' => 'nullable',
+            'lost_period_account' => 'nullable',
+            'adjustment_opening_balance_banks_account' => 'nullable',
+            'adjustment_opening_balance_banks_inventory' => 'nullable',
+        ]);
+
+        // Buscar el primer registro o crear uno nuevo
+        $account = AccountingChartAccountConfiguration::first();
+        if (!$account) {
+            $account = AccountingChartAccountConfiguration::create($request->all());
+        } else {
+            $account->update($request->all());
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Configuración actualizada exitosamente',
+            'data' => $account
+        ], 200);
     }
 }

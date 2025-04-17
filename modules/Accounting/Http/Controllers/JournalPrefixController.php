@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Modules\Accounting\Models\JournalPrefix;
+use Illuminate\Validation\Rule;
 
 /*
  * Class JournalPrefixController
@@ -15,17 +16,24 @@ class JournalPrefixController extends Controller
 {
     public function index()
     {
-        return JournalPrefix::all();
+        return JournalPrefix::where('modifiable',1)->get();
     }
 
     public function store(Request $request)
     {
+        
         $request->validate([
-            'prefix' => 'required|string|unique:journal_prefixes,prefix',
+            'prefix' => 'required|string',
             'description' => 'required|string',
             'modifiable' => 'required|boolean',
         ]);
 
+        $prefixFound = JournalPrefix::where('prefix',$request->prefix)->first();
+
+        if($prefixFound){
+            return response()->json(['message' => 'Prefijo ya existe']);
+        }
+        
         return JournalPrefix::create($request->all());
     }
 

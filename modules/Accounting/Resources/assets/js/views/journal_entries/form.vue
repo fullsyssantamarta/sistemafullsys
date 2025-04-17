@@ -1,5 +1,6 @@
 <template>
-    <el-dialog :title="titleDialog" :visible="showDialog" @close="close" @open="create">
+    <div>
+    <el-dialog :title="titleDialog" :visible="showDialog" @close="close" @open="create" width="65%">
         <form autocomplete="off" @submit.prevent="submit">
             <div class="form-body">
                 <div class="row">
@@ -11,7 +12,10 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label class="control-label">Prefijo</label>
+                            <label class="control-label">
+                                Prefijo
+                                <a href="#" @click.prevent="clickAddPrefix">[+ Nuevo]</a>
+                            </label>
                             <el-select v-model="form.journal_prefix_id" placeholder="Seleccionar">
                                 <el-option v-for="prefix in prefixes" :key="prefix.id" :label="prefix.description+ ' - ' + prefix.prefix"
                                     :value="prefix.id"></el-option>
@@ -27,7 +31,7 @@
 
                 <div>
                     <h4>Detalles del Asiento</h4>
-                    <el-table :data="form.details" border>
+                    <el-table :data="form.details" border show-summary :summary-method="getSummaries">
                         <el-table-column prop="account_id" label="Cuenta Contable">
                             <template slot-scope="{ row }">
                                 <el-select v-model="row.chart_of_account_id	" placeholder="Seleccionar cuenta">
@@ -38,13 +42,21 @@
 
                         <el-table-column prop="debit" label="Débito">
                             <template slot-scope="{ row }">
-                                <el-input type="number" v-model="row.debit"></el-input>
+                                <el-input type="number" 
+                                    v-model="row.debit"
+                                    :disabled="row.credit > 0"
+                                    step="0.01"
+                                ></el-input>
                             </template>
                         </el-table-column>
 
                         <el-table-column prop="credit" label="Crédito">
                             <template slot-scope="{ row }">
-                                <el-input type="number" v-model="row.credit"></el-input>
+                                <el-input type="number" 
+                                    v-model="row.credit"
+                                    :disabled="row.debit > 0"
+                                    step="0.01"
+                                ></el-input>
                             </template>
                         </el-table-column>
 
@@ -65,10 +77,22 @@
             </div>
         </form>
     </el-dialog>
+
+    <journal-entry-prefix 
+        :showDialog.sync="showDialogPrefix" 
+        >
+    </journal-entry-prefix>
+    
+    </div>
+
 </template>
 
 <script>
+
+import JournalEntryPrefix from "./partials/prefix.vue";
+
 export default {
+    components: { JournalEntryPrefix },
     props: ["showDialog", "recordId"],
     data() {
         return {
@@ -78,6 +102,7 @@ export default {
             form: {},
             prefixes: [],
             accounts: [],
+            showDialogPrefix: false,
         };
     },
     created() {
@@ -117,6 +142,28 @@ export default {
                     this.form = response.data.data;
                 });
             }
+        },
+        getSummaries({ columns, data }) {
+            const sums = ['TOTAL'];
+            let totalDebit = 0;
+            let totalCredit = 0;
+
+            data.forEach(item => {
+                totalDebit += Number(item.debit) || 0;
+                totalCredit += Number(item.credit) || 0;
+            });
+
+            columns.forEach((column, index) => {
+                if (column.property === 'debit') {
+                    sums[index] = totalDebit.toFixed(2);
+                } else if (column.property === 'credit') {
+                    sums[index] = totalCredit.toFixed(2);
+                } else if (index !== 0) {
+                    sums[index] = '';
+                }
+            });
+
+            return sums;
         },
         async submit() {
 
@@ -186,6 +233,9 @@ export default {
             this.$eventHub.$emit("reloadData");
             this.$emit("update:showDialog", false);
             this.initForm();
+        },
+        clickAddPrefix() {
+            this.showDialogPrefix = true;
         },
     },
 };

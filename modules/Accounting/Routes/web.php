@@ -25,6 +25,9 @@ if($hostname) {
             Route::get('charts/columns', 'ChartOfAccountController@columns');
             Route::get('charts/children/{parent_id}', 'ChartOfAccountController@getChildren');
             Route::get('charts/parent/{parent_id}', 'ChartOfAccountController@getChildren');
+            Route::get('charts/tree', 'ChartOfAccountController@tree');
+            Route::get('charts/tables', 'ChartOfAccountController@tables');
+            Route::post('charts/accounts-configuration', 'ChartOfAccountController@accountConfiguration');
             Route::apiResource('charts', 'ChartOfAccountController')->names([
                 'index'   => 'tenant.accounting.charts.index',
             ]);
@@ -54,6 +57,16 @@ if($hostname) {
             // Reporte de Estado de Resultados
             Route::get('/income-statement', 'ReportIncomeStatementController@index')->name('tenant.accounting.report.income-statement');
             Route::get('/income-statement/records', 'ReportIncomeStatementController@records');
+
+            Route::prefix('clasification-sale')->group(function () {
+                Route::get('records', 'ChartAccountSaleConfigurationController@records');
+                Route::get('record/{id}', 'ChartAccountSaleConfigurationController@record');
+                Route::get('tables', 'ChartAccountSaleConfigurationController@tables');
+                Route::post('', 'ChartAccountSaleConfigurationController@store');
+                Route::put('{id}', 'ChartAccountSaleConfigurationController@update');
+                Route::delete('{id}', 'ChartAccountSaleConfigurationController@destroy');
+            });
+
 
         });
     });

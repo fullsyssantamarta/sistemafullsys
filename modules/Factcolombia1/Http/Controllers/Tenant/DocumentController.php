@@ -55,6 +55,8 @@ use Exception;
 use Modules\Accounting\Models\JournalEntry;
 use Modules\Accounting\Models\JournalPrefix;
 use Modules\Accounting\Models\ChartOfAccount;
+use Modules\Accounting\Models\ChartAccountSaleConfiguration;
+use Modules\Accounting\Models\AccountingChartAccountConfiguration;
 
 
 class DocumentController extends Controller
@@ -964,39 +966,81 @@ class DocumentController extends Controller
         $total = $document->total;
         $iva = $document->total_tax;
         $subtotal = $document->sale ;
-        $accountIdAsset = ChartOfAccount::where('code','130505')->first();
-        $accountIdIncome = ChartOfAccount::where('code','413505')->first();
-        $accountIdLiability = ChartOfAccount::where('code','240805')->first();
-
-        $entry = JournalEntry::create([
-            'date' => date('Y-m-d'),
-            'journal_prefix_id' => 1,
-            'description' => 'Factura de Venta #'.$document->prefix.'-'.$document->number,
-            'document_id' => $document->id,
-            'status' => 'posted'
-        ]);
-
-        //Cuentas por cobrar (Activo)
-        $entry->details()->create([
-            'chart_of_account_id' => $accountIdAsset->id,
-            'debit' => $total,
-            'credit' => 0,
-        ]);
-
-        //Ingresos por ventas (Ingreso)
-        $entry->details()->create([
-            'chart_of_account_id' => $accountIdIncome->id,
-            'debit' => 0,
-            'credit' => $subtotal,
-        ]);
-
-        //IVA generado (Pasivo)
-        $entry->details()->create([
-            'chart_of_account_id' => $accountIdLiability->id,
-            'debit' => 0,
-            'credit' => $iva,
-        ]);
         
+        // $accountIdAsset = ChartOfAccount::where('code','13050501')->first();
+
+        $accountIdCash = ChartOfAccount::where('code','11050501')->first();
+        $accountIdIncome = ChartOfAccount::where('code','41359101')->first();
+        $taxIva = Tax::where('name','IVA5')->first();
+        if($taxIva){
+            $accountIdLiability = ChartOfAccount::where('code',$taxIva->chart_account_sale)->first();
+        }
+
+        $saleCost = AccountingChartAccountConfiguration::first();
+        if($saleCost){
+            $accountIdSaleCost = ChartOfAccount::where('code',$saleCost->sale_cost_account)->first();
+        }
+
+        $assetInventory = ChartAccountSaleConfiguration::first();
+        if($assetInventory){
+            $accountIdInventory = ChartOfAccount::where('code',$assetInventory->income_account)->first();
+        }
+        
+        // dd($accountIdCash, $accountIdIncome, $accountIdLiability,$accountIdSaleCost,$accountIdInventory);
+
+        if($accountIdCash && $accountIdIncome && $accountIdLiability){
+
+            $entry = JournalEntry::create([
+                'date' => date('Y-m-d'),
+                'journal_prefix_id' => 1,
+                'description' => 'Factura de Venta #'.$document->prefix.'-'.$document->number,
+                'document_id' => $document->id,
+                'status' => 'posted'
+            ]);
+    
+            //Caja general (contado)
+            $entry->details()->create([
+                'chart_of_account_id' => $accountIdCash->id,
+                'debit' => $total,
+                'credit' => 0,
+            ]);
+    
+            //Cuentas por cobrar (Activo)
+            // $entry->details()->create([
+            //     'chart_of_account_id' => $accountIdAsset->id,
+            //     'debit' => $total,
+            //     'credit' => 0,
+            // ]);
+    
+            //Ingresos por ventas (Ingreso)
+            $entry->details()->create([
+                'chart_of_account_id' => $accountIdIncome->id,
+                'debit' => 0,
+                'credit' => $subtotal,
+            ]);
+    
+            //IVA generado (Pasivo)
+            $entry->details()->create([
+                'chart_of_account_id' => $accountIdLiability->id,
+                'debit' => 0,
+                'credit' => $iva,
+            ]);
+
+            //Costo de ventas
+            $entry->details()->create([
+                'chart_of_account_id' => $accountIdSaleCost->id,
+                'debit' => 0,
+                'credit' => 0,
+            ]);
+
+            //Inventarios
+            $entry->details()->create([
+                'chart_of_account_id' => $accountIdInventory->id,
+                'debit' => 0,
+                'credit' => 0,
+            ]);
+        }
+
     }
 
     public function preeliminarview(DocumentRequest $request){
