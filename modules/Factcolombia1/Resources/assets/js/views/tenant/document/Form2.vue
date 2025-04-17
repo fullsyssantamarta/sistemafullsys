@@ -1210,7 +1210,7 @@ export default {
                     tax.total = (Number(tax.total) + Number(item.total_tax)).toFixed(2);
                 }
                 item.subtotal = (
-                    Number(item.price * item.quantity) + Number(item.total_tax)
+                    Number(item.price * item.quantity) + Number(item.total_tax) -  Number(total_discount).toFixed(2)
                 ).toFixed(2);
                 this.$set(item, "total", (Number(item.subtotal) - Number(total_discount)).toFixed(2));
             });
@@ -1589,24 +1589,34 @@ export default {
             },
 
             getLegacyMonetaryTotal() {
+                // 1. Monto bruto de las líneas (incluye sólo descuentos por línea)
                 let line_ext_am = 0;
-                let tax_incl_am = 0;
+                // 2. Total de descuentos (línea + global)
                 let allowance_total_amount = 0;
-                this.form.items.forEach(element => {
-                    line_ext_am += (Number(element.price) * Number(element.quantity)) - Number(element.discount) ;
-//                    allowance_total_amount += Number(element.discount);
+
+                this.form.items.forEach(item => {
+                    const lineaBruta = Number(item.price) * Number(item.quantity);
+                    const descuentoLinea = Number(item.discount);
+                    line_ext_am += (lineaBruta - descuentoLinea);
+                    allowance_total_amount += descuentoLinea;
                 });
 
-                let total_tax_amount = 0;
-                this.tax_amount_calculate.forEach(element => {
-                    total_tax_amount += Number(element.tax_amount);
-                });
+                // 3. Cálculo del descuento global
+                let globalDisc = Number(this.total_global_discount) || 0;
+                if (!this.global_discount_is_amount && globalDisc > 0) {
+                    // si está en %, lo calculamos sobre line_ext_am (antes de impuestos)
+                    globalDisc = (line_ext_am * globalDisc) / 100;
+                }
+                allowance_total_amount += globalDisc;
 
-                let tax_excl_am = 0;
-                this.tax_amount_calculate.forEach(element => {
-                    tax_excl_am += Number(element.taxable_amount);
-                });
-                tax_incl_am = line_ext_am + total_tax_amount;
+                // 4. Suma de impuestos y base imponible
+                const total_tax_amount = this.tax_amount_calculate
+                    .reduce((sum, t) => sum + Number(t.tax_amount), 0);
+                const tax_excl_am = this.tax_amount_calculate
+                    .reduce((sum, t) => sum + Number(t.taxable_amount), 0);
+
+                // 5. Impuesto incluido (sin restar descuentos)
+                const tax_incl_am = line_ext_am + total_tax_amount;
 
                 return {
                     line_extension_amount: this.cadenaDecimales(line_ext_am),
@@ -1614,8 +1624,8 @@ export default {
                     tax_inclusive_amount: this.cadenaDecimales(tax_incl_am),
                     allowance_total_amount: this.cadenaDecimales(allowance_total_amount),
                     charge_total_amount: "0.00",
-                    payable_amount: this.cadenaDecimales(tax_incl_am)
-//                    payable_amount: this.cadenaDecimales(tax_incl_am - allowance_total_amount)
+                    // 6. Valor a pagar = bruto + impuestos − descuentos
+                    payable_amount: this.cadenaDecimales(tax_incl_am - allowance_total_amount)
                 };
             },
 
