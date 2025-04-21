@@ -1417,6 +1417,12 @@ class DocumentController extends Controller
                 'xml' => $this->getFileName(),
                 'cufe' => $response_model->cude
             ]);
+
+            // Registrar asientos contables
+            if($this->document->type_document_id == 3 ){
+                $this->registerAccountingCreditNoteEntries($this->document);
+            }
+
         }
         catch (\Exception $e) {
             DB::connection('tenant')->rollBack();
@@ -1476,6 +1482,60 @@ class DocumentController extends Controller
             ]
            //'data' => $data_document
         ];
+    }
+
+    private function registerAccountingCreditNoteEntries($document) {
+        $total = $document->total;
+        $iva = $document->total_tax;
+        $subtotal = $document->sale ;
+
+
+        $accountIdIncome = ChartOfAccount::where('code','41750501')->first();
+
+        $taxIva = Tax::where('name','IVA5')->first();
+        if($taxIva){
+            $accountIdLiability = ChartOfAccount::where('code',$taxIva->chart_account_return_sale)->first();
+        }
+
+        $accountConfiguration = AccountingChartAccountConfiguration::first();
+
+        if($accountConfiguration){
+            $accountIdCustomer = ChartOfAccount::where('code',$accountConfiguration->customer_returns_account)->first();
+        }
+
+        if($accountIdCustomer && $accountIdIncome && $accountIdLiability){
+
+            $entry = JournalEntry::create([
+                'date' => date('Y-m-d'),
+                'journal_prefix_id' => 1,
+                'description' => 'Nota de Crédito #'.$document->prefix.'-'.$document->number,
+                'document_id' => $document->id,
+                'status' => 'posted'
+            ]);
+    
+            //ventas
+            $entry->details()->create([
+                'chart_of_account_id' => $accountIdIncome->id,
+                'debit' => $subtotal,
+                'credit' => 0,
+            ]);
+    
+            //IVA generado (Pasivo)
+            $entry->details()->create([
+                'chart_of_account_id' => $accountIdLiability->id,
+                'debit' => $iva,
+                'credit' => 0,
+            ]);
+
+            //Clientes
+            $entry->details()->create([
+                'chart_of_account_id' => $accountIdCustomer->id,
+                'debit' => 0,
+                'credit' => $total,
+            ]);
+
+        }
+
     }
 
     /**

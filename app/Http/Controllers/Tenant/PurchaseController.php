@@ -224,8 +224,14 @@ class PurchaseController extends Controller
             }
 
             // Registrar asientos contables
-            $this->registerAccountingPurchaseEntries($doc);
+            if($doc->document_type_id == '01'){
+                $this->registerAccountingPurchaseEntries($doc);
+            }
 
+            if($doc->document_type_id == '07'){
+                $this->registerAccountingCreditNotePurchase($doc);
+            }
+            
             return $doc;
         });
 
@@ -288,6 +294,59 @@ class PurchaseController extends Controller
             'debit' => 0,
             'credit' => $total,
         ]);
+    }
+
+    private function registerAccountingCreditNotePurchase($document) {
+        $total = $document->total;
+        $iva = $document->total_tax;
+        $subtotal = $document->sale; // Neto de la compra
+
+        $accountConfiguration = AccountingChartAccountConfiguration::first();
+        if($accountConfiguration){
+            $accountIdInventory = ChartOfAccount::where('code',$accountConfiguration->inventory_account)->first();
+        }
+
+        $taxIva = Tax::where('name','IVA5')->first();
+        if($taxIva){
+            $accountIdIva = ChartOfAccount::where('code',$taxIva->chart_account_return_purchase)->first();
+        }
+
+        if($accountConfiguration){
+            $accountIdLiability = ChartOfAccount::where('code',$accountConfiguration->supplier_returns_account)->first();
+        }
+
+        //1 Registrar la entrada en el libro diario
+        $entry = JournalEntry::create([
+            'date' => date('Y-m-d'),
+            'journal_prefix_id' => 2, // Prefijo para compras
+            'description' => 'Nota de Crédito #'.$document->series . '-' . $document->number,
+            'purchase_id' => $document->id,
+            'status' => 'posted'
+        ]);
+    
+        // 2 Registrar los detalles contables
+
+        //proveedores (Pasivo)
+        $entry->details()->create([
+            'chart_of_account_id' => $accountIdLiability->id, 
+            'debit' => $total,
+            'credit' => 0,
+        ]);
+    
+        //Inventario (Activo)
+        $entry->details()->create([
+            'chart_of_account_id' => $accountIdInventory->id,
+            'debit' => 0,
+            'credit' => $subtotal,
+        ]);
+    
+        //IVA descontable (Activo)
+        $entry->details()->create([
+            'chart_of_account_id' => $accountIdIva->id, 
+            'debit' => 0,
+            'credit' => $iva,
+        ]);
+        
     }
 
     public function update(PurchaseRequest $request)

@@ -7,7 +7,7 @@
                     <div class="row">
                         <div class="col-md-10">
                             <div class="form-group">
-                                <label class="control-label">Selecciona las cuentas contables de ingresos por defecto para el registro de documentos de venta y devoluciones de tus clientes.</label>
+                                <label class="control-label">Configura las cuentas contables de ingresos y devoluciones de tus clientes con su Clasificación contable.</label>
                             </div>
                         </div>
                         <div class="col-md-2">

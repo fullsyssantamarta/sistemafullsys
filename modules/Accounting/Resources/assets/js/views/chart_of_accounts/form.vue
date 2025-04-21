@@ -6,24 +6,20 @@
                 <div class="col-12">
                     <div class="form-group">
                         <label>Clase</label>
-                        <el-select v-model="form.parent_id" placeholder="Seleccione una clase (opcional)" @change="handleParentSelection">
+                        <el-select v-model="form.parent_id" :loading="loadingHierarchy" placeholder="Seleccione una clase (opcional)" @change="handleParentSelection">
                             <el-option v-for="account in parentAccounts" :key="account.id" :label="account.code + ' - ' + account.name" :value="account.id" />
                         </el-select>
+                        <!-- Spinner encima del select -->
+                        <div v-if="loadingHierarchy"
+                            class="custom-spinner-overlay d-flex align-items-center justify-content-center"
+                            >
+                            <i class="el-icon-loading spinner-icon"></i>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Selectores de Niveles -->
-                <!-- <div class="col-12" v-for="(level, index) in hierarchy" :key="index">
-                    <div class="form-group">
-                        <label>{{ levelTitles[index] }}</label>
-                        <el-select v-model="level.selected" @change="handleSublevelSelection(level.selected, index)">
-                            <el-option v-for="child in level.children" :key="child.id" :label="child.label" :value="child.id" :disabled="index === 4"/>
-                        </el-select>
-                    </div>
-                </div> -->
-
-                <!-- Selectores de Niveles -->
-                <div class="col-12" v-for="(level, index) in hierarchy" :key="index">
+                <div v-if="!loadingHierarchy" class="col-12" v-for="(level, index) in hierarchy" :key="index">
                     <div class="form-group">
                         <label>{{ levelTitles[index] }}</label>
                         <el-select
@@ -112,6 +108,8 @@ export default {
             parentCode: "",
             errors: {},
             levelTitles: ["Grupo", "Cuenta", "Subcuenta",'Auxiliar','Detalle'], // Títulos dinámicos para los niveles
+            loadingHierarchy:false,
+
         };
     },
     computed: {
@@ -178,6 +176,8 @@ export default {
         },
 
         async loadHierarchyForEdit(parents) {
+            this.loadingHierarchy = true;
+
             for (let i = 1; i < parents.length; i++) {
                 const parent = parents[i];
 
@@ -200,6 +200,7 @@ export default {
                     }
                 }
             }
+            this.loadingHierarchy = false;
         },
 
         async fetchChildren(parentId) {
