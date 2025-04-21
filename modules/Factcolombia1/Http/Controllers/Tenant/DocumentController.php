@@ -312,7 +312,14 @@ class DocumentController extends Controller
 //        try {
             $this->company = Company::query()->with('country', 'version_ubl', 'type_identity_document')->firstOrFail();
             $company = ServiceTenantCompany::firstOrFail();
-            $invoice_json_decoded = json_decode($document_invoice->request_api, true);
+            if (is_string($document_invoice->request_api)) {
+                $invoice_json_decoded = json_decode($document_invoice->request_api, true);
+            } elseif (is_object($document_invoice->request_api) || is_array($document_invoice->request_api)) {
+                $invoice_json_decoded = (array) $document_invoice->request_api;
+            } else {
+                $invoice_json_decoded = [];
+            }
+//            $invoice_json_decoded = json_decode($document_invoice->request_api, true);
 //            \Log::debug($invoice_json_decoded);
 //            \Log::debug($invoice_json_decoded);
             $correlative_api = $invoice_json_decoded['number'];
@@ -605,7 +612,7 @@ class DocumentController extends Controller
                 $service_invoice['prefix'] = $request->prefix;
                 $service_invoice['resolution_number'] = $request->resolution_number;
                 if($request->format_print != "2"){
-                    $service_invoice['foot_note'] = "Modo de operación: Software Propio - by ".env('APP_NAME', 'FACTURALATAM')." La presente Factura Electrónica de Venta, es un título valor de acuerdo con lo establecido en el Código de Comercio y en especial en los artículos 621,772 y 774. El Decreto 2242 del 24 de noviembre de 2015 y el Decreto Único 1074 de mayo de 2015. El presente título valor se asimila en todos sus efectos a una letra de cambio Art. 779 del Código de Comercio. Con esta el Comprador declara haber recibido real y materialmente las mercancías o prestación de servicios descritos en este título valor.";
+                    $service_invoice['foot_note'] = "Modo de operación: Software Propio - by ".env('APP_NAME', 'TORRE SOFTWARE')." La presente Factura Electrónica de Venta, es un título valor de acuerdo con lo establecido en el Código de Comercio y en especial en los artículos 621,772 y 774. El Decreto 2242 del 24 de noviembre de 2015 y el Decreto Único 1074 de mayo de 2015. El presente título valor se asimila en todos sus efectos a una letra de cambio Art. 779 del Código de Comercio. Con esta el Comprador declara haber recibido real y materialmente las mercancías o prestación de servicios descritos en este título valor.";
                 }
             }
 //            \Log::debug(json_encode($service_invoice));
@@ -1142,9 +1149,9 @@ class DocumentController extends Controller
             $service_invoice['prefix'] = $request->prefix;
             $service_invoice['resolution_number'] = $request->resolution_number;
             $service_invoice['head_note'] = "V I S T A   P R E E L I M I N A R  --  V I S T A   P R E E L I M I N A R  --  V I S T A   P R E E L I M I N A R  --  V I S T A   P R E E L I M I N A R";
-            $service_invoice['foot_note'] = "Modo de operación: Software Propio - by ".env('APP_NAME', 'FACTURALATAM')." La presente Factura Electrónica de Venta, es un título valor de acuerdo con lo establecido en el Código de Comercio y en especial en los artículos 621,772 y 774. El Decreto 2242 del 24 de noviembre de 2015 y el Decreto Único 1074 de mayo de 2015. El presente título valor se asimila en todos sus efectos a una letra de cambio Art. 779 del Código de Comercio. Con esta el Comprador declara haber recibido real y materialmente las mercancías o prestación de servicios descritos en este título valor.";
+            $service_invoice['foot_note'] = "Modo de operación: Software Propio - by ".env('APP_NAME', 'TORRE SOFTWARE')." La presente Factura Electrónica de Venta, es un título valor de acuerdo con lo establecido en el Código de Comercio y en especial en los artículos 621,772 y 774. El Decreto 2242 del 24 de noviembre de 2015 y el Decreto Único 1074 de mayo de 2015. El presente título valor se asimila en todos sus efectos a una letra de cambio Art. 779 del Código de Comercio. Con esta el Comprador declara haber recibido real y materialmente las mercancías o prestación de servicios descritos en este título valor.";
 //\Log::debug(json_encode($service_invoice));
-            $service_invoice['web_site'] = env('APP_NAME', 'FACTURALATAM');
+            $service_invoice['web_site'] = env('APP_NAME', 'TORRE SOFTWARE');
 //\Log::debug(json_encode($service_invoice));
             if(!is_null($this->company['jpg_firma_flsacturas']))
               if(file_exists(public_path('storage/uploads/logos/'.$this->company['jpg_firma_facturas']))){
@@ -1319,7 +1326,7 @@ class DocumentController extends Controller
                 $note_service['establishment_phone'] = $sucursal->telephone;
             $note_service['establishment_email'] = $sucursal->email;
             $note_service['customer']['dv'] = $this->validarDigVerifDIAN($note_service['customer']['identification_number']);
-            $note_service['foot_note'] = "Modo de operación: Software Propio - by ".env('APP_NAME', 'FACTURALATAM');
+            $note_service['foot_note'] = "Modo de operación: Software Propio - by ".env('APP_NAME', 'TORRE SOFTWARE');
 
             $id_test = $company->test_id;
             $base_url = config('tenant.service_fact');
