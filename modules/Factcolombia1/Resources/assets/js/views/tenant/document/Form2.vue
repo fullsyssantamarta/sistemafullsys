@@ -340,7 +340,7 @@
                                         </td>
                                         <td>:</td>
                                         <!-- <td class="text-right">
-                                            {{ratePrefix()}} {{Number(tax.retention).toFixed(2)}}
+                                            {{ratePrefix()}} {{Number(tax.retention).toFixed(4)}}
                                         </td> -->
                                         <td class="text-right" id="input-with-select">
                                             <el-input v-model="total_global_discount" :min="0" class="input-discount"
@@ -365,7 +365,7 @@
                                             </td>
                                             <td>:</td>
                                             <td class="text-right">{{ ratePrefix() }} {{
-                                                getFormatDecimal(Number(tax.total).toFixed(2)) }}</td>
+                                                getFormatDecimal(Number(tax.total).toFixed(4)) }}</td>
                                         </tr>
                                     </template>
                                     <tr>
@@ -379,7 +379,7 @@
                                             <td>{{ tax.name }}(-)</td>
                                             <td>:</td>
                                             <!-- <td class="text-right">
-                                                {{ratePrefix()}} {{Number(tax.retention).toFixed(2)}}
+                                                {{ratePrefix()}} {{Number(tax.retention).toFixed(4)}}
                                             </td> -->
                                             <td class="text-right" width=35%>
                                                 <el-input v-model="tax.retention" readonly>
@@ -1194,36 +1194,36 @@ export default {
                         total_discount = ((item.price * item.discount_percentage) / 100) * item.quantity;
                     }
                 }
-                this.$set(item, "discount", Number(total_discount).toFixed(2));
-                this.$set(item, "total_discount", Number(total_discount).toFixed(2));
+                this.$set(item, "discount", Number(total_discount).toFixed(4));
+                this.$set(item, "total_discount", Number(total_discount).toFixed(4));
                 item.total_tax = 0;
                 if (item.tax != null) {
                     let tax = val.taxes.find(tax => tax.id == item.tax.id);
                     if (item.tax.is_fixed_value) {
-                        item.total_tax = ((item.tax.rate * item.quantity) - total_discount).toFixed(2);
+                        item.total_tax = ((item.tax.rate * item.quantity) - total_discount).toFixed(4);
                     }
                     if (item.tax.is_percentage) {
-                        item.total_tax = (((item.price * item.quantity) - total_discount) * (item.tax.rate / item.tax.conversion)).toFixed(2);
+                        item.total_tax = (((item.price * item.quantity) - total_discount) * (item.tax.rate / item.tax.conversion)).toFixed(4);
                     }
                     if (!tax.hasOwnProperty("total"))
-                        tax.total = Number(0).toFixed(2);
-                    tax.total = (Number(tax.total) + Number(item.total_tax)).toFixed(2);
+                        tax.total = Number(0).toFixed(4);
+                    tax.total = (Number(tax.total) + Number(item.total_tax)).toFixed(4);
                 }
                 item.subtotal = (
-                    Number(item.price * item.quantity) + Number(item.total_tax) -  Number(total_discount).toFixed(2)
-                ).toFixed(2);
-                this.$set(item, "total", (Number(item.subtotal) - Number(total_discount)).toFixed(2));
+                    Number(item.price * item.quantity) + Number(item.total_tax) -  Number(total_discount).toFixed(4)
+                ).toFixed(4);
+                this.$set(item, "total", (Number(item.subtotal) - Number(total_discount)).toFixed(4));
             });
-            val.total_tax = val.items.reduce((p, c) => Number(p) + Number(c.total_tax), 0).toFixed(2);
-            let total = val.items.reduce((p, c) => Number(p) + Number(c.total), 0).toFixed(2);
+            val.total_tax = val.items.reduce((p, c) => Number(p) + Number(c.total_tax), 0).toFixed(4);
+            let total = val.items.reduce((p, c) => Number(p) + Number(c.total), 0).toFixed(4);
             let amount_total_dicount_global = this.total_global_discount;
             if (!this.global_discount_is_amount && amount_total_dicount_global > 0) {
                 amount_total_dicount_global = ((total - val.total_tax) * amount_total_dicount_global) / 100;
             }
-            val.subtotal = val.items.reduce((p, c) => Number(p) + (Number(c.subtotal) - Number(c.total_discount) - Number(amount_total_dicount_global, 0)), 0).toFixed(2);
-            val.sale = val.items.reduce((p, c) => Number(p) + Number(c.price * c.quantity) - Number(c.total_discount) - Number(amount_total_dicount_global, 0), 0).toFixed(2);
-            val.total_discount = (val.items.reduce((p, c) => Number(p) + Number(c.total_discount), 0) + Number(amount_total_dicount_global, 0)).toFixed(2);
-            total = (Number(total, 0) - Number(amount_total_dicount_global, 0)).toFixed(2);
+            val.subtotal = val.items.reduce((p, c) => Number(p) + (Number(c.subtotal) - Number(c.total_discount) - Number(amount_total_dicount_global, 0)), 0).toFixed(4);
+            val.sale = val.items.reduce((p, c) => Number(p) + Number(c.price * c.quantity) - Number(c.total_discount) - Number(amount_total_dicount_global, 0), 0).toFixed(4);
+            val.total_discount = (val.items.reduce((p, c) => Number(p) + Number(c.total_discount), 0) + Number(amount_total_dicount_global, 0)).toFixed(4);
+            total = (Number(total, 0) - Number(amount_total_dicount_global, 0)).toFixed(4);
             let totalRetentionBase = Number(0);
             // this.taxes.forEach(tax => {
             val.taxes.forEach(tax => {
@@ -1231,12 +1231,12 @@ export default {
                     tax.retention = (
                         Number(val.sale) *
                         (tax.rate / tax.conversion)
-                    ).toFixed(2);
+                    ).toFixed(4);
                     totalRetentionBase =
                         Number(totalRetentionBase) + Number(tax.retention);
                     if (Number(totalRetentionBase) >= Number(val.sale))
-                        this.$set(tax, "retention", Number(0).toFixed(2));
-                    total -= Number(tax.retention).toFixed(2);
+                        this.$set(tax, "retention", Number(0).toFixed(4));
+                    total -= Number(tax.retention).toFixed(4);
                 }
                 if (
                     tax.is_retention &&
