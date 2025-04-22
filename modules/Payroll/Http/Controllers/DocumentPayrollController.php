@@ -148,22 +148,38 @@ class DocumentPayrollController extends Controller
             $data = DB::connection('tenant')->transaction(function () use($request) {
                 $documents = [];
                 $workers = $request->worker_id;
+                $base_request = $request->all();
+
                 foreach ($workers as $worker_id) {
-                    $newRequest = clone $request;
                     $worker_model = Worker::find($worker_id);
-                    $newRequest->merge([
-                        'worker_id' => $worker_id,
-                        'payment' => [
-                            'bank_name' => $worker_model->payment->bank_name,
-                            'account_type' => $worker_model->payment->account_type,
-                            'account_number' => $worker_model->payment->account_number,
-                            'payment_method_id' => $worker_model->payment->payment_method_id,
-                        ]
-                    ]);
+                    
+                    // Clonar datos base del request para cada trabajador
+                    $worker_request = $base_request;
+                    
+                    // Actualizar datos específicos del trabajador
+                    $worker_request['worker_id'] = $worker_id;
+                    $worker_request['payment'] = [
+                        'bank_name' => $worker_model->payment->bank_name,
+                        'account_type' => $worker_model->payment->account_type,
+                        'account_number' => $worker_model->payment->account_number,
+                        'payment_method_id' => $worker_model->payment->payment_method_id,
+                    ];
+
+                    // Actualizar salario y cálculos relacionados para este trabajador específico
+                    $worker_request['accrued']['total_base_salary'] = (float)$worker_model->salary;
+                    $worker_request['accrued']['salary'] = (float)$worker_model->salary;
+                    
+                    // Recalcular total de devengados basado en el salario del trabajador actual
+                    $transportation_allowance = $worker_request['accrued']['transportation_allowance'] ?? 0;
+                    $worker_request['accrued']['accrued_total'] = $worker_model->salary + $transportation_allowance;
+
+                    // Crear nuevo request con los datos actualizados
+                    $newRequest = new DocumentPayrollRequest();
+                    $newRequest->merge($worker_request);
 
                     // inputs
                     $helper = new DocumentPayrollHelper();
-                    $inputs = $helper->getInputs($request);
+                    $inputs = $helper->getInputs($newRequest);
 
                     // Procesar los datos de accrued antes de guardar
                     if (isset($inputs['accrued'])) {
