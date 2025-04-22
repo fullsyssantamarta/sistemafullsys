@@ -24,7 +24,7 @@
                                     <td v-if="row.card_brand">{{ row.card_brand.description }}</td>
                                     <td v-else>-</td>
                                     <td>{{ row.reference }}</td>
-                                    <td  >S/ {{ row.payment }}</td>
+                                    <td  >$ {{ row.payment }}</td>
                                     <td>
                                         <template v-if="!row.state">
                                             <button type="button" class="btn waves-effect waves-light btn-xs btn-primary" @click.prevent="clickCancelPayment(row.id)">
@@ -82,7 +82,7 @@
                                         <div class="form-group mb-0" :class="{'has-danger': row.errors.payment}">
                                             <!-- <el-input v-model="row.payment"></el-input> -->
                                             <el-input  v-model="row.payment" >
-                                                <template slot="prepend">S/ </template>
+                                                <template slot="prepend">$ </template>
                                             </el-input>
                                             <small class="form-control-feedback" v-if="row.errors.payment" v-text="row.errors.payment[0]"></small>
                                         </div>
@@ -104,17 +104,17 @@
                             <tfoot>
                             <tr>
                                 <td colspan="6" class="text-right">TOTAL PAGADO</td>
-                                <td class="text-right">S/ {{ client.total_paid }}</td>
+                                <td class="text-right">$ {{ client.total_paid }}</td>
                                 <td></td>
                             </tr>
                             <tr>
                                 <td colspan="6" class="text-right">TOTAL A PAGAR</td>
-                                <td class="text-right">S/ {{ client.total }}</td>
+                                <td class="text-right">$ {{ client.total }}</td>
                                 <td></td>
                             </tr>
                             <tr>
                                 <td colspan="6" class="text-right">PENDIENTE DE PAGO</td>
-                                <td class="text-right">S/ {{ client.total_difference }}</td>
+                                <td class="text-right">$ {{ client.total_difference }}</td>
                                 <td></td>
                             </tr>
                             </tfoot>

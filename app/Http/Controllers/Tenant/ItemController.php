@@ -28,6 +28,7 @@ use App\Models\Tenant\ItemTag;
 use App\Models\Tenant\Catalogs\Tag;
 use Modules\Item\Models\Category;
 use Modules\Item\Models\Brand;
+use Modules\Inventory\Models\InventoryConfiguration;
 use Modules\Inventory\Models\Warehouse as WarehouseModule;
 use App\Models\Tenant\Establishment;
 use Modules\Item\Models\ItemLotsGroup;
@@ -67,6 +68,13 @@ class ItemController extends Controller
             'inactive' => 'Inhabilitados',
             // 'description' => 'Descripción'
         ];
+    }
+
+    //retorma si controla o no controla inventarios
+    public function getInventoryConfiguration()
+    {
+        $inventoryConfiguration = InventoryConfiguration::first();
+        return response()->json(['inventoryConfiguration' => $inventoryConfiguration]);
     }
 
     public function records(Request $request)

@@ -1,5 +1,5 @@
 <template>
-    <el-dialog :title="titleDialog" :visible="showDialog" @open="create" width="30%"
+    <el-dialog :title="titleDialog" :visible="showDialog" @open="create" width="30%" append-to-body
                :close-on-click-modal="false"
                :close-on-press-escape="false"
                :show-close="false">
@@ -9,8 +9,8 @@
                 <el-button @click="clickClose">Cerrar</el-button>
             </template>
             <template v-else>
-                <el-button @click="clickFinalize">Ir al listado</el-button>
-                <el-button type="primary" @click="clickNewDocument">Nuevo gasto</el-button>
+               <!-- <el-button @click="clickFinalize">Ir al listado</el-button> -->
+                <el-button type="primary" @click="clickNewDocument">Cerrar</el-button>
             </template>
         </span>
     </el-dialog>
@@ -46,10 +46,13 @@
             create() {
                 this.$http.get(`/${this.resource}/record/${this.recordId}`)
                     .then(response => {
-                        this.form = response.data.data
-                        this.titleDialog = 'Gasto registrado: '+this.form.number
-                    })
-            },
+                        this.form = response.data.data;
+                        // Convertir el valor de payment a número y luego formatearlo con separadores de miles.
+                        const paymentAmount = parseFloat(this.form.payments[0].payment).toLocaleString('es', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                        this.titleDialog = 'Gasto registrado por valor de $' + paymentAmount;
+                        console.log(this.form);
+                    });
+            }, 
           
             clickFinalize() {
                 location.href = `/${this.resource}`

@@ -579,11 +579,11 @@
                                         Reporte Inventario
                                     </a>
                                 </li>
-                                {{-- <li class="{{(($path[0] === 'reports') && ($path[1] === 'valued-kardex')) ? 'nav-active' : ''}}">
+                                <li class="{{(($path[0] === 'reports') && ($path[1] === 'valued-kardex')) ? 'nav-active' : ''}}">
                                     <a class="nav-link" href="{{route('reports.valued_kardex.index')}}">
                                         Kardex valorizado
                                     </a>
-                                </li> --}}
+                                </li>
                             </ul>
                         </li>
                         @endif
@@ -1035,9 +1035,9 @@
                             </li>
                             @endif --}}
 
-                            {{-- <li class="{{($path[0] === 'inventories' && $path[1] === 'configuration') ? 'nav-active': ''}}">
+                            <li class="{{($path[0] === 'inventories' && $path[1] === 'configuration') ? 'nav-active': ''}}">
                                 <a class="nav-link" href="{{route('tenant.inventories.configuration.index')}}">Inventarios</a>
-                            </li> --}}
+                            </li>
                         </ul>
                     </li>
                     @endif
@@ -1065,15 +1065,15 @@
 
                                 <li class="{{($path[0] === 'co-radian-events' && $path[1] == 'manage') ? 'nav-active' : ''}}">
                                     <a class="nav-link" href="{{route('tenant.co-radian-events-manage.index')}}">
-                                        Gestionar eventos
+                                        Gestionar eventos Doc. Procesados
                                     </a>
                                 </li>
 
-                                {{-- <li class="{{($path[0] === 'co-advanced-configuration') ? 'nav-active' : ''}}">
-                                    <a class="nav-link" href="{{route('tenant.co-advanced-configuration.index')}}">
-                                        Avanzado
+                                <li class="{{($path[0] === 'co-radian-events' && $path[1] == 'radian-cufe') ? 'nav-active' : ''}}">
+                                    <a class="nav-link" href="{{route('tenant.co-radian-cufe.index')}}">
+                                        Gestionar eventos con CUFE
                                     </a>
-                                </li> --}}
+                                </li>
                             </ul>
                         </li>
                     @endif

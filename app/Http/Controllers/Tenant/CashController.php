@@ -35,8 +35,10 @@ class CashController extends Controller
     public function columns()
     {
         return [
+            'date_opening' => 'Fecha de apertura',
+            'date_closed' => 'Fecha de cierre',
             'income' => 'Ingresos',
-            // 'expense' => 'Egresos',
+            'expense' => 'Egresos',
         ];
     }
 
@@ -44,7 +46,9 @@ class CashController extends Controller
     {
         $records = Cash::where($request->column, 'like', "%{$request->value}%")
                         ->whereTypeUser()
-                        ->orderBy('date_opening', 'DESC');
+                        ->orderBy('id', 'desc');
+
+
         return new CashCollection($records->paginate(config('tenant.items_per_page')));
     }
 
@@ -56,22 +60,30 @@ class CashController extends Controller
     public function tables()
     {
         $user = auth()->user();
-        $type = $user->type;
-        $users = array();
-
-        switch($type)
-        {
-            case 'admin':
-                $users = User::where('type', 'seller')->get();
-                $users->push($user);
-                break;
-            case 'seller':
-                $users = User::where('id', $user->id)->get();
-                break;
+        $users = User::where('type', $user->type)->get();
+        if ($user->type == 'admin') {
+            $users = User::where('type', 'seller')->get();
+            $users->push($user);  // Asegura que el administrador siempre está incluido
         }
-        $resolutions = ConfigurationPos::select('id', 'prefix', 'resolution_number')->get();
+    
+        // Obtiene el ID de la resolución actual desde la solicitud, si existe
+        $currentResolutionId = request()->input('current_resolution_id');
+    
+        // Obtiene todas las resoluciones, pero asegura que la actualmente en uso por el registro editado esté incluida
+        $resolutionsInUse = Cash::where('state', true)->pluck('resolution_id')->unique();
+    
+        $resolutions = ConfigurationPos::select('id', 'prefix', 'resolution_number')
+            ->where(function ($query) use ($currentResolutionId, $resolutionsInUse) {
+                $query->whereNotIn('id', $resolutionsInUse->reject(function ($id) use ($currentResolutionId) {
+                    return $id == $currentResolutionId;  // Rechaza el ID de la resolución en uso solo si es el mismo que el actualmente editado
+                }));
+            })
+            ->orWhere('id', $currentResolutionId)  // Asegura incluir la resolución actual si está siendo editada
+            ->get();
+    
         return compact('users', 'user', 'resolutions');
     }
+    
 
     public function opening_cash()
     {
@@ -196,8 +208,10 @@ class CashController extends Controller
         // Se recuperan las categorías
         $categories = Category::all()->pluck('name', 'id');
 
-        // Se Recupera la Resolución
-        $resolutions_maquinas = ConfigurationPos::select('cash_type', 'plate_number', 'electronic')->get();
+        // Solo recuperar la configuración de la máquina para la caja abierta actual
+        $resolutions_maquinas = ConfigurationPos::select('cash_type', 'plate_number', 'electronic')
+                                ->where('id', $cash->resolution_id)
+                                ->get();
 
         set_time_limit(0); // Aumentar el tiempo de ejecución si los reportes son grandes.
 

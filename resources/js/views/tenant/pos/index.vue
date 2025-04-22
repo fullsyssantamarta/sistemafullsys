@@ -12,11 +12,27 @@
                 <h2>
                     <el-switch v-model="search_item_by_barcode" active-text="Buscar por código de barras" @change="changeSearchItemBarcode"></el-switch>
                 </h2>
+            
                 <template v-if="!electronic">
                     <h2>
                         <el-switch v-model="type_refund" active-text="Devolución"></el-switch>
                     </h2>
                 </template>
+
+                <h2>
+                    <el-button @click="showExpenseFormModal = true" class="btn btn-custom btn-sm  mt-2 mr-2">Registrar Gasto</el-button>
+                </h2>
+                <!-- Modal para el formulario de gastos -->
+                <!-- Modal para el formulario de gastos -->
+                <el-dialog :visible.sync="showExpenseFormModal" :modal="false" title="Nuevo Gasto" @close="handleCloseExpenseForm">
+                    <ExpenseForm 
+                    @close="handleCloseExpenseForm"
+                    @expenseAdded="handleExpenseAdded"
+                    :isModal="true"                    
+                    />
+                </el-dialog>
+            
+
             </div>
             <div class="col-md-4">
                 <h2> <button type="button" @click="place = 'cat'" class="btn btn-custom btn-sm  mt-2 mr-2"><i class="fa fa-border-all"></i></button> </h2>
@@ -455,6 +471,7 @@ import HistoryPurchasesForm from "../../../../../modules/Pos/Resources/assets/js
 import PersonForm from "../persons/form.vue";
 import WarehousesDetail from '../items/partials/warehouses.vue'
 import queryString from "query-string";
+import ExpenseForm from '../../../../../modules/Expense/Resources/assets/js/views/expenses/form.vue';
 import {functions} from '@mixins/functions'
 
 export default {
@@ -465,7 +482,8 @@ export default {
         HistorySalesForm,
         HistoryPurchasesForm,
         PersonForm,
-        WarehousesDetail
+        WarehousesDetail,
+        ExpenseForm,
     },
     mixins: [functions],
     data() {
@@ -508,6 +526,7 @@ export default {
             category_selected: "",
             plate_number_valid: true,
             electronic: false,
+            showExpenseFormModal: false,
         };
     },
 
@@ -570,6 +589,14 @@ export default {
         }
     },
     methods: {
+        handleCloseExpenseForm() {
+            this.showExpenseFormModal = false;
+            // Cualquier otra acción que necesites realizar al cerrar el modal
+        },
+        handleExpenseAdded(expenseData) {
+          //  console.log('Gasto añadido:', expenseData);
+            // Realizar acciones después de añadir un gasto, como actualizar una lista de gastos.
+        },
         getQueryParameters() {
             return queryString.stringify({
                 page: this.pagination.current_page
@@ -963,7 +990,33 @@ export default {
                 this.form_item.quantity = 1;
                 this.form_item.aux_quantity = 1;
 
-                let unit_price = this.form_item.unit_price_value;
+                try {
+                    // Realiza la petición directamente a la ruta de configuración avanzada
+                    const response = await this.$http.get('/co-advanced-configuration/record');
+                    // Guarda la configuración en la propiedad local (no en el prop directamente)
+                    this.localConfiguration = response.data.data;
+                    // Si item_tax_included es false, significa que el precio actual ya trae IVA incluido,
+                    // por lo tanto se debe calcular el precio base (sin IVA) y asignarlo.
+                    if (!this.localConfiguration.item_tax_included) {
+                        // Verifica que existan los datos del impuesto
+                        if (this.form_item.item.tax &&
+                            this.form_item.item.tax.rate &&
+                            this.form_item.item.tax.conversion) {
+                            
+                            const taxRate = parseFloat(this.form_item.item.tax.rate);
+                            const conversion = parseFloat(this.form_item.item.tax.conversion);
+                            // Calcula el precio base quitando el IVA: precio_con_iva / (1 + tasa efectiva)
+                            unit_price = unit_price / (1 + (taxRate / conversion));
+                        } else {
+                            console.warn('Datos de impuesto no encontrados.');
+                        }
+                        // Se asigna el precio calculado sin IVA al campo sale_unit_price
+                        this.form_item.item.sale_unit_price = unit_price;
+                    }
+                    // Si item_tax_included es true, se deja el precio tal cual (porque significa que el precio base no incluye IVA y se supone que se le sumará IVA en otro proceso)
+                } catch (error) {
+                    console.error("Error al obtener la configuración avanzada:", error);
+                }
 
                 this.form_item.unit_price = unit_price;
                 this.form_item.item.unit_price = unit_price;
@@ -1053,7 +1106,36 @@ export default {
                     this.form_item.quantity = 1;
                     this.form_item.aux_quantity = 1;
 
+
                     let unit_price = this.form_item.unit_price_value;
+
+                    try {
+                        // Realiza la petición directamente a la ruta de configuración avanzada
+                        const response = await this.$http.get('/co-advanced-configuration/record');
+                        // Guarda la configuración en la propiedad local (no en el prop directamente)
+                        this.localConfiguration = response.data.data;
+                        // Si item_tax_included es false, significa que el precio actual ya trae IVA incluido,
+                        // por lo tanto se debe calcular el precio base (sin IVA) y asignarlo.
+                        if (!this.localConfiguration.item_tax_included) {
+                            // Verifica que existan los datos del impuesto
+                            if (this.form_item.item.tax &&
+                                this.form_item.item.tax.rate &&
+                                this.form_item.item.tax.conversion) {
+                                
+                                const taxRate = parseFloat(this.form_item.item.tax.rate);
+                                const conversion = parseFloat(this.form_item.item.tax.conversion);
+                                // Calcula el precio base quitando el IVA: precio_con_iva / (1 + tasa efectiva)
+                                unit_price = unit_price / (1 + (taxRate / conversion));
+                            } else {
+                                console.warn('Datos de impuesto no encontrados.');
+                            }
+                            // Se asigna el precio calculado sin IVA al campo sale_unit_price
+                            this.form_item.item.sale_unit_price = unit_price;
+                        }
+                        // Si item_tax_included es true, se deja el precio tal cual (porque significa que el precio base no incluye IVA y se supone que se le sumará IVA en otro proceso)
+                    } catch (error) {
+                        console.error("Error al obtener la configuración avanzada:", error);
+                    }
 
                     this.form_item.unit_price = unit_price;
                     this.form_item.item.unit_price = unit_price;

@@ -71,13 +71,27 @@ class DocumentController extends Controller
         return view('factcolombia1::document.tenant.index');
     }
 
+    /**
+     * Scope a query to include documents where the customer's name matches a search term.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  string  $name
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeFilterByName($query, $name)
+    {
+        // Asumiendo que 'customer' es una columna de tipo JSON y 'name' es uno de sus atributos
+        return $query->where('customer->name', 'LIKE', "%{$name}%");
+    }
+
 
     public function columns()
     {
         return [
-            'number' => 'Número',
+            'number' => 'Número de Factura',
             'date_of_issue' => 'Fecha de emisión',
-            'customer' => 'Cliente',
+            'name' => 'Nombre',
+            'customer' => 'No Cédula'
         ];
     }
 
@@ -108,9 +122,27 @@ class DocumentController extends Controller
 
     public function records(Request $request)
     {
-        $records =  Document::where($request->column, 'like', '%' . $request->value . '%')->whereTypeUser()->latest();
+        $records = Document::query();
+    
+        if ($request->column == 'name' && $request->filled('value')) {
+            // Convertimos tanto el valor de la columna como el valor de búsqueda a minúsculas
+            $value = strtolower($request->value);
+            $records->whereRaw("LOWER(json_unquote(json_extract(`customer`, '$.name'))) LIKE ?", ["%{$value}%"]);
+        } elseif ($request->filled('column') && $request->filled('value')) {
+            // Para otras columnas que no son JSON y buscamos insensitivo a mayúsculas/minúsculas
+            $value = strtolower($request->value);
+            $records->whereRaw("LOWER({$request->column}) LIKE ?", ["%{$value}%"]);
+        }
+    
+        $records->whereTypeUser()->latest();
+    
         return new DocumentCollection($records->paginate(config('tenant.items_per_page')));
     }
+    
+    
+  
+    
+    
 
 
     public function record($id)
@@ -1028,14 +1060,18 @@ class DocumentController extends Controller
         }
         catch (\Exception $e) {
             DB::connection('tenant')->rollBack();
+        
             // Inicializar el mensaje de error
             $userFriendlyMessage = 'Ocurrió un error inesperado.';
+        
             // Verificar si hay un mensaje de error específico en la respuesta de la API
-            if (is_object($response_model) && isset($response_model->message)) {
+            if (isset($response_model->message)) {
                 $userFriendlyMessage = $response_model->message;  // Mensaje general de la API
+        
                 // Verificar si hay detalles de errores específicos
                 if (isset($response_model->errors) && is_object($response_model->errors)) {
                     $errorDetailsArray = []; // Cambia a array para mejorar eficiencia
+        
                     foreach ($response_model->errors as $field => $errorMessages) {
                         if (is_array($errorMessages)) {
                             $errorDetailsArray[] = implode(', ', $errorMessages);
@@ -1043,29 +1079,31 @@ class DocumentController extends Controller
                             $errorDetailsArray[] = $errorMessages;
                         }
                     }
+        
                     // Concatenar detalles de los errores al mensaje para el usuario
                     if (!empty($errorDetailsArray)) {
                         $userFriendlyMessage .= ' ' . implode(' ', $errorDetailsArray);
                     }
                 }
             }
-            // Obtener el mensaje de la excepción
-            $errorMessage = $e->getMessage();
-            // Verificar si el mensaje contiene "Undefined property: stdClass::$Response"
-            if (strpos($errorMessage, 'Undefined property: stdClass::$Response') !== false) {
-                // Si el mensaje contiene "Undefined property: stdClass::$Response", no mostrar nada
-                $errorMessage = '';
-            }
+
+                // Obtener el mensaje de la excepción
+                $errorMessage = $e->getMessage();
+
+                // Verificar si el mensaje contiene "Undefined property: stdClass::$Response"
+                if (strpos($errorMessage, 'Undefined property: stdClass::$Response') !== false) {
+                    // Si el mensaje contiene "Undefined property: stdClass::$Response", no mostrar nada
+                    $errorMessage = ''; 
+                }
+        
             // Devolver la respuesta con un mensaje de error más detallado
-            \Log::error($e->getTrace());
             return [
                 'success' => false,
                 'validation_errors' => true,
                 'message' =>  $errorMessage . ' ' . $userFriendlyMessage,
-                'line' => $e->getLine(),
-                // 'trace' => $e->getTrace(),
             ];
         }
+        
 
         DB::connection('tenant')->commit();
         $this->company = Company::query()->with('country', 'version_ubl', 'type_identity_document')->firstOrFail();
@@ -1223,6 +1261,8 @@ class DocumentController extends Controller
 
             $ch = curl_init("{$base_url}ubl2.1/invoice/preeliminar-view");
             $data_document = json_encode($service_invoice);
+            \Log::debug($datoscompany);
+            
 //\Log::debug("{$base_url}ubl2.1/invoice");
 //\Log::debug($company->api_token);
 //\Log::debug($correlative_api);
@@ -1586,7 +1626,7 @@ class DocumentController extends Controller
             'number' => $number,
             'alternate_email' => $request->email,
             'email_cc_list' => [
-                ['email' => $sucursal->email]
+               /* ['email' => $sucursal->email] */
             ]
         ];
     //    \Log::debug(json_encode($send));
@@ -1737,6 +1777,27 @@ class DocumentController extends Controller
         }
     }
 
+    public function invoiceCorrelative(Request $request)
+    {
+        // Se espera que se envíe "type_document_id" y "prefix" en el cuerpo del request.
+        $type_document_id = $request->input('type_document_id');
+        $prefix = $request->input('prefix');
+        
+        // Puedes definir si deseas ignorar el estado del documento (ajusta según tus requerimientos)
+        $ignore_state_document_id = false;
+        
+        // Llama a tu método interno para obtener el correlativo
+        $number = $this->getCorrelativeInvoice($type_document_id, $prefix, $ignore_state_document_id);
+        
+        // Devuelve la respuesta en formato JSON
+        return response()->json([
+            'success'          => true,
+            'type_document_id' => $type_document_id,
+            'prefix'           => $prefix,
+            'correlative'      => $number
+        ]);
+    }
+
     public function setStateDocument($type_service, $DocumentNumber)
     {
         $company = ServiceTenantCompany::firstOrFail();
@@ -1841,13 +1902,41 @@ class DocumentController extends Controller
 
     public function health_tables()
     {
-        $health_type_document_identifications = $this->api_conection("table/health_type_document_identifications", "GET")->health_type_document_identifications;
-        $health_type_users = $this->api_conection("table/health_type_users", "GET")->health_type_users;
-        $health_contracting_payment_methods = $this->api_conection("table/health_contracting_payment_methods", "GET")->health_contracting_payment_methods;
-        $health_coverages = $this->api_conection("table/health_coverages", "GET")->health_coverages;
-
-        return compact('health_type_document_identifications', 'health_type_users', 'health_contracting_payment_methods', 'health_coverages');
+        try {
+            // Realizamos las llamadas a la API externa
+            $health_type_document_identifications = $this->api_conection("table/health_type_document_identifications", "GET");
+            $health_type_users = $this->api_conection("table/health_type_users", "GET");
+            $health_contracting_payment_methods = $this->api_conection("table/health_contracting_payment_methods", "GET");
+            $health_coverages = $this->api_conection("table/health_coverages", "GET");
+    
+            // Puedes hacer un dd() o log para ver la respuesta cruda y confirmar la estructura.
+            // dd($health_type_document_identifications);
+    
+            // Si la respuesta es diferente a lo esperado, ajusta aquí para leer la propiedad correcta.
+            return response()->json([
+                'success' => true,
+                'health_type_document_identifications' => isset($health_type_document_identifications->health_type_document_identifications)
+                    ? $health_type_document_identifications->health_type_document_identifications 
+                    : $health_type_document_identifications,
+                'health_type_users' => isset($health_type_users->health_type_users)
+                    ? $health_type_users->health_type_users 
+                    : $health_type_users,
+                'health_contracting_payment_methods' => isset($health_contracting_payment_methods->health_contracting_payment_methods)
+                    ? $health_contracting_payment_methods->health_contracting_payment_methods 
+                    : $health_contracting_payment_methods,
+                'health_coverages' => isset($health_coverages->health_coverages)
+                    ? $health_coverages->health_coverages 
+                    : $health_coverages,
+            ]);
+        } catch (\Exception $e) {
+            // Devuelve el error para ayudarte a identificar el problema
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
+    
 
 
     public function table($table)
@@ -2069,16 +2158,12 @@ class DocumentController extends Controller
      * @param  $decimal_quantity
      * @return double
      */
+    
     private function getSaleUnitPriceWithTax($item)
     {
-        $advanced_config = AdvancedConfiguration::first();
-        $is_tax_included = $advanced_config->item_tax_included;
-        if($is_tax_included) {
-            return number_format($item->sale_unit_price * ( 1 + ($item->tax->rate ?? 0) / ($item->tax->conversion ?? 1)), 2, ".","");
-        }
-        return $item->sale_unit_price;
+        // Siempre retorna el precio base sin aplicar IVA por que en la factura se hace la validación.
+        return number_format($item->sale_unit_price, 2, ".", "");
     }
-
 
     public function searchItems(Request $request)
     {

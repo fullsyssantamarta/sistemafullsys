@@ -8,38 +8,24 @@
         <title>Impuestos</title>
     </head>
     <body>
-        <div>
-            <h3 align="center" class="title"><strong>Reporte Impuestos</strong></h3>
-        </div>
-        <br>
-        <div style="margin-top:20px; margin-bottom:15px;">
-            <table>
-                <tr>
-                    <td>
-                        <p><b>Empresa: </b></p>
-                    </td>
-                    <td align="center">
-                        <p><strong>{{$company->name}}</strong></p>
-                    </td>
-                    <td>
-                        <p><strong>Fecha: </strong></p>
-                    </td>
-                    <td align="center">
-                        <p><strong>{{date('Y-m-d')}}</strong></p>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <p><strong>N° Documento: </strong></p>
-                    </td>
-                    <td align="center">{{$company->number}}</td>
-                    <td>
-                        <p><strong>Establecimiento: </strong></p>
-                    </td>
-                    <td align="center">{{$establishment->address}} - {{$establishment->address}} - {{$establishment->country->name}} - {{$establishment->department->name}} - {{$establishment->city->name}}</td>
-                </tr>
-            </table>
-        </div>
+        <table style="width:100%; border-collapse: collapse;">
+            <tr>
+                <td colspan="17" style="height:35px; text-align: center; vertical-align: middle; font-size: 16px; font-weight: bold; padding: 10px; background-color: #0e3abd; color: white;">
+                    <h1 style="font-size: 24px; margin: 0; padding-bottom: 10px;">Reporte Impuestos</h1>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="17" style="height:100px; text-align: center; vertical-align: middle; font-size: 12px; font-weight: bold; padding: 10px; background-color: #0e3abd; color: white;">
+
+                    <span style="font-size: 12px;">Empresa: {{$company->name}}</span><br>
+                    <span style="font-size: 12px;">Fecha: {{date('Y-m-d')}}</span><br>
+                    <span style="font-size: 12px;">N° Documento: {{$company->number}}</span><br>
+                    <span style="font-size: 12px;">Establecimiento: {{$establishment->address}} - {{$establishment->city->name}}</span>
+                </td>
+            </tr>
+            <!-- Aquí seguiría el resto de tu tabla -->
+        </table>
+                 
         <br>
         @if(!empty($records))
 
@@ -49,6 +35,7 @@
                     @php
                         $sale_total = 0;
                         $total_discount = 0;
+                        $total_factura = 0;
 
                     @endphp
                     <table class="">
@@ -65,6 +52,8 @@
                                 @foreach($taxTitles as $tt)
                                     <th>{{ $tt->name}}({{ $tt->rate}})</th>
                                 @endforeach
+
+                                <th>Total</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -85,17 +74,20 @@
                                         </div>
                                     </td>
 
-                                    <td>$ {{$value->total}}</td>
+                                    <td>$ {{$value->sale}}</td>
                                     <td>$ {{$value->total_discount}}</td>
 
                                     @foreach($taxTitles as $tax)
                                         <td >${{$reportTax->getTaxTotalBill($tax, $value->taxes)}}</td>
                                     @endforeach
+
+                                    <td>$ {{$value->total}}</td>
                                 </tr>
 
                                 @php
                                     $sale_total += $value->sale;
                                     $total_discount += $value->total_discount;
+                                    $total_factura += $value->total;
                                 @endphp
                             @endforeach
 
@@ -108,6 +100,7 @@
                                 @foreach($taxTitles as $tax)
                                     <td><strong>${{$reportTax->getTaxTotal($tax, $taxesAll)}}</strong></td>
                                 @endforeach
+                                <td><strong>${{ $total_factura }}</strong></td>
                             </tr>
                         </tfoot>
                     </table>

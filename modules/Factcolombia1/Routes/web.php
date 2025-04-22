@@ -41,6 +41,7 @@ if($current_hostname) {
                 Route::post('query-zipkey', 'Tenant\DocumentController@queryZipkey');
                 Route::post('sincronize', 'Tenant\DocumentController@sincronize');
                 Route::post('import', 'Tenant\DocumentController@co_import');
+                Route::post('invoice-correlative', 'Tenant\DocumentController@invoiceCorrelative');
             });
 
             Route::prefix('co-documents-health')->group(function () {
@@ -134,6 +135,10 @@ if($current_hostname) {
     $app_url = config('tenant.prefix_url') == null ? config('tenant.app_url_base') : config('tenant.prefix_url').'.'.config('tenant.app_url_base');
     Route::domain($app_url)->group(function() {
 
+        // Rutas accesibles sin autenticación previa
+        // Asegúrate de colocar la ruta switch-tenant aquí si se supone que debe ser accesible sin necesidad de autenticación de admin
+        Route::get('/switch-tenant/{companyId}', 'System\CompanyController@switchTenant')->name('switch-tenant');
+
         Route::middleware('auth:admin')->group(function() {
 
             Route::get('/', function () {
@@ -150,7 +155,10 @@ if($current_hostname) {
                 Route::post('', 'System\CompanyController@store')->name('system.company');
                 Route::post('update', 'System\CompanyController@update');
                 Route::get('records', 'System\CompanyController@records');
+                Route::get('all', 'System\CompanyController@all');
+                Route::get('current-user', 'System\CompanyController@currentUserId');
                 Route::get('record/{id}', 'System\CompanyController@record');
+                Route::post('update-user', 'System\CompanyController@updateUser');
                 Route::delete('{company}', 'System\CompanyController@destroy');
 
                 // Route::post('locked_emission', 'System\CompanyController@lockedEmission');

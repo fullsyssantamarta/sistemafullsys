@@ -32,6 +32,13 @@ class RadianEventController extends Controller
     {
         return view('radianevent::manage.index');
     }
+
+    public function radianCufe()
+    {
+        return view('radianevent::reception.radiancufe');
+    }
+    
+
     
     
     public function columns()
@@ -40,6 +47,7 @@ class RadianEventController extends Controller
             'identification_number' => 'NIT Emisor',
             'name_seller' => 'Nombre emisor',
             'prefix' => 'Prefijo',
+            'number' => 'Número de Factura',
         ];
     }
 
@@ -50,6 +58,103 @@ class RadianEventController extends Controller
 
         return new ReceivedDocumentCollection($records->latest()->paginate(config('tenant.items_per_page')));
     }
+
+    public function sendRadianEvent(Request $request)
+    {
+        $company = ServiceCompany::select('identification_number', 'api_token')->firstOrFail();
+        $connection_api = new HttpConnectionApi($company->api_token);
+    
+        $params = [
+            'event_id' => $request->event_id,
+            'document_reference' => [
+                'cufe' => $request->cufe
+            ]
+        ];
+    
+        // Incluir type_rejection_id si event_id es igual a 2
+        if ($request->event_id == 2) {
+            $params['type_rejection_id'] = $request->type_rejection_id;
+        }
+    
+        $url = "ubl2.1/send-event-data";
+        $send_request_to_api = $connection_api->sendRequestToApi($url, $params, 'POST');
+    
+        if (isset($send_request_to_api['errors'])) {
+            return $this->getGeneralResponse(false, $connection_api->parseErrorsToString($send_request_to_api['errors']));
+        }
+    
+        if ($send_request_to_api['success']) {
+            $received_document = ReceivedDocument::where('cufe', $request->cufe)->first();
+    
+            if ($received_document) {
+                switch ($request->event_id) {
+                    case 1:
+                        $received_document->update(['acu_recibo' => 1]);
+                        break;
+                    case 2:
+                        $received_document->update(['rechazo' => 1]);
+                        break;
+                    case 3:
+                        if ($received_document->acu_recibo != 1) {
+                            return $this->getGeneralResponse(false, 'Se requiere realizar primero el evento de Acuse de Recibo (event_id = 1).');
+                        }
+                        $received_document->update(['rec_bienes' => 1]);
+                        break;
+                    case 4:
+                        $received_document->update(['aceptacion' => 1]);
+                        break;
+                    default:
+                        // Manejar otros casos o ignorar
+                        break;
+                }
+            } else {
+                if ($request->event_id == 1) {
+                    $folder = "radian_reception_documents";
+                    $xml = $send_request_to_api['ResponseDian']['Envelope']['Body']['SendEventUpdateStatusResponse']['SendEventUpdateStatusResult']['XmlBase64Bytes'];
+                    $file_content = base64_decode($xml);
+                    $filename = $send_request_to_api['invoice_number'] . '.xml';
+                    $subtotal = $send_request_to_api['invoice_total']-$send_request_to_api['invoice_tax'];
+                    $data = [
+                            'identification_number' => $send_request_to_api['receiver_id'],
+                            'name_seller' => $send_request_to_api['receiver_name'],
+                            'state_document_id' => 1,
+                            'type_document_id' => 1,
+                            'prefix' => 'SETP',
+                            'number' => $send_request_to_api['invoice_number'],
+                            'xml' => $send_request_to_api['invoice_number'] . '.xml',
+                            'cufe' => $send_request_to_api['invoice_cufe'],
+                            'date_issue' => $send_request_to_api['invoice_date'],
+                            'total' => $send_request_to_api['invoice_total'],
+                            'total_tax' => $send_request_to_api['invoice_tax'],
+                            'ambient_id' => 2,
+                            'dv' => '9',
+                            'customer' => $send_request_to_api['transmitter_id'],
+                            'sale' => '88888888.00',
+                            'subtotal' => $subtotal,
+                            'total_discount' => '0.00',
+                            'acu_recibo' => 1,
+                            'rec_bienes' => 0,
+                            'aceptacion' => 0,
+                            'rechazo' => 0,
+                            'pdf' => $send_request_to_api['invoice_number'] . '.pdf',
+                            'response_api' => $send_request_to_api['ResponseDian']
+                        ];        
+                        ReceivedDocument::create($data);
+                        Storage::disk('tenant')->put($folder . DIRECTORY_SEPARATOR . $filename, $file_content);
+                        return $this->getGeneralResponse(true, 'Evento enviado con éxito y Archivo XML cargado correctamente.');
+                } else {
+                    return $this->getGeneralResponse(false, 'El documento no existe y no se puede crear para el evento especificado.');
+                }
+            }
+    
+            return $this->getGeneralResponse(true, 'Evento enviado con éxito');
+        }
+    
+        return $send_request_to_api;
+    }
+    
+    
+
 
 
     public function runEvent(Request $request)
@@ -178,6 +283,85 @@ class RadianEventController extends Controller
      * @param  Request $request
      * @return array
      */
+
+     public function upload(Request $request)
+     {
+         if ($request->hasFile('file'))
+         {
+             try {
+                 $folder = "radian_reception_documents";
+                 $file = $request->file('file');
+                 $file_content = file_get_contents($file);
+     
+                 $filename = $file->getClientOriginalName();
+                 $extension = $file->getClientOriginalExtension();
+     
+                 if ($extension === 'zip') {
+                     // Extraer el archivo XML del archivo ZIP
+                     $zip = new \ZipArchive();
+                     if ($zip->open($file) === true) {
+                         $xmlFilename = null;
+                         for ($i = 0; $i < $zip->numFiles; $i++) {
+                             $filename = $zip->getNameIndex($i);
+                             if (pathinfo($filename, PATHINFO_EXTENSION) === 'xml') {
+                                 $xmlFilename = $filename;
+                                 break;
+                             }
+                         }
+                         if ($xmlFilename === null) {
+                             throw new Exception('No se encontró un archivo XML en el archivo ZIP.');
+                         }
+                         $file_content = $zip->getFromName($xmlFilename);
+                         $zip->close();
+                         $filename = $xmlFilename;
+                         $extension = 'xml';
+                     } else {
+                         throw new Exception('No se pudo abrir el archivo ZIP.');
+                     }
+                 }
+     
+                 if ($extension === 'pdf') {
+                     // Procesar archivo PDF
+                     $exist_record = ReceivedDocument::where('xml', str_replace('.pdf', '.xml', $filename))->first();
+                     if (!$exist_record) return $this->getGeneralResponse(false, 'Debe cargar el xml previamente.');
+                     Storage::disk('tenant')->put($folder . DIRECTORY_SEPARATOR . $filename, $file_content);
+                     return $this->getGeneralResponse(true, 'Archivo PDF cargado correctamente.');
+                 } elseif ($extension === 'xml') {
+                     // Procesar archivo XML
+                     if (Storage::disk('tenant')->exists($folder . DIRECTORY_SEPARATOR . $filename)) throw new Exception('El archivo ya fue cargado');
+                     $company = ServiceCompany::select('identification_number', 'api_token')->firstOrFail();
+                     $connection_api = new HttpConnectionApi($company->api_token);
+                     $params = [
+                         'xml_document' => base64_encode($file_content),
+                         'company_idnumber' => $company->identification_number,
+                     ];
+                     $url = "process-seller-document-reception";
+                     $send_request_to_api = $connection_api->sendRequestToApi($url, $params, 'POST');
+                     if (!$send_request_to_api['success']) throw new Exception($send_request_to_api['message']);
+                     Storage::disk('tenant')->put($folder . DIRECTORY_SEPARATOR . $filename, $file_content);
+                     $data = $send_request_to_api['data'];
+                     $data['xml'] = $filename;
+                     $data['pdf'] = str_replace('.xml', '.pdf', $filename);
+                     ReceivedDocument::create($data);
+                     return $this->getGeneralResponse(true, 'Archivo XML cargado correctamente.');
+                 } else {
+                     throw new Exception('Tipo de archivo no soportado. Por favor, suba un archivo XML, PDF o ZIP.');
+                 }
+             } catch (Exception $e) {
+                 return [
+                     'success' => false,
+                     'message' => $e->getMessage()
+                 ];
+             }
+         }
+     
+         return [
+             'success' => false,
+             'message' => __('app.actions.upload.error'),
+         ];
+     }
+
+    /*
     public function upload(Request $request)
     {
         if ($request->hasFile('file'))
@@ -259,5 +443,6 @@ class RadianEventController extends Controller
             'message' =>  __('app.actions.upload.error'),
         ];
     }
+    */
 
 }

@@ -17,12 +17,15 @@ class UserController extends Controller
         return view('tenant.users.index');
     }
 
-    public function record($id)
+    public function record(User $user = null) 
     {
-        $record = new UserResource(User::findOrFail($id));
-
-        return $record;
-    }
+        if (!$user) {
+            $user = auth()->user(); // Devuelve el usuario autenticado si no se proporciona un usuario específico
+        }
+        return new UserResource($user);
+    }    
+    
+    
 
     public function tables()
     {

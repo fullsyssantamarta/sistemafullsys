@@ -22,13 +22,14 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        if(auth()->user()->type != 'admin' || !auth()->user()->searchModule('dashboard'))
-            return redirect()->route('tenant.documents.index');
+    if (!auth()->check() || auth()->user()->type != 'admin' || !auth()->user()->searchModule('dashboard')) {
+        return redirect()->route('tenant.documents.index');
+    }
 
-        $company = Company::select('soap_type_id')->first();
-        $soap_company  = $company->soap_type_id;
+    $company = Company::select('soap_type_id')->first();
+    $soap_company  = $company->soap_type_id;
 
-        return view('dashboard::index', compact('soap_company'));
+    return view('dashboard::index', compact('soap_company'));
     }
 
     public function filter()

@@ -13,9 +13,13 @@ if($current_hostname) {
                 Route::post('upload', 'RadianEventController@upload');
 
                 Route::get('manage', 'RadianEventController@manage')->name('tenant.co-radian-events-manage.index');
+                Route::get('radian-cufe', 'RadianEventController@radianCufe')->name('tenant.co-radian-cufe.index');
+
 
                 Route::get('columns', 'RadianEventController@columns');
                 Route::get('records', 'RadianEventController@records');
+                
+                Route::post('send-radian-event', 'RadianEventController@sendRadianEvent')->name('tenant.send-radian-event');
 
                 Route::post('run-event', 'RadianEventController@runEvent');
                 Route::get('download/{filename}', 'RadianEventController@download');

@@ -16,7 +16,7 @@ class TenantAddDataToCoTaxes extends Migration
         if (Schema::hasTable('co_taxes')) {
 
             DB::table('co_taxes')->insert([
-                [ 'name' => 'IVA5', 'code' => '71', 'rate' => '5.0', 'conversion' => '100.0', 'created_at' => '2020-10-25 03:21:51', 'updated_at' => '2020-10-25 03:21:51', 'type_tax_id' => 1 ],
+                [ 'name' => 'IVA19', 'code' => '01', 'rate' => '19.0', 'conversion' => '100.0', 'created_at' => '2020-10-25 03:21:51', 'updated_at' => '2020-10-25 03:21:51', 'type_tax_id' => 1 ],
             ]);
 
         }

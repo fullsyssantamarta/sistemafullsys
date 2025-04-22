@@ -8,14 +8,8 @@
             <div class="row">
                 <div class="col-lg-12 col-md-12 col-sm-12  ">
                     <el-tabs v-model="activeName"  >
-                       <el-tab-pane label="Imprimir A4" name="first">
-                            <embed :src="form.print_a4" type="application/pdf" width="100%" height="400px"/>
-                        </el-tab-pane>
-                        <el-tab-pane label="Imprimir A5" name="second">
-                            <embed :src="form.print_a5" type="application/pdf" width="100%" height="400px"/>
-                        </el-tab-pane>
                         <el-tab-pane label="Imprimir Ticket" name="third">
-                            <embed :src="form.print_ticket" type="application/pdf" width="100%" height="400px"/>
+                            <embed :src="form.print_ticket" type="application/pdf" width="100%" height="600px"/>
                         </el-tab-pane>
 
                     </el-tabs>

@@ -36,8 +36,9 @@
                         <th>Aceptacion Expresa</th>
                         <th>Rechazo</th>
 
-                    </tr>
-                    <tr slot-scope="{ index, row }">
+                    <tr>
+                        <!-- Filtro para cargar facturas solo de eventos cufe se utiliza la columna sale-->
+                    <tr v-if="row.sale !== '88888888.00'" slot-scope="{ index, row }">
                         <td>{{ index }}</td>
 
                         <td>

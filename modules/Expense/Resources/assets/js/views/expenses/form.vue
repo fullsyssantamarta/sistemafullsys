@@ -75,11 +75,13 @@
                         <table>
                             <thead>
                                 <tr width="100%">
-                                    <th v-if="form.payments.length>0">Método de gasto</th>
-                                    <th v-if="form.payments.length>0" >Destino</th>
-                                    <th v-if="form.payments.length>0">Referencia</th>
-                                    <th v-if="form.payments.length>0">Monto</th>
-                                    <th width="15%"><a href="#" @click.prevent="clickAddPayment" class="text-center font-weight-bold text-info">[+ Agregar]</a></th>
+                                    <th width="25%">Método de gasto</th>
+                                    <th width="20%">Destino</th>
+                                    <th width="40%">Detalle del gasto</th> <!-- Aumenta el ancho aquí -->
+                                    <th width="20%">Monto</th>
+                                    <!--
+                                    <th width="5%"></th>
+                                    -->
                                 </tr>
                             </thead>
                             <tbody>
@@ -99,8 +101,8 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="form-group mb-2 mr-2"  >
-                                            <el-input v-model="row.reference"></el-input>
+                                        <div class="form-group mb-2 mr-2" style="width: 100%;">
+                                            <el-input v-model="row.reference" style="width: 100%;"></el-input>
                                         </div>
                                     </td>
                                     <td>
@@ -108,11 +110,13 @@
                                             <el-input v-model="row.payment"></el-input>
                                         </div>
                                     </td>
+                                    <!--
                                     <td class="series-table-actions text-center">
                                         <button  type="button" class="btn waves-effect waves-light btn-xs btn-danger" @click.prevent="clickCancel(index)">
                                             <i class="fa fa-trash"></i>
                                         </button>
                                     </td>
+                                    -->
                                     <br>
                                 </tr>
                             </tbody>
@@ -157,7 +161,7 @@
                     </div>
                 </div>
                 <div class="form-actions text-right mt-4">
-                    <el-button @click.prevent="close()">Cancelar</el-button>
+                    <el-button @click.prevent="closeAction()">{{ isModal ? 'Cerrar' : 'Cancelar' }}</el-button>
                     <el-button type="primary" native-type="submit" :loading="loading_submit" v-if="form.items.length > 0">Generar</el-button>
                 </div>
             </form>
@@ -187,6 +191,13 @@
 
 
     export default {
+        props: {
+            isModal: {
+            type: Boolean,
+            default: false, // Asume que no está en modal por defecto
+            },
+            // Otras props...
+        },
         components: {ExpenseFormItem, PersonForm, ExpenseOptions},
         mixins: [functions, exchangeRate],
         data() {
@@ -240,6 +251,15 @@
            })
         },
         methods: {
+            closeAction() {
+                if (this.isModal) {
+                // Solo cierra el modal, sin redirigir
+                this.$emit('close');
+                } else {
+                // Redirige o cierra como se hacía originalmente
+                location.href = `/${this.resource}`;
+                }
+            },
             changeExpenseMethodType(index = 0){
 
                 this.form.payments[index].payment_destination_id = (this.payment_destinations.length>0 && this.form.payments[index].expense_method_type_id != 1) ? this.payment_destinations[0].id:null
@@ -347,6 +367,7 @@
                     .then(response => {
 
                         if (response.data.success) {
+                            this.$emit('expenseAdded', response.data.data);
                             this.resetForm()
                             this.expenseNewId = response.data.data.id
                             this.showDialogOptions = true

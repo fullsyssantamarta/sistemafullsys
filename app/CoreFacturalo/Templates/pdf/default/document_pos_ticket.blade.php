@@ -50,7 +50,7 @@
 
 @if($filename_logo != "")
     <div class="text-center company_logo_box">
-        <img src="data:{{mime_content_type($filename_logo)}};base64, {{base64_encode(file_get_contents($filename_logo))}}" alt="{{$company->name}}" class="company_logo" style="max-width: 150px;">
+        <img src="data:{{mime_content_type($filename_logo)}};base64, {{base64_encode(file_get_contents($filename_logo))}}" alt="{{$company->name}}" class="company_logo" style="max-width: 150px; margin-top: 20px;">
     </div>
 @endif
 <table class="full-width">
@@ -193,72 +193,79 @@
         <td class="text-right font-bold desc">{{ number_format($document->total, 2) }}</td>
     </tr>
 </table>
-<table class="full-width">
-    <tr>
-        <td class="desc">
-            <span>PAGOS:</span><br>
-            <ul>
-                @foreach($payments as $row)
-                    <li>{{ $row->payment_method_type->number_days ? $row->date_of_payment->addDays($row->payment_method_type->number_days)->format('d/m/Y') : $row->date_of_payment->format('d/m/Y') }} {{ $row->payment_method_type->description }} {{ $row->reference ? $row->reference.' - ':'' }} {{ $document->currency_type->symbol }}{{ $row->payment }}</li>
-                    @php
-                        $payment += (float) $row->payment;
-                    @endphp
-                @endforeach
-            </ul>
-            <span>VUELTO: {{ $document->currency_type->symbol }} {{ number_format(abs($balance),2, ".", "") }}</span><br>
-            <span>SALDO: {{ $document->currency_type->symbol }} {{ number_format($document->total - $payment, 2) }}</span>
-            @if($resolution)
-                <br>
-                <span>Resol. DIAN #:{{ $resolution->resolution_number }}</span>
-                <br>
-                <span>Fecha resol.: {{ $resolution->resolution_date->format('d-m-Y') }}</span>
-                <br>
-                <span>Desde la Factura {{ $resolution->from }} a la {{ $resolution->to }}</span>
-                <br>
-                @php
-                    $firstDate  = new \DateTime($resolution->date_from);
-                    $secondDate = new \DateTime($resolution->date_end);
-                    $intvl = $firstDate->diff($secondDate);
-                @endphp
-                <span>Vigencia: {{($intvl->y * 12) + $intvl->m}} Meses</span>
-            @endif
+<table style="width: 100%;">
+    <tbody>
 
-        </td>
-    </tr>
-    <tr>
-        @if($is_epos && $document->qr)
-            <td>
-                <img src="data:image/png;base64,{{ base64_encode($imagenCodigoQR) }}" alt="QR" >
+                <!-- Fila para los pagos y resolución -->
+                <tr>
+                    <td style="text-align: left; padding: 10px;">
+                        <div style="margin-bottom: 20px;">
+                            <span><strong>PAGOS:</strong></span>
+                            <ul>
+                                @foreach($payments as $row)
+                                    <li>
+                                        {{ $row->payment_method_type->number_days ? $row->date_of_payment->addDays($row->payment_method_type->number_days)->format('d/m/Y') : $row->date_of_payment->format('d/m/Y') }} 
+                                        {{ $row->payment_method_type->description }} 
+                                        {{ $row->reference ? $row->reference.' - ' : '' }} 
+                                        {{ $document->currency_type->symbol }}{{ $row->payment }}
+                                    </li>
+                                    @php
+                                        $payment += (float) $row->payment;
+                                    @endphp
+                                @endforeach
+                            </ul>
+                            <span><strong>SALDO:</strong> {{ $document->currency_type->symbol }} {{ number_format($document->total - $payment, 2) }}</span>
+                        </div>
+                        
+                        @if($resolution)
+                            <div style="margin-top: 10px;">
+                                <span>Resol. DIAN #: {{ $resolution->resolution_number }}</span><br>
+                                <span>Fecha resol.: {{ $resolution->resolution_date->format('d-m-Y') }}</span><br>
+                                <span>Desde la Factura {{ $resolution->from }} a la {{ $resolution->to }}</span><br>
+                                @php
+                                    $firstDate  = new \DateTime($resolution->date_from);
+                                    $secondDate = new \DateTime($resolution->date_end);
+                                    $intvl = $firstDate->diff($secondDate);
+                                @endphp
+                                <span>Vigencia: {{ ($intvl->y * 12) + $intvl->m }} Meses</span>
+                            </div>
+                        @endif
+                    </td>
+                </tr>
+        <!-- Fila para el QR -->
+        @if($is_epos)
+        <tr>
+            <td style="text-align: center;">
+                <img src="data:image/png;base64,{{ base64_encode($imagenCodigoQR) }}" alt="QR" style="width: 50%; max-width: 200px; margin: 0 auto;">
             </td>
+        </tr>
         @endif
-    </tr>
+
+        <!-- Fila para el mensaje de agradecimiento -->
+        <tr>
+            @if($document->state_type_id == '11')
+                <td style="text-align: center;">
+                    <h6>ANULADO</h6>
+                </td>
+            @else
+                <td style="text-align: center; padding: 10px;">
+                    <h6 style="font-weight: bold;">GRACIAS POR SU COMPRA</h6>
+                    @if($is_epos)
+                        <div>
+                            <h6>Software: {{ $request_api['software_manufacturer']['software_name'] }}</h6>
+                            <h6>Fabricante: {{ $request_api['software_manufacturer']['name'] }}</h6>
+                            <h6>Compañia: {{ $request_api['software_manufacturer']['business_name'] }}</h6>
+                        </div>
+                    @endif
+                </td>
+            @endif
+        </tr>
+    </tbody>
 </table>
-<table class="full-width">
-    <tr>
-        @if($document->state_type_id == '11')
-            <td class="text-center">
-                <h6>ANULADO</h6>
-            </td>
-        @else
-            <td class="text-center">
-                <h6>GRACIAS POR SU COMPRA</h6>
-                @if($is_epos)
-                    <tr>
-                        <td><h6>Software: {{ $request_api['software_manufacturer']['software_name'] }}</h6></td>
-                    </tr>
-                    <tr>
-                        <td><h6>Fabricante: {{ $request_api['software_manufacturer']['name'] }}</h6></td>
-                    </tr>
-                    <tr>
-                        <td><h6>Compañia: {{ $request_api['software_manufacturer']['business_name'] }}</h6></td>
-                    </tr>
-                @endif
-            </td>
-        @endif
-    </tr>
-</table>
+
 @if($is_epos)
-    <p><h6>cude: {{ $document->cude }}</h6></p>
+    <p style="text-align: center; font-size: 6pt;"><strong>CUDE:</strong> {{ $document->cude }}</p>
 @endif
+
 </body>
 </html>

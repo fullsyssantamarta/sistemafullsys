@@ -105,7 +105,7 @@ if ($hostname) {
             Route::get('users', 'Tenant\UserController@index')->name('tenant.users.index');
             Route::get('users/create', 'Tenant\UserController@create')->name('tenant.users.create');
             Route::get('users/tables', 'Tenant\UserController@tables');
-            Route::get('users/record/{user}', 'Tenant\UserController@record');
+            Route::get('users/record/{user?}', 'Tenant\UserController@record');
             Route::post('users', 'Tenant\UserController@store');
             Route::get('users/records', 'Tenant\UserController@records');
             Route::delete('users/{user}', 'Tenant\UserController@destroy');
@@ -145,6 +145,7 @@ if ($hostname) {
             Route::get('main-items/search', 'Tenant\ItemController@searchItems');
             Route::get('main-items/search-by-id/{id}', 'Tenant\ItemController@searchItemById');
             Route::get('items/search-data', 'Tenant\ItemController@searchData');
+            Route::get('items/inventory-configuration', 'Tenant\ItemController@getInventoryConfiguration');
 
             //Persons
             Route::get('persons/columns', 'Tenant\PersonController@columns');
@@ -558,6 +559,9 @@ if ($hostname) {
             // });
             Route::get('dashboard', 'System\HomeController@index')->name('system.dashboard');
 
+            // Ruta para cambiar de tenant
+            Route::get('/switch-tenant/{companyId}', 'System\TenantSwitchController@switch')->name('system.switch_tenant');
+
             //Clients
             Route::get('clients', 'System\ClientController@index')->name('system.clients.index');
             Route::get('clients/records', 'System\ClientController@records');
@@ -605,7 +609,9 @@ if ($hostname) {
             //Users
             Route::get('users/create', 'System\UserController@create')->name('system.users.create');
             Route::get('users/record', 'System\UserController@record');
+            Route::get('users/records', 'System\UserController@records');
             Route::post('users', 'System\UserController@store');
+            Route::put('users/{user}', 'System\UserController@update')->name('system.users.update'); // Ruta PUT para actualizar usuarios
 
             Route::get('services/ruc/{number}', 'System\ServiceController@ruc');
 

@@ -242,12 +242,12 @@
                                     <tr>
                                         <td>TOTAL VENTA</td>
                                         <td>:</td>
-                                        <td class="text-right">{{ ratePrefix() }} {{ form.sale }}</td>
+                                        <td class="text-right">{{ ratePrefix() }} {{ getFormatDecimal(form.sale) }}</td>
                                     </tr>
                                     <tr>
                                         <td>TOTAL DESCUENTO (-)</td>
                                         <td>:</td>
-                                        <td class="text-right">{{ ratePrefix() }} {{ form.total_discount }}</td>
+                                        <td class="text-right">{{ ratePrefix() }} {{ getFormatDecimal(form.total_discount) }}</td>
                                     </tr>
                                     <template v-for="(tax, index) in form.taxes">
                                         <tr v-if="((tax.total > 0) && (!tax.is_retention))" :key="index">
@@ -255,21 +255,21 @@
                                                 {{ tax.name }}(+)
                                             </td>
                                             <td>:</td>
-                                            <td class="text-right">{{ ratePrefix() }} {{ Number(tax.total).toFixed(2) }}
+                                            <td class="text-right">{{ ratePrefix() }} {{ getFormatDecimal(tax.total) }}
                                             </td>
                                         </tr>
                                     </template>
                                     <tr>
                                         <td>SUBTOTAL</td>
                                         <td>:</td>
-                                        <td class="text-right">{{ ratePrefix() }} {{ form.subtotal }}</td>
+                                        <td class="text-right">{{ ratePrefix() }} {{ getFormatDecimal(form.subtotal) }}</td>
                                     </tr>
                                     <template v-for="(tax, index) in form.taxes">
                                         <tr v-if="((tax.is_retention) && (tax.apply))" :key="index">
                                             <td>{{ tax.name }}(-)</td>
                                             <td>:</td>
                                             <!-- <td class="text-right">
-                                                {{ratePrefix()}} {{Number(tax.retention).toFixed(2)}}
+                                                {{ratePrefix()}} {{Number(tax.retention).toFixed(4)}}
                                             </td> -->
                                             <td class="text-right" width=35%>
                                                 <el-input v-model="tax.retention" readonly>
@@ -286,8 +286,7 @@
                             <div class="col-md-8 mt-3">
                             </div>
                             <div class="col-md-4">
-                                <h3 class="text-right" v-if="form.total > 0"><b>TOTAL A PAGAR: </b>{{ ratePrefix() }} {{
-                                    form.total }}</h3>
+                                <h3 class="text-right" v-if="form.total > 0"><b>TOTAL A PAGAR: </b>{{ ratePrefix() }} {{ getFormatDecimal(form.total) }}</h3>
                             </div>
                         </div>
                     </div>
@@ -351,6 +350,7 @@ export default {
             currencies: [],
             loading_search: false,
             recordItem: null,
+            localConfiguration: null,
         }
     },
     async created() {
@@ -385,9 +385,24 @@ export default {
         this.$eventHub.$on('reloadDataPersons', (customer_id) => {
             this.reloadDataCustomers(customer_id)
         })
+        
+        // Realiza la petición a la configuración avanzada
+        const response = await this.$http.get('/co-advanced-configuration/record');
+        // Guarda la configuración en la propiedad local
+        this.localConfiguration = response.data.data;
+
         await this.createQuotationFromSO()
     },
     methods: {
+        getFormatDecimal(value) {
+            const numericValue = parseFloat(value);
+            if (isNaN(numericValue)) return '0.00';
+            return numericValue.toLocaleString('en-US', {
+                style: 'decimal',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        },
         changeTermsCondition() {
             if (this.form.active_terms_condition) {
                 this.showDialogTermsCondition = true
@@ -530,21 +545,33 @@ export default {
             this.customers = this.all_customers
         },
         addRow(row) {
-            if(row.tax_included_in_price) {
-                const tax_caculable = parseFloat(row.tax.rate) / row.tax.conversion;
-                const price_without_tax = row.price / (1 + tax_caculable);
-                row.unit_price = price_without_tax.toFixed(2);
+            // Verificamos que exista la configuración avanzada y los datos del impuesto
+            if (this.localConfiguration && row.tax && row.tax.rate && row.tax.conversion) {
+                const taxRate = parseFloat(row.tax.rate);          // Ejemplo: 19.00
+                const conversion = parseFloat(row.tax.conversion);   // Ejemplo: 100.00
+
+                // Si la configuración global indica que el precio ya incluye IVA, se debe extraer para obtener la base
+                if (this.localConfiguration.item_tax_included === false) {
+                    // Caso: El precio que llega ya incluye IVA y se debe extraer la base
+                    // Fórmula: precio_base = precio_final / (1 + (taxRate / conversion))
+                    row.unit_price = (row.price / (1 + (taxRate / conversion))).toFixed(4);
+                } else {
+                    // Caso: El precio que llega es la base, no se hace ajuste
+                    row.unit_price = row.price;
+                }
             } else {
+                console.warn("Faltan datos de configuración avanzada o de impuesto.");
                 row.unit_price = row.price;
             }
+            
+            // Se agrega el ítem a la cotización
             if (this.recordItem) {
-                //this.form.items.$set(this.recordItem.indexi, row)
-                this.form.items[this.recordItem.indexi] = row
-                this.recordItem = null
-            }
-            else {
+                this.form.items[this.recordItem.indexi] = row;
+                this.recordItem = null;
+            } else {
                 this.form.items.push(JSON.parse(JSON.stringify(row)));
             }
+            
             this.calculateTotal();
         },
         clickRemoveItem(index) {
@@ -574,31 +601,31 @@ export default {
                         total_discount = ((item.unit_price * item.discount_percentage) / 100) * item.quantity;
                     }
                 }
-                this.$set(item, "discount", Number(total_discount).toFixed(2));
-                this.$set(item, "total_discount", Number(total_discount).toFixed(2));
+                this.$set(item, "discount", Number(total_discount).toFixed(4));
+                this.$set(item, "total_discount", Number(total_discount).toFixed(4));
                 item.total_tax = 0;
                 if (item.tax != null) {
                     let tax = val.taxes.find(tax => tax.id == item.tax.id);
                     if (item.tax.is_fixed_value) {
-                        item.total_tax = ((item.tax.rate * item.quantity) - total_discount).toFixed(2);
+                        item.total_tax = ((item.tax.rate * item.quantity) - total_discount).toFixed(4);
                     }
                     if (item.tax.is_percentage) {
-                        item.total_tax = (((item.unit_price * item.quantity) - total_discount) * (item.tax.rate / item.tax.conversion)).toFixed(2);
+                        item.total_tax = (((item.unit_price * item.quantity) - total_discount) * (item.tax.rate / item.tax.conversion)).toFixed(4);
                     }
                     if (!tax.hasOwnProperty("total"))
-                        tax.total = Number(0).toFixed(2);
-                    tax.total = (Number(tax.total) + Number(item.total_tax)).toFixed(2);
+                        tax.total = Number(0).toFixed(4);
+                    tax.total = (Number(tax.total) + Number(item.total_tax)).toFixed(4);
                 }
                 item.subtotal = (
                     Number(item.unit_price * item.quantity) + Number(item.total_tax)
-                ).toFixed(2);
-                this.$set(item, "total", (Number(item.subtotal) - Number(total_discount)).toFixed(2));
+                ).toFixed(4);
+                this.$set(item, "total", (Number(item.subtotal) - Number(total_discount)).toFixed(4));
             });
-            val.total_tax = val.items.reduce((p, c) => Number(p) + Number(c.total_tax), 0).toFixed(2);
-            let total = val.items.reduce((p, c) => Number(p) + Number(c.total), 0).toFixed(2);
-            val.subtotal = val.items.reduce((p, c) => Number(p) + (Number(c.subtotal) - Number(c.total_discount)), 0).toFixed(2);
-            val.sale = val.items.reduce((p, c) => Number(p) + Number(c.unit_price * c.quantity) - Number(c.total_discount), 0).toFixed(2);
-            val.total_discount = val.items.reduce((p, c) => Number(p) + Number(c.total_discount), 0).toFixed(2);
+            val.total_tax = val.items.reduce((p, c) => Number(p) + Number(c.total_tax), 0).toFixed(4);
+            let total = val.items.reduce((p, c) => Number(p) + Number(c.total), 0).toFixed(4);
+            val.subtotal = val.items.reduce((p, c) => Number(p) + (Number(c.subtotal) - Number(c.total_discount)), 0).toFixed(4);
+            val.sale = val.items.reduce((p, c) => Number(p) + Number(c.unit_price * c.quantity) - Number(c.total_discount), 0).toFixed(4);
+            val.total_discount = val.items.reduce((p, c) => Number(p) + Number(c.total_discount), 0).toFixed(4);
             let totalRetentionBase = Number(0);
             // this.taxes.forEach(tax => {
             val.taxes.forEach(tax => {
@@ -606,12 +633,12 @@ export default {
                     tax.retention = (
                         Number(val.sale) *
                         (tax.rate / tax.conversion)
-                    ).toFixed(2);
+                    ).toFixed(4);
                     totalRetentionBase =
                         Number(totalRetentionBase) + Number(tax.retention);
                     if (Number(totalRetentionBase) >= Number(val.sale))
-                        this.$set(tax, "retention", Number(0).toFixed(2));
-                    total -= Number(tax.retention).toFixed(2);
+                        this.$set(tax, "retention", Number(0).toFixed(4));
+                    total -= Number(tax.retention).toFixed(4);
                 }
                 if (
                     tax.is_retention &&
@@ -622,14 +649,14 @@ export default {
                     let row = val.taxes.find(row => row.id == tax.in_tax);
                     tax.retention = Number(
                         Number(row.total) * (tax.rate / tax.conversion)
-                    ).toFixed(2);
+                    ).toFixed(4);
                     if (Number(tax.retention) > Number(row.total))
-                        this.$set(tax, "retention", Number(0).toFixed(2));
-                    row.retention = Number(tax.retention).toFixed(2);
-                    total -= Number(tax.retention).toFixed(2);
+                        this.$set(tax, "retention", Number(0).toFixed(4));
+                    row.retention = Number(tax.retention).toFixed(4);
+                    total -= Number(tax.retention).toFixed(4);
                 }
             });
-            val.total = Number(total).toFixed(2)
+            val.total = Number(total).toFixed(4)
         },
         ratePrefix(tax = null) {
             if ((tax != null) && (!tax.is_fixed_value)) return null;

@@ -17,7 +17,7 @@
                         <div class="col-md-6">
                             <div class="form-group" :class="{'has-danger': errors.email}">
                                 <label class="control-label">Correo Electrónico</label>
-                                <el-input v-model="form.email" :disabled="true"></el-input>
+                                <el-input v-model="form.email" :disabled="form.id !== null"></el-input>
                                 <small class="form-control-feedback" v-if="errors.email" v-text="errors.email[0]"></small>
                             </div>
                         </div>
@@ -54,6 +54,35 @@
                 </div>
             </form>
         </div>
+
+        <div class="card">
+            <div class="card-header bg-info">
+                <h3 class="my-0">Lista de Usuarios</h3>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Correo Electrónico</th>
+                            <th>Teléfono</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="user in users" :key="user.id">
+                            <td>{{ user.name }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.phone }}</td>
+                            <td>
+                                <button @click.stop="editUser(user)">Editar</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 </template>
 
@@ -64,56 +93,98 @@
             return {
                 loading_submit: false,
                 headers: null,
+                users: [],
                 resource: 'users',
                 errors: {},
                 form: {},
             }
         },
         created() {
-            this.initForm()
-            this.$http.get(`/${this.resource}/record`)
-                .then(response => {
-                    if (response.data !== '') {
-                        this.form = response.data.data
-                    }
-                })
+            this.initForm(); // Inicializa el formulario en blanco
+            this.getUsers(); // Obtiene la lista de usuarios para la tabla
         },
         methods: {
+            selectUser(user) {
+                this.form = { ...user };
+                this.errors = {};
+            },
+            getUsers() {
+                this.$http.get(`/${this.resource}/records`)
+                    .then(response => {
+                        this.users = response.data.data; // Simplemente asigna los usuarios directamente
+                        console.log( this.users);
+                    })
+                    .catch(error => {
+                        console.error('Error al obtener la lista de usuarios:', error);
+                    });
+            },
+            editUser(user) {
+                // Clona el objeto usuario para evitar referencias directas, excluyendo la contraseña
+                this.form = { ...user, password: '', password_confirmation: '' };
+                this.errors = {};
+            },
             initForm() {
-                this.errors = {}
+                this.errors = {};
                 this.form = {
-                    id: null,
-                    name: null,
-                    email: null,
-                    api_token: null,
-                    password: null,
-                    password_confirmation: null,
-                    phone: null,
-                }
+                    id: null, // Asegúrate de que 'id' esté en null
+                    name: '', // Campos en blanco
+                    email: '',
+                    password: '',
+                    password_confirmation: '',
+                    phone: '',
+                };
             },
             submit() {
-                this.loading_submit = true
-                this.$http.post(`/${this.resource}`, this.form)
+                // Determina si se está creando o actualizando un usuario y configura la URL y el método
+                const url = this.form.id ? `/${this.resource}/${this.form.id}` : `/${this.resource}`;
+                const method = this.form.id ? 'put' : 'post';
+                const data = this.form.id ? { ...this.form, _method: 'PUT' } : this.form;
+
+                this.loading_submit = true;
+                this.$http[method](url, data)
                     .then(response => {
                         if (response.data.success) {
-                            this.form.password = null
-                            this.form.password_confirmation = null
-                            this.$message.success(response.data.message)
+                            this.$message.success(response.data.message);
+                            this.getUsers(); // Recarga la lista de usuarios para reflejar los cambios
+                            this.resetForm(); // Limpia el formulario
                         } else {
-                            this.$message.error(response.data.message)
+                            this.$message.error(response.data.message);
                         }
                     })
                     .catch(error => {
+                        this.$message.error('Error al realizar la operación');
                         if (error.response.status === 422) {
-                            this.errors = error.response.data
+                            this.errors = error.response.data.errors;
                         } else {
-                            console.log(error)
+                            console.error(error.response);
                         }
                     })
-                    .then(() => {
-                        this.loading_submit = false
-                    })
+                    .finally(() => {
+                        this.loading_submit = false;
+                    });
             },
+            resetForm() {
+                this.form = {
+                    id: null,
+                    name: '',
+                    email: '',
+                    password: '',
+                    password_confirmation: '',
+                    phone: '',
+                };
+                this.errors = {};
+            },
+
+            getUsers() {
+                this.$http.get(`/${this.resource}/records`)
+                    .then(response => {
+                        this.users = response.data.data; // Actualiza la lista de usuarios
+                    })
+                    .catch(error => {
+                        console.error('Error al obtener la lista de usuarios:', error);
+                    });
+            }
+
         }
     }
 </script>

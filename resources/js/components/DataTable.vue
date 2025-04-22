@@ -13,8 +13,8 @@
                             </el-select>
                         </div>
                     </div>
-                    <div class="col-lg-3 col-md-4 col-sm-12 pb-2">
-                        <template v-if="search.column=='date_of_issue' || search.column=='date_of_due' || search.column=='date_of_payment' || search.column=='delivery_date'">
+                    <div class="col-lg-3 col-md-4 col-sm-12 pb-2">                        
+                        <template v-if="search.column == 'date_of_issue' || search.column == 'date_of_due' || search.column == 'date_of_payment' || search.column == 'delivery_date' || search.column == 'date_opening' || search.column == 'date_closed'">
                             <el-date-picker
                                 v-model="search.value"
                                 type="date"
