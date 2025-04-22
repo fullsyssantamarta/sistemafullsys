@@ -16,6 +16,7 @@
                             <tr>
                                 <th>Código tipo de persona</th>
                                 <th>Código tipo de régimen</th>
+                                <th>Código tipo de obligación</th>
                                 <th>Código tipo de documento</th>
                                 <th>Número de identificación</th>
                                 <th>DV</th>
@@ -32,6 +33,7 @@
                             <tr>
                                 <td>{{$value->type_person_id}}</td>
                                 <td>{{$value->type_regime_id}}</td>
+                                <td>{{$value->type_obligation_id}}</td>
                                 <td>{{$value->identity_document_type_id}}</td>
                                 <td>{{$value->number}}</td>
                                 <td>{{$value->dv}}</td>

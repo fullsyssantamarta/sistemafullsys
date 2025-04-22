@@ -13,6 +13,7 @@ use Modules\Factcolombia1\Models\TenantService\TypeDocumentIdentification;
 use Modules\Factcolombia1\Models\Tenant\City;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Modules\Factcolombia1\Models\Tenant\TypeObligation;
 
 class PersonsImport implements ToCollection, WithMultipleSheets, WithHeadingRow
 {
@@ -78,7 +79,8 @@ class PersonsImport implements ToCollection, WithMultipleSheets, WithHeadingRow
 
             try {
                 // Validar que los campos necesarios existan
-                if (!isset($row['codigo_tipo_de_persona']) || !isset($row['codigo_tipo_de_regimen']) || !isset($row['codigo_tipo_de_documento'])) {
+                if (!isset($row['codigo_tipo_de_persona']) || !isset($row['codigo_tipo_de_regimen']) || 
+                    !isset($row['codigo_tipo_de_obligacion']) || !isset($row['codigo_tipo_de_documento'])) {
                     throw new Exception("Registro nro.: {$registered}, Formato de archivo inválido o campos faltantes");
                 }
 
@@ -95,6 +97,18 @@ class PersonsImport implements ToCollection, WithMultipleSheets, WithHeadingRow
                 
                 if (!$type_regime) {
                     throw new Exception("Registro nro.: {$registered}, Régimen no encontrado: {$regime_value}");
+                }
+
+                // Tipo de obligación
+                $obligation_value = trim(str_replace('_x000D_', '', $row['codigo_tipo_de_obligacion']));
+                if (is_numeric($obligation_value)) {
+                    $type_obligation = TypeObligation::find($obligation_value);
+                } else {
+                    $type_obligation = TypeObligation::where('name', 'like', '%'.$obligation_value.'%')->first();
+                }
+                
+                if (!$type_obligation) {
+                    throw new Exception("Registro nro.: {$registered}, Obligación no encontrada: {$obligation_value}");
                 }
 
                 // Tipo de documento - Modificación para aceptar tanto código como nombre
@@ -123,6 +137,7 @@ class PersonsImport implements ToCollection, WithMultipleSheets, WithHeadingRow
                     [
                         'type_person_id' => $type_person_id,
                         'type_regime_id' => $type_regime->id,
+                        'type_obligation_id' => $type_obligation->id,
                         'dv' => $row['dv'],
                         'code' => $row['codigo_interno'],
                         'name' => $row['nombre_completo'],
