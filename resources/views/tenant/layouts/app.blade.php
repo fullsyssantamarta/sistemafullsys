@@ -28,9 +28,7 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    {{--    <title>{{ config('app.name', 'Factura Fácil') }}</title>--}}
-    <title>Factura Fácil</title>
-    <link rel="icon" type="image/x-icon" href="https://factufacil.com.co/wp-content/uploads/2023/11/cropped-favicon.png">
+    <title>{{ config('app.name', 'Facturador PRO') }}</title>
 
     <!-- Scripts -->
 
