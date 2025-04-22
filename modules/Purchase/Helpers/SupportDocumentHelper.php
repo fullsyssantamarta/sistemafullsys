@@ -186,6 +186,35 @@ class SupportDocumentHelper
         $form_api['seller']['dv'] = $this->validarDigVerifDIAN($form_api['seller']['identification_number']);
         $form_api['seller']['postal_zone_code'] = '111611';
 
+        // Calcular totales e impuestos
+        $gross_total_amount = 0;
+        $tax_total_amount = 0;
+        $tax_groups = []; // Para agrupar impuestos por tipo y porcentaje
+        
+        // Procesar líneas y calcular totales
+        if($support_document->isAdjustNote()) {
+            foreach($form_api['credit_note_lines'] as &$line) {
+                $this->processLine($line, $inputs['items'], $gross_total_amount, $tax_total_amount, $tax_groups);
+            }
+        } else {
+            foreach($form_api['invoice_lines'] as &$line) {
+                $this->processLine($line, $inputs['items'], $gross_total_amount, $tax_total_amount, $tax_groups);
+            }
+        }
+
+        // Actualizar los totales en el documento
+        $form_api['legal_monetary_totals'] = [
+            'line_extension_amount' => number_format($gross_total_amount, 2, '.', ''),
+            'tax_exclusive_amount' => number_format($gross_total_amount, 2, '.', ''),
+            'tax_inclusive_amount' => number_format($gross_total_amount + $tax_total_amount, 2, '.', ''),
+            'allowance_total_amount' => '0.00',
+            'charge_total_amount' => '0.00',
+            'payable_amount' => number_format($gross_total_amount + $tax_total_amount, 2, '.', '')
+        ];
+
+        // Convertir grupos de impuestos al formato requerido
+        $form_api['tax_totals'] = $this->convertTaxGroups($tax_groups);
+
         if(file_exists(storage_path('logo_empresa_emisora.jpg'))){
             $logo_empresa_emisora = base64_encode(file_get_contents(storage_path('logo_empresa_emisora.jpg')));
             $form_api['logo_empresa_emisora'] = $logo_empresa_emisora;
@@ -205,6 +234,84 @@ class SupportDocumentHelper
         return $form_api;
     }
 
+    /**
+     * Procesa una línea individual y actualiza los totales
+     */
+    private function processLine(&$line, $items, &$gross_total_amount, &$tax_total_amount, &$tax_groups) 
+    {
+        $item = $this->findItemForLine($line, $items);
+        
+        if (!$item) {
+            $this->throwException("No se encontró el item para la línea: " . ($line['description'] ?? 'Desconocido'));
+        }
+
+        if (!isset($item['price']) || !isset($item['quantity']) || !isset($item['total_tax']) || 
+            !isset($item['tax']['type_tax_id']) || !isset($item['tax']['rate'])) {
+            $this->throwException("Datos incompletos para el item: " . ($line['description'] ?? 'Desconocido'));
+        }
+
+        $base_amount = $item['price'] * $item['quantity'];
+        $tax_amount = $item['total_tax'];
+        
+        $gross_total_amount += $base_amount;
+        $tax_total_amount += $tax_amount;
+
+        // El line_extension_amount debe ser el valor bruto sin impuestos
+        $line['line_extension_amount'] = number_format($base_amount, 2, '.', '');
+        $line['price_amount'] = number_format($item['price'], 2, '.', '');
+        $line['base_quantity'] = number_format($item['quantity'], 2, '.', '');
+
+        // Agrupar impuestos por tipo y porcentaje
+        $tax_key = $item['tax']['type_tax_id'] . '_' . $item['tax']['rate'];
+        if (!isset($tax_groups[$tax_key])) {
+            $tax_groups[$tax_key] = [
+                'tax_id' => $item['tax']['type_tax_id'],
+                'percent' => $item['tax']['rate'],
+                'tax_amount' => 0,
+                'taxable_amount' => 0
+            ];
+        }
+        $tax_groups[$tax_key]['tax_amount'] += $tax_amount;
+        $tax_groups[$tax_key]['taxable_amount'] += $base_amount;
+
+        $line['tax_totals'] = [[
+            'tax_id' => $item['tax']['type_tax_id'],
+            'tax_amount' => number_format($tax_amount, 2, '.', ''),
+            'percent' => number_format($item['tax']['rate'], 2, '.', ''),
+            'taxable_amount' => number_format($base_amount, 2, '.', '')
+        ]];
+    }
+
+    /**
+     * Convierte los grupos de impuestos al formato requerido
+     */
+    private function convertTaxGroups($tax_groups) 
+    {
+        $tax_totals = [];
+        foreach ($tax_groups as $group) {
+            $tax_totals[] = [
+                'tax_id' => $group['tax_id'],
+                'tax_amount' => number_format($group['tax_amount'], 2, '.', ''),
+                'percent' => number_format($group['percent'], 2, '.', ''),
+                'taxable_amount' => number_format($group['taxable_amount'], 2, '.', '')
+            ];
+        }
+        return $tax_totals;
+    }
+
+    private function findItemForLine($line, $items)
+    {
+        if (!is_array($items)) {
+            return null;
+        }
+        
+        foreach($items as $item) {
+            if(isset($item['item']['description']) && $item['item']['description'] === $line['description']) {
+                return $item;
+            }
+        }
+        return null;
+    }
 
     /**
      *
@@ -215,7 +322,6 @@ class SupportDocumentHelper
     {
         throw new Exception($message);
     }
-
 
     /**
      * Obtener correlativo desde el api

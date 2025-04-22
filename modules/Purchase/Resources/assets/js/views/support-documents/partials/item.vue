@@ -234,20 +234,17 @@
                 if (input.length > 2) {
 
                     this.loading_search = true
-                    let parameters = `input=${input}`
-
+                    // Modificar la URL para incluir las relaciones necesarias
+                    let parameters = `input=${input}&with_tax=true`
 
                     await this.$http.get(`/main-items/search/?${parameters}`)
-                            .then(response => {
-                                // console.log(response)
-                                this.items = response.data.items
-                                this.loading_search = false
-
-
-                                if(this.items.length == 0){
-                                    this.filterItems()
-                                }
-                            })
+                        .then(response => {
+                            this.items = response.data.items
+                            this.loading_search = false
+                            if(this.items.length == 0){
+                                this.filterItems()
+                            }
+                        })
                 } else {
                     await this.filterItems()
                 }
@@ -314,11 +311,13 @@
                 {
                     if(this.form.type_generation_transmition_id == 1) this.setDefaultStartDate()
                 }
-
-                // this.lots = this.form.item.lots
-
-                // this.form.tax_id = (this.taxes.length > 0) ? this.form.item.tax.id: null
-                this.form.tax_id = 8 // se asigna excento por defecto
+                // Validación mejorada del impuesto del ítem
+                if (this.form.item && this.form.item.tax) {
+                    this.form.tax_id = this.form.item.tax.id
+                } else {
+                    // Si el ítem no tiene impuesto, usar el primer impuesto disponible
+                    this.form.tax_id = this.taxes.length > 0 ? this.taxes[0].id : null
+                }
 
                 this.form.price = this.form.item.sale_unit_price;
 
