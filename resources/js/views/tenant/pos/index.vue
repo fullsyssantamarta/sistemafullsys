@@ -232,9 +232,11 @@
                         </div>
                         <div class="col-4">
                             <div class="btn-group d-flex" role="group">
-                                <a class="btn btn-sm btn-default w-100" @click.prevent="showDialogNewPerson = true">
-                                    <i class="fas fa-plus fa-wf"></i>
-                                </a>
+                                <el-tooltip content="Buscar o Agregar Cliente" placement="top">
+                                    <a class="btn btn-sm btn-default w-100" @click.prevent="showDialogNewPerson = true">
+                                        <i class="fas fa-plus fa-wf"></i>
+                                    </a>
+                                </el-tooltip>
                                 <a class="btn btn-sm btn-default w-100" @click="clickDeleteCustomer">
                                     <i class="fas fa-trash fa-wf"></i>
                                 </a>
