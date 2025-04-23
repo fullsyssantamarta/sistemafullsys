@@ -888,15 +888,12 @@ class DocumentController extends Controller
             }
             $this->document = DocumentHelper::createDocument($request, $nextConsecutive, $correlative_api, $this->company, $response, $response_status, $company->type_environment_id);
             $payments = (new DocumentHelper())->savePayments($this->document, $request->payments);
-<<<<<<< HEAD
             
             // Registrar asientos contables
             $this->registerAccountingSaleEntries($this->document);
-=======
             // Registrar cupón
             $this->registerCustomerCoupon($this->document);
 
->>>>>>> master
         }
         catch (\Exception $e) {
             DB::connection('tenant')->rollBack();
