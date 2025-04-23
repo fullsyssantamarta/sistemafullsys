@@ -47,10 +47,10 @@
                                     <el-select @change="changeResolution" v-model="form.resolution_id"
                                         popper-class="el-select-document_type" dusk="type_invoice_id"
                                         class="border-left rounded-left border-info">
-                                        <el-option 
-                                            v-for="option in filteredResolutions" 
-                                            :key="option.id" 
-                                            :value="option.id" 
+                                        <el-option
+                                            v-for="option in filteredResolutions"
+                                            :key="option.id"
+                                            :value="option.id"
                                             :label="`${option.prefix} / ${option.resolution_number} / ${option.from} / ${option.to} / ${option.description === '1' ? 'Activa' : 'Inactiva'}`">
                                         </el-option>
                                     </el-select>
@@ -612,7 +612,7 @@ export default {
             })
 //            console.log(this.customers)
             await this.generatedFromExternalDocument()
-            
+
             // Realiza la petición a la configuración avanzada
             const response = await this.$http.get('/co-advanced-configuration/record');
             // Guarda la configuración en la propiedad local
@@ -624,7 +624,7 @@ export default {
             filteredResolutions() {
                 return this.resolutions.filter(option => this.shouldShowResolution(option));
             },
-            
+
             generatedFromPos()
             {
                 const form_exceed_uvt = this.$getStorage('form_exceed_uvt')
@@ -702,7 +702,7 @@ export default {
                         this.remainingInvoicesAlertShown = true; // Marcar la alerta como mostrada
                     }
                 }
-            },           
+            },
             //Validacion de resolucion Cristian
             validateResolution() {
                 const selectedDocument = this.typeDocuments.find(doc => doc.id === this.form.resolution_id);
@@ -734,10 +734,18 @@ export default {
                         console.error('Error al obtener la información de la compañía:', error);
                     }
             },
+
             shouldShowResolution(option) {
-                    // Retorna true solo si option.description es igual a '1', indicando que la resolución está activa.
-                    return option.description === '1';
+                const today = new Date();
+                const todayString = today.toISOString().split('T')[0]; // 'YYYY-MM-DD'
+                const resolutionEndDate = option.resolution_date_end;
+
+                if(this.is_contingency_3)
+                    return option.code === '3' && resolutionEndDate >= todayString;
+                else
+                    return option.code === '1' && resolutionEndDate >= todayString;
             },
+
             generatedFromExternalDocument()
             {
                 if(this.generatedFromPos)
@@ -901,11 +909,13 @@ export default {
             this.recordItem = row;
             this.showDialogAddItem = true;
         },
+
         clickEditUser(row, index) {
             row.indexi = index
             this.recordItemHealthUser = row
             this.showDialogAddHealthUser = true
         },
+
         searchRemoteCustomers(input) {
             if (input.length > 0) {
                 this.loading_search = true
@@ -925,6 +935,7 @@ export default {
                 this.input_person.number = null
             }
         },
+
         load_duplicate_invoice() {
             if (typeof this.invoice !== 'undefined') {
                 if (this.invoice.health_fields) {
@@ -1110,7 +1121,7 @@ export default {
         } else {
             console.warn("Faltan datos de configuración avanzada o de impuesto.");
         }
-        
+
         // Se agrega el ítem a la factura
         if (this.recordItem) {
             this.form.items[this.recordItem.indexi] = row;
@@ -1118,7 +1129,7 @@ export default {
         } else {
             this.form.items.push(JSON.parse(JSON.stringify(row)));
         }
-        
+
         this.calculateTotal();
         },
         addHealthData(health_fields) {
@@ -1564,13 +1575,13 @@ export default {
                         bolsaTaxableAmount += (Number(element.price) * Number(element.quantity));
 
                         bolsa_per_unit_amount = (Number(element.price));
-                        
+
 
                         if (!bolsaUnitMeasureId) {
                             bolsaUnitMeasureId = element.item.unit_type.code.trim();
                         }
                     }
-                });                    
+                });
                 // Si hay impuesto a las bolsas, agregar al array de tax
                 if (bolsaTaxAmount > 0) {
                     tax.push({
@@ -1631,7 +1642,7 @@ export default {
 
             getInvoiceLines() {
                 let data = this.form.items.map(x => {
-                    // se definen variables 
+                    // se definen variables
                     let percent;
                     let base_amount_incbp;
                     if (x.tax.type_tax_id === 10 && Number(x.price) === 0) {
@@ -1642,7 +1653,7 @@ export default {
                         percent = this.cadenaDecimales(x.tax.rate);
                     }
 
-                    let item = {                       
+                    let item = {
                         unit_measure_id: x.item.unit_type.code,
                         invoiced_quantity: x.quantity,
                         line_extension_amount: this.cadenaDecimales((Number(x.price) * Number(x.quantity)) - x.discount),

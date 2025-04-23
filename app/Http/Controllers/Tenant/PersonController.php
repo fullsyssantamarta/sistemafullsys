@@ -106,7 +106,7 @@ class PersonController extends Controller
         $existing = Person::where('number', $request->number)
                           ->where('identity_document_type_id', $request->identity_document_type_id)
                           ->first();
-    
+
         if ($existing) {
             // Si ya existe, retornamos el cliente existente para que se cargue en la factura.
             return response()->json([
@@ -115,28 +115,28 @@ class PersonController extends Controller
                 'id' => $existing->id
             ]);
         }
-    
+
         // Si no existe, se procede a crear el cliente.
         $id = $request->input('id');
         $person = Person::firstOrNew(['id' => $id]);
         $person->fill($request->all());
         $person->save();
-    
+
         // Se eliminan las direcciones viejas y se guardan las nuevas
         $person->addresses()->delete();
         $addresses = $request->input('addresses');
         foreach ($addresses as $row) {
             $person->addresses()->updateOrCreate(['id' => $row['id']], $row);
         }
-    
+
         $person_type = ($person->type == 'customers') ? 'Cliente' : 'Proveedor';
-    
+
         return response()->json([
             'success' => true,
             'message' => ($id) ? "{$person_type} editado con éxito" : "{$person_type} registrado con éxito",
             'id' => $person->id
         ]);
-    }    
+    }
 
     public function destroy($id)
     {
@@ -406,7 +406,7 @@ class PersonController extends Controller
 
         /**
      * Consulta el API DIAN y retorna la información del contribuyente.
-     * 
+     *
      * Se espera recibir en el request:
      * - identification_number: Número de identificación del contribuyente.
      * - type_document_id: Tipo de documento (p. ej.: 3 para cédula o NIT según lo requiera el API).
@@ -446,15 +446,17 @@ class PersonController extends Controller
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);      // Para capturar la respuesta
         // Se utiliza el método GET. Si el API requiere POST, cambiar el método aquí.
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);          
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);          
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);       
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-
+//\Log::debug($url);
+//\Log::debug($payload);
+//\Log::debug($company->api_token);
         // Ejecuta la llamada al API DIAN
         $response = curl_exec($ch);
-        $err = curl_error($ch); 
-        curl_close($ch);       
+        $err = curl_error($ch);
+        curl_close($ch);
 
         if ($err) {
             return response()->json([

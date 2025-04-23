@@ -48,7 +48,7 @@
             </div>
           </div>
           <!-- FIN FILA Número, DV y Nombre -->
-  
+
           <!-- FILA: Correo electrónico y Checkbox para campos adicionales -->
           <div class="row align-items-center">
             <div class="col-md-8">
@@ -67,7 +67,7 @@
             </div>
           </div>
           <!-- FIN FILA -->
-  
+
           <!-- Campos adicionales (se muestran si showAdditionalFields es verdadero) -->
           <div v-if="showAdditionalFields">
             <div class="row">
@@ -164,7 +164,7 @@
               <div class="col-md-6">
                 <div class="form-group" :class="{'has-danger': errors.telephone}">
                   <label class="control-label">Teléfono</label>
-                  <el-input type="tel" maxlength="10" v-model="form.telephone" 
+                  <el-input type="tel" maxlength="10" v-model="form.telephone"
                             onkeydown="return ( event.ctrlKey || event.altKey || (47<event.keyCode && event.keyCode<58 && event.shiftKey==false) || (95<event.keyCode && event.keyCode<106) || (event.keyCode==8) || (event.keyCode==9) || (event.keyCode>34 && event.keyCode<40) || (event.keyCode==46) )">
                   </el-input>
                   <small class="form-control-feedback" v-if="errors.telephone" v-text="errors.telephone[0]"></small>
@@ -213,7 +213,7 @@
       </form>
     </el-dialog>
   </template>
-  
+
   <style>
   .aling-div {
     margin-top: 25px;
@@ -225,10 +225,10 @@
     transform: scale(1.3); /* Ajusta el tamaño del checkbox */
   }
   </style>
-  
+
   <script>
   import { calcularDv } from '../../../functions/Nit';
-  
+
   export default {
     props: ['showDialog', 'type', 'recordId', 'external', 'document_type_id', 'input_person'],
     data() {
@@ -307,14 +307,14 @@
           this.loading_search = true;
           // Calcula el DV
           this.form.dv = await calcularDv(this.form.number);
-    
+
           try {
             // Llama al endpoint que consulta DIAN
             const response = await this.$http.post('/persons/query-dian', {
               identification_number: this.form.number,
               type_document_id: this.form.identity_document_type_id
             });
-    
+//console.log(response.data);
             if (response.data.success) {
               let data = response.data.data;
               // Mapea la respuesta DIAN al formulario
@@ -361,12 +361,12 @@
           this.idIdentification = response.data.data.logo;
           let address = null;
           let telephone = null;
-    
+
           if (this.idIdentification === 'logo_7715537.jpg') {
             address = 'CR 14 15 70 BRR CENTRO';
             telephone = '3203468640';
           }
-    
+
           if (!this.recordId) {
             this.form = {
               id: null,
@@ -399,7 +399,7 @@
         }).catch(error => {
           console.error('Error al obtener los datos de la compañía:', error);
         });
-    
+
         this.departmentss();
         this.citiess();
       },
@@ -410,14 +410,14 @@
           this.departments = [];
           this.cities = [];
         }
-    
+
         this.$http.get('/companies/record').then(response => {
           this.idIdentification = response.data.data.logo;
-    
+
           if (this.form.country_id != null) {
             this.getDepartment(this.form.country_id).then(departmentRows => {
               this.departments = departmentRows;
-    
+
               if (!edit) {
                 if (this.idIdentification === 'logo_7715537.jpg') {
                   let valorPorDefecto = 779;
@@ -428,7 +428,7 @@
                   this.form.department_id = null;
                 }
               }
-    
+
               this.citiess(edit);
             });
           }
@@ -441,11 +441,11 @@
           this.form.city_id = null;
           this.cities = [];
         }
-    
+
         if (this.form.department_id != null) {
           this.getCities(this.form.department_id).then(cityRows => {
             this.cities = cityRows;
-    
+
             if (!edit) {
               if (this.idIdentification === 'logo_7715537.jpg') {
                 let valorPorDefectoCiudad = 12688;
@@ -481,7 +481,7 @@
           if (this.document_type_id === '03') {
             this.form.identity_document_type_id = '1';
           }
-    
+
           if (this.input_person) {
             this.form.identity_document_type_id = (this.input_person.identity_document_type_id)
               ? this.input_person.identity_document_type_id
@@ -528,10 +528,10 @@
                 this.form.contact_phone = null;
                 this.form.contact_name = null;
             }
-            
+
             // Agregamos el flag que indica que la request proviene de la factura
             this.form.from_invoice = true;
-            
+
             this.loading_submit = true;
             this.$http.post(`/${this.resource}`, this.form)
             .then(response => {
@@ -589,7 +589,7 @@
         this.form.district_id = (data.ubigeo) ? data.ubigeo[2] : null;
         this.form.condition = data.condicion;
         this.form.state = data.estado;
-    
+
         this.filterProvinces();
         this.filterDistricts();
       },
@@ -599,4 +599,3 @@
     }
   }
   </script>
-  
