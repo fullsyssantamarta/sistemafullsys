@@ -48,9 +48,13 @@ use Modules\Finance\Traits\FinanceTrait;
 use Modules\Item\Models\ItemLotsGroup;
 use App\Models\Tenant\Configuration;
 use Modules\Factcolombia1\Models\Tenant\{
+    ConfigurationPurchaseCoupon as TenantConfigurationPurchaseCoupon,
     Currency,
+    CustomerPurchaseCoupon as TenantCustomerPurchaseCoupon,
     TypeDocument,
     Tax,
+    ConfigurationPurchaseCoupon,
+    CustomerPurchaseCoupon,
 };
 use Modules\Factcolombia1\Models\TenantService\{
     Company as ServiceTenantCompany
@@ -63,8 +67,7 @@ use App\Models\Tenant\ConfigurationPos;
 use App\Http\Resources\Tenant\DocumentPosResource;
 use App\Models\Tenant\Cash;
 use Modules\Factcolombia1\Http\Controllers\Tenant\DocumentController;
-
-
+use Illuminate\Support\Facades\View;
 
 
 class DocumentPosController extends Controller
@@ -595,6 +598,7 @@ class DocumentPosController extends Controller
             $this->savePayments($this->sale_note, $data['payments']);
             $this->setFilename();
             $this->createPdf($this->sale_note,"ticket", $this->sale_note->filename);
+            $this->registerCustomerCoupon($this->sale_note);
 //        });
         }catch(\Exception $e){
 //            \Log::debug(json_encode([
@@ -1740,4 +1744,76 @@ class DocumentPosController extends Controller
         return $customer->id;
     }
 
+    public function downloadFileCoupon($id)
+    {
+        $purchaseCoupon = CustomerPurchaseCoupon::where('document_id',$id)->where('status',1)->first();
+        if (!$purchaseCoupon) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Cupón no encontrado'
+            ], 404);
+        }
+        
+        $coupon = ConfigurationPurchaseCoupon::where('id',$purchaseCoupon->configuration_purchase_coupon_id)->where('status',1)->first();
+        
+        if (!$coupon) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cupón no encontrado'
+            ], 404);
+        }
+
+        $data = [
+            'title' => $coupon->title,
+            'description' => $coupon->description,
+            'establishment' => $coupon->establishment,
+            'coupon_date' => $coupon->coupon_date,
+            'document_number' => $purchaseCoupon->document_number,
+            'customer_name' => $purchaseCoupon->customer_name,
+            'customer_number' => $purchaseCoupon->customer_number, 
+            'customer_phone' => $purchaseCoupon->customer_phone,
+            'customer_email' => $purchaseCoupon->customer_email,
+        ];
+
+        $html = View::make('factcolombia1::coupon.coupon', $data)->render();
+
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => [72, 297], // 72mm de ancho (tirilla), altura variable
+            'margin_left' => 5,
+            'margin_right' => 5,
+            'margin_top' => 5,
+            'margin_bottom' => 5,
+            'default_font' => 'symbola'
+        ]);
+
+        $mpdf->WriteHTML($html);
+
+        $pdfContent = $mpdf->Output('', 'S'); // 'S' devuelve el string del contenido
+
+        return response()->json([
+            'success' => true,
+            'filebase64' => base64_encode($pdfContent),
+            'filename' => 'cupon-'.$purchaseCoupon->document_number.'.pdf'
+        ]);
+    }
+
+    private function registerCustomerCoupon($document) {
+        $activeCoupon = ConfigurationPurchaseCoupon::where('status',1)->first();
+        $customer = Person::where('id',$document->customer_id)->first();
+    
+        if($activeCoupon && $customer && $document->total >= $activeCoupon->minimum_purchase_amount){
+            CustomerPurchaseCoupon::create([
+                'configuration_purchase_coupon_id' => $activeCoupon->id,
+                'document_id' => $document->id,
+                'document_number' => $document->prefix.'-'.$document->number,
+                'customer_name' => $customer->name,
+                'customer_number' => $customer->number,
+                'customer_phone' => $customer->telephone,
+                'customer_email' => $customer->email,
+                'document_amount' => $document->total,
+                'status' => 1
+            ]);
+        }
+    }
 }
