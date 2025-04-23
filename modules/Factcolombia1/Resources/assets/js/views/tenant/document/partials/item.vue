@@ -70,9 +70,9 @@
                             </el-select>
                             <!-- <el-checkbox :disabled="recordItem != null" v-model="change_tax_id">Editar</el-checkbox> -->
                             <template v-if="!is_client">
-                            <el-checkbox 
-                                v-model="tax_included_in_price" 
-                                :disabled="true" 
+                            <el-checkbox
+                                v-model="tax_included_in_price"
+                                :disabled="false"
                                 @change="change_price_tax_included">
                                 {{ taxCheckboxLabel }}
                             </el-checkbox><br>
@@ -299,9 +299,11 @@
                 this.document.hasOwnProperty("items") && this.document.items.length > 0
             );
             },
+
             typeNoteDocuments() {
                 return this.typeDocuments.filter(row => row.id != 1);
             },
+
             taxCheckboxLabel() {
                 // Si la configuración ya está cargada...
                 if (this.localConfiguration && typeof this.localConfiguration.item_tax_included !== 'undefined') {
