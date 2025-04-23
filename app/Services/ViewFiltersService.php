@@ -92,6 +92,18 @@ class ViewFiltersService
                 $name = 'Documento POS';
                 break;
 
+            case 'credit_notes':
+                $name = 'Notas de crédito';
+                break;
+
+            case 'debit_notes':
+                $name = 'Notas de débito';
+                break;
+
+            case 'pos_credit_notes':
+                $name = 'Notas de crédito POS';
+                break;
+
             default:
                 $name = 'Todos';
                 break;

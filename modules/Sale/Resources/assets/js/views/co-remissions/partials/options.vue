@@ -98,6 +98,16 @@
                     response_api_message: null,
                     download_pdf: null,
                     download_xml: null,
+                    external_id: null,
+                    identifier: null,
+                    date_of_issue:null,
+                    print_ticket: null,
+                    print_a4: null,
+                    print_a5: null,
+                    print_html: null,
+                    series:null,
+                    number:null,
+                    whatsapp_number: null,
                 };
             },
             async create() {
@@ -194,6 +204,7 @@
                 this.$emit('update:showDialog', false)
                 this.$emit("triggerBack");
                 this.initForm()
+                this.$eventHub.$emit('cancelSale')
             },
         }
     }

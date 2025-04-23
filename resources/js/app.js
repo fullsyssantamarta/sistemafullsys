@@ -103,6 +103,8 @@ Vue.component('tenant-taxes-form', require('@viewsModuleProColombia/tenant/tax/f
 Vue.component('tenant-client-client', require('@viewsModuleProColombia/tenant/client/index.vue'));
 Vue.component('tenant-import-import', require('@viewsModuleProColombia/tenant/import/Import.vue'));
 
+Vue.component('tenant-coupon-co', require('@viewsModuleProColombia/tenant/coupon/index.vue'));
+
 
 //components colombia
 // Vue.component('tenant-document-form', require('@viewsModuleProColombia/tenant/configuration/Configuration.vue'));

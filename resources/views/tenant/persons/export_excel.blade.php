@@ -14,47 +14,33 @@
                     <table class="">
                         <thead>
                             <tr>
-                                <th class="">Código tipo de persona
-                                </th>
-                                <th class="">Código tipo de régimen
-                                </th>
-                                <th class="">Código tipo de documento de identidad
-                                </th>
-                                <th class="">Número de identificación
-                                </th>
-                                <th class="">DV
-                                </th>
-                                <th class="">Código Interno
-                                </th>
-                                <th class="">Nombre completo
-                                </th>
-                                <th class="">Código de país
-                                </th>
-                                <th class="">Código de departamento
-                                </th>
-                                <th class="">Código de ciudad
-                                </th>
-                                <th class="">Dirección
-                                </th>
-                                <th class="">Teléfono
-                                </th>
-                                <th class="">Correo electrónico
-
-                                </th>
+                                <th>Código tipo de persona</th>
+                                <th>Código tipo de régimen</th>
+                                <th>Código tipo de obligación</th>
+                                <th>Código tipo de documento</th>
+                                <th>Número de identificación</th>
+                                <th>DV</th>
+                                <th>Código Interno</th>
+                                <th>Nombre completo</th>
+                                <th>Código de ciudad</th>
+                                <th>Dirección</th>
+                                <th>Teléfono</th>
+                                <th>Correo electrónico</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($records as $key => $value)
+                            @foreach($records as $value)
                             <tr>
                                 <td>{{$value->type_person_id}}</td>
                                 <td>{{$value->type_regime_id}}</td>
+                                <td>{{$value->type_obligation_id}}</td>
                                 <td>{{$value->identity_document_type_id}}</td>
                                 <td>{{$value->number}}</td>
                                 <td>{{$value->dv}}</td>
                                 <td>{{$value->code}}</td>
                                 <td>{{$value->name}}</td>
-                                <td>{{$value->country_id}}</td>
-                                <td>{{$value->department_id}}</td>
+                                <!-- <td>{{$value->country_id}}</td>
+                                <td>{{$value->department_id}}</td> -->
                                 <td>{{$value->city_id}}</td>
                                 <td>{{$value->address}}</td>
                                 <td>{{$value->telephone}}</td>

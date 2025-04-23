@@ -7,14 +7,15 @@ use Exception;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\ToCollection;
-use PhpOffice\PhpSpreadsheet\IOFactory;
 use Modules\Factcolombia1\Models\Tenant\TypePerson;
 use Modules\Factcolombia1\Models\Tenant\TypeRegime;
 use Modules\Factcolombia1\Models\TenantService\TypeDocumentIdentification;
 use Modules\Factcolombia1\Models\Tenant\City;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Modules\Factcolombia1\Models\Tenant\TypeObligation;
 
-class PersonsImport implements ToCollection, WithMultipleSheets
+class PersonsImport implements ToCollection, WithMultipleSheets, WithHeadingRow
 {
     use Importable;
 
@@ -39,90 +40,124 @@ class PersonsImport implements ToCollection, WithMultipleSheets
         throw new Exception($message);
     }
 
-    public function validateTypePerson($row, $row_number)
+    private function validateTypePerson($value, $registered)
     {
-        if(empty($row[0])) {
-            $this->throwException('Registro nro.: '.$registered.', Código tipo de persona no añadido');
-        }
-        $type_person_string = trim(str_replace('_x000D_', '', $row[0]));
-        if (ctype_digit($type_person_string)) {
-            $person_id = (int)$type_person_string;
-            if(!TypePerson::find($person_id)) {
-                $this->throwException('Registro nro.: '.$registered.', '.$row[6].', Código tipo de persona no se encuentra en la base de datos.');
-            }
-            $type_person_id = $person_id;
-        } else {
-            // Busca coincidencias con palabras clave en texto
-            $person_types = ['natural' => 2,'juridica' => 1,];
-            $explode_person = explode(' ', strtolower($type_person_string));
-            $matched_keyword = array_filter(array_keys($person_types), function ($keyword) use ($explode_person) {
-                return in_array($keyword, $explode_person);
-            });
-            if (!empty($matched_keyword)) {
-                // Obtén el ID correspondiente al texto encontrado
-                $type_person_id = $person_types[reset($matched_keyword)];
-            } else {
-                $this->throwException('Registro nro.: '.$registered.', '.$row[6].', Tipo de persona no se encuentra en la base de datos.');
+        $value = trim(str_replace('_x000D_', '', $value));
+        
+        // Si es numérico, buscar directamente por ID
+        if (ctype_digit($value)) {
+            $type_person = TypePerson::find($value);
+            if ($type_person) {
+                return $type_person->id;
             }
         }
-        if(!empty($type_person_id)) {
-            return $type_person_id;
-        } else {
-            $this->throwException('Registro nro.: '.$registered.', Inconveniente con el Tipo de persona');
+        
+        // Si contiene "Persona Natural"
+        if (stripos($value, 'Persona Natural') !== false) {
+            return 2; // ID para Persona Natural
         }
+        
+        // Si contiene "Persona Jurídica"
+        if (stripos($value, 'Persona Juridica') !== false) {
+            return 1; // ID para Persona Jurídica
+        }
+
+        throw new Exception("Registro nro.: {$registered}, Tipo de persona no válido: {$value}");
     }
 
     public function collection(Collection $rows)
     {
-            $registered = 0;
-            unset($rows[0]);
-            $total = count($rows);
-            foreach ($rows as $row)
-            {
-                $registered += 1; // aumenta su valor se actualice o registre
-                $type = request()->input('type');
-                // row 0
-                $type_person_id = $this->validateTypePerson($row, $registered);
-                // row 1
-                $row_type_regime = trim(str_replace('_x000D_', '', $row[1]));
-                $type_regime_id = ctype_digit($row_type_regime) ? (int)$row_type_regime : TypeRegime::where('name', 'like', '%'.str_replace('_x000D_', '', $row[1]).'%')->firstOrFail()->id;
-                // row 2
-                $row_identity_document_type = trim(str_replace('_x000D_', '', $row[2]));
-                $identity_document_type_id = ctype_digit($row_identity_document_type) ? (int)$row_identity_document_type : TypeDocumentIdentification::where('name', 'like', '%'.str_replace('_x000D_', '', $row_identity_document_type).'%')->firstOrFail()->id;
+        $registered = 0;
+        $total = 0;
 
-                $number = $row[3];
-                $dv = $row[4];
-                $code = $row[5];
-                $name = $row[6];
-                $country_id = 47;
-                $city_id = $row[9];
-                $department_id = City::where('id', $city_id)->firstOrFail()->department_id; // debe validarse
-                $address = $row[10];
-                $telephone = $row[11];
-                $email = $row[12];
+        foreach ($rows as $row) {
+            // Verificamos que la fila no esté vacía
+            if (empty(array_filter($row->toArray()))) continue;
+
+            $registered += 1;
+            $type = request()->input('type');
+
+            try {
+                // Validar que los campos necesarios existan
+                if (!isset($row['codigo_tipo_de_persona']) || !isset($row['codigo_tipo_de_regimen']) || 
+                    !isset($row['codigo_tipo_de_obligacion']) || !isset($row['codigo_tipo_de_documento'])) {
+                    throw new Exception("Registro nro.: {$registered}, Formato de archivo inválido o campos faltantes");
+                }
+
+                // Tipo de persona
+                $type_person_id = $this->validateTypePerson($row['codigo_tipo_de_persona'], $registered);
+
+                // Tipo de régimen - Modificación para aceptar tanto ID como nombre
+                $regime_value = trim(str_replace('_x000D_', '', $row['codigo_tipo_de_regimen']));
+                if (is_numeric($regime_value)) {
+                    $type_regime = TypeRegime::find($regime_value);
+                } else {
+                    $type_regime = TypeRegime::where('name', 'like', '%'.$regime_value.'%')->first();
+                }
+                
+                if (!$type_regime) {
+                    throw new Exception("Registro nro.: {$registered}, Régimen no encontrado: {$regime_value}");
+                }
+
+                // Tipo de obligación
+                $obligation_value = trim(str_replace('_x000D_', '', $row['codigo_tipo_de_obligacion']));
+                if (is_numeric($obligation_value)) {
+                    $type_obligation = TypeObligation::find($obligation_value);
+                } else {
+                    $type_obligation = TypeObligation::where('name', 'like', '%'.$obligation_value.'%')->first();
+                }
+                
+                if (!$type_obligation) {
+                    throw new Exception("Registro nro.: {$registered}, Obligación no encontrada: {$obligation_value}");
+                }
+
+                // Tipo de documento - Modificación para aceptar tanto código como nombre
+                $doc_type_value = trim(str_replace('_x000D_', '', $row['codigo_tipo_de_documento']));
+                if (is_numeric($doc_type_value)) {
+                    $type_doc = TypeDocumentIdentification::find($doc_type_value);
+                } else {
+                    $type_doc = TypeDocumentIdentification::where('name', 'like', '%'.$doc_type_value.'%')->first();
+                }
+                
+                if (!$type_doc) {
+                    throw new Exception("Registro nro.: {$registered}, Tipo de documento no encontrado: {$doc_type_value}");
+                }
+
+                $city = City::find($row['codigo_de_ciudad']);
+                if (!$city) {
+                    throw new Exception("Registro nro.: {$registered}, Ciudad no encontrada: {$row['codigo_de_ciudad']}");
+                }
 
                 Person::updateOrCreate(
                     [
                         'type' => $type,
-                        'identity_document_type_id' => $identity_document_type_id,
-                        'number' => $number
+                        'identity_document_type_id' => $type_doc->id,
+                        'number' => $row['numero_de_identificacion']
                     ],
                     [
                         'type_person_id' => $type_person_id,
-                        'type_regime_id' => $type_regime_id,
-                        'dv' => $dv,
-                        'code' => $code,
-                        'name' => $name,
-                        'country_id' => $country_id,
-                        'department_id' => $department_id,
-                        'city_id' => $city_id,
-                        'address' => $address,
-                        'telephone' => $telephone,
-                        'email' => $email,
+                        'type_regime_id' => $type_regime->id,
+                        'type_obligation_id' => $type_obligation->id,
+                        'dv' => $row['dv'],
+                        'code' => $row['codigo_interno'],
+                        'name' => $row['nombre_completo'],
+                        'country_id' => 47,
+                        'department_id' => $city->department_id,
+                        'city_id' => $city->id,
+                        'address' => $row['direccion'],
+                        'telephone' => $row['telefono'],
+                        'email' => $row['correo_electronico'],
                     ]
                 );
+
+            } catch (Exception $e) {
+                throw new Exception($e->getMessage());
             }
-            $this->data = compact('total', 'registered');
+
+            $total++;
+        }
+
+        $this->data = compact('total', 'registered');
     }
 
     public function getData()

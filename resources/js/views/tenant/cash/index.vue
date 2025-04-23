@@ -47,7 +47,7 @@
                         <td>{{ row.expense }}</td> -->
                         <td>{{ row.state_description }}</td>
                         <td class="text-center">
-                            <button type="button" class="btn waves-effect waves-light btn-xs btn-primary" @click.prevent="clickDownload(row.id)">Reporte</button>
+                            <button type="button" class="btn waves-effect waves-light btn-xs btn-primary" @click.prevent="showReportModal(row.id)">Reporte</button>
                             <button type="button" class="btn waves-effect waves-light btn-xs btn-primary" @click.prevent="clickDownload(row.id, 'resumido')">Reporte Resumen</button>
                             <button type="button" class="btn waves-effect waves-light btn-xs btn-primary" @click.prevent="clickDownloadArqueo(row.id)">Arqueo</button>
 
@@ -67,6 +67,23 @@
         </div>
         <cash-form :showDialog.sync="showDialog" :typeUser="typeUser"
                             :recordId="recordId"></cash-form>
+
+        <!-- Modal para tipo de reporte -->
+        <el-dialog title="Seleccionar Tipo de Reporte" :visible.sync="showReportDialog" append-to-body>
+            <div class="row">
+                <div class="col-md-12">
+                    <el-select v-model="selectedReportType" placeholder="Seleccione tipo de reporte">
+                        <el-option label="Todos" value="all"></el-option>
+                        <el-option label="Electrónico" value="1"></el-option>
+                        <el-option label="No Electrónico" value="0"></el-option>
+                    </el-select>
+                </div>
+            </div>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="showReportDialog = false">Cancelar</el-button>
+                <el-button type="primary" @click="generateReport">Generar</el-button>
+            </span>
+        </el-dialog>
     </div>
 </template>
 
@@ -84,6 +101,9 @@
         data() {
             return {
                 showDialog: false,
+                showReportDialog: false,
+                selectedReportType: 'all',
+                selectedCashId: null,
                 open_cash: true,
                 resource: 'cash',
                 recordId: null,
@@ -104,6 +124,14 @@
 
         },
         methods: {
+            showReportModal(id) {
+                this.selectedCashId = id;
+                this.showReportDialog = true;
+            },
+            generateReport() {
+                window.open(`/${this.resource}/report/${this.selectedCashId}/${this.selectedReportType}`, '_blank');
+                this.showReportDialog = false;
+            },
             clickDownload(id, only_head = '') {
                 window.open(`/${this.resource}/report/${id}/${only_head}`, '_blank');
             },

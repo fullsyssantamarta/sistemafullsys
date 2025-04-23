@@ -54,8 +54,8 @@ class RadianEventController extends Controller
 
     public function runEvent(Request $request)
     {
-        // enviar api para parsear xml y obtener data
-        $received_document = ReceivedDocument::findOrFail($request->id);
+        $received_document = ReceivedDocument::with('email_reading_detail')->findOrFail($request->id);
+        $from_address = $received_document->email_reading_detail ? $received_document->email_reading_detail->from_address : null;
 
         $url = "ubl2.1/send-event";
         $company = ServiceCompany::select('identification_number', 'api_token')->firstOrFail();
@@ -69,16 +69,15 @@ class RadianEventController extends Controller
             'event_id' => $request->event_code,
             'base64_attacheddocument_name' => $filename,
             'base64_attacheddocument' => base64_encode($xml),
+            'sendmail' => true,
+            'sendmailtome' => true,
+            'email_cc_list' => $from_address ? [['email' => $from_address]] : [],
         ];
 
         if($request->event_code === '2') $params['type_rejection_id'] = $request->type_rejection_id;
 
-        // dd($params, $received_document, $xml);
-
         $send_request_to_api = $connection_api->sendRequestToApi($url, $params, 'POST');
-        // dd($send_request_to_api);
 
-        //error validacion form request api
         if(isset($send_request_to_api['errors']))  return $this->getGeneralResponse(false, $connection_api->parseErrorsToString($send_request_to_api['errors']));
 
         if($send_request_to_api['success'])
@@ -86,7 +85,6 @@ class RadianEventController extends Controller
             return $this->validateResponseApi($send_request_to_api, $connection_api, $received_document, $request->event_code);
         }
 
-        //errores
         return $send_request_to_api;
     }
 
@@ -125,33 +123,44 @@ class RadianEventController extends Controller
     {
         $data_update = [];
 
+        // Extraer el CUDE de XmlDocumentKey
+        $cude = $send_request_to_api['ResponseDian']['Envelope']['Body']['SendEventUpdateStatusResponse']['SendEventUpdateStatusResult']['XmlDocumentKey'] ?? null;
+        
+        if (!$cude) {
+            // Intentar obtener de la propiedad cude si existe
+            $cude = $send_request_to_api['cude'] ?? null;
+        }
         switch ($event_code) 
         {
             case '1':
                 $data_update = [
                     'acu_recibo' => 1,
-                    // 'response_api' => $send_request_to_api, //@todo cada evento genera un response, debe haber un campo para cada uno
+                    'response_acu_recibo' => json_encode($send_request_to_api),
+                    'cude_acu_recibo' => $cude,
                 ];
                 break;
             
             case '2':
                 $data_update = [
                     'rechazo' => 1,
-                    // 'response_api' => $send_request_to_api,
+                    'response_rechazo' => json_encode($send_request_to_api),
+                    'cude_rechazo' => $cude,
                 ];
                 break;
 
             case '3':
                 $data_update = [
                     'rec_bienes' => 1,
-                    // 'response_api' => $send_request_to_api,
+                    'response_rec_bienes' => json_encode($send_request_to_api),
+                    'cude_rec_bienes' => $cude,
                 ];
                 break;
 
             case '4':
                 $data_update = [
                     'aceptacion' => 1,
-                    // 'response_api' => $send_request_to_api,
+                    'response_aceptacion' => json_encode($send_request_to_api),
+                    'cude_aceptacion' => $cude,
                 ];
                 break;
         }

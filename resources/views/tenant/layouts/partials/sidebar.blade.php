@@ -329,7 +329,11 @@
 
                                 @endif
 
-
+                                <li class="{{ ($path[0] === 'co-coupon')?'nav-active':'' }}">
+                                    <a class="nav-link" href="{{route('tenant.co-coupon.index')}}">
+                                        Cupones
+                                    </a>
+                                </li>
 
                             @endif
 

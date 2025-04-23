@@ -418,7 +418,8 @@ class DocumentPos extends ModelTenant
                         'currency_id',
                         'sale',
                         'total_tax',
-                        'subtotal'
+                        'subtotal',
+                        'state_type_id'
                     ]);
     }
 
@@ -464,15 +465,22 @@ class DocumentPos extends ModelTenant
      */
     public function getDataReportSalesBook()
     {
+        $customer_data = $this->customer;
+        $type_name = $this->state_type_id === '11' ? 'Nota de crédito POS' : 'Documento POS';
+        
         return [
             'date_of_issue' => $this->date_of_issue->format('d/m/Y'),
             'number_full' => $this->number_full,
-            'type_document_name' => 'Documento POS',
+            'type_document_name' => $type_name,
             'currency_code' => $this->currency->code,
-            'customer_name' => $this->customer->name,
+            'customer_name' => $customer_data->name ?? '',
+            'customer_number' => $customer_data->number ?? '',
+            'customer_address' => $customer_data->address ?? '',
             'net_total' => $this->generalApplyNumberFormat($this->net_total),
             'total' => $this->generalApplyNumberFormat($this->total),
             'total_exempt' => $this->generalApplyNumberFormat($this->getTotalExempt()),
+            'state_type_id' => $this->state_type_id ,
+            'total_discount' => $this->total_discount ?? 0,
         ];
     }
 

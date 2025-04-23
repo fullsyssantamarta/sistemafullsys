@@ -42,6 +42,10 @@ class ReceivedDocument extends ModelTenant
         'rechazo',
         'response_api',
         'co_email_reading_detail_id',
+        'cude_acu_recibo',
+        'cude_rec_bienes',
+        'cude_aceptacion',
+        'cude_rechazo'
          
     ];
 
@@ -94,6 +98,10 @@ class ReceivedDocument extends ModelTenant
             'rec_bienes' => $this->rec_bienes,
             'aceptacion' => $this->aceptacion,
             'rechazo' => $this->rechazo,
+            'cude_acu_recibo' => $this->cude_acu_recibo,
+            'cude_rec_bienes' => $this->cude_rec_bienes,
+            'cude_aceptacion' => $this->cude_aceptacion,
+            'cude_rechazo' => $this->cude_rechazo,
         ];
     }
 

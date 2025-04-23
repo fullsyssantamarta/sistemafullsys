@@ -76,6 +76,7 @@
                                 <img :src="item.image_url" class="img-thumbail img-custom" />
                                 <p class="text-muted font-weight-lighter mb-0">
                                     <small>{{item.internal_id}}</small>
+                                    <small style="float: right; clear">{{item.lot_code ? 'Lote:' + item.lot_code : ''}}   {{item.date_of_due ? 'FV:' + item.date_of_due : ''}}</small>
                                     <template v-if="item.sets.length  > 0">
                                         <br>
                                         <small> {{ item.sets.join('-') }} </small>
@@ -245,6 +246,13 @@
                                         <p class="m-0" style="line-height: 1em;">
                                             <span v-html="clearText(item.item.name)"></span><br>
                                             <small v-if="item.unit_type">{{ item.unit_type.name }}</small>
+                                            <template v-if="item.item.lot_code || item.item.date_of_due">
+                                                <br>
+                                                <small class="text-muted">
+                                                    {{item.item.lot_code ? 'Lote:' + item.item.lot_code : ''}}<br>
+                                                    {{item.item.date_of_due ? 'FV: ' + item.item.date_of_due : ''}}
+                                                </small>
+                                            </template>
                                         </p>
                                         <small> {{nameSets(item.item_id)}} </small>
                                     </td>
@@ -351,7 +359,17 @@
             <item-form :showDialog.sync="showDialogNewItem" :external="true"></item-form>
         </div>
         <template v-else>
-            <payment-form :is_payment.sync="is_payment" :form="form" :items_refund="items_refund" :currency-type-id-active="form.currency_id" :currency-type-active="currency" :exchange-rate-sale="form.exchange_rate_sale" :customer="customer" :soapCompany="soapCompany"></payment-form>
+            <payment-form 
+                :is_payment.sync="is_payment" 
+                :form="form" 
+                :items_refund="items_refund" 
+                :currency-type-id-active="form.currency_id" 
+                :currency-type-active="currency" 
+                :exchange-rate-sale="form.exchange_rate_sale" 
+                :customer="customer" 
+                :soapCompany="soapCompany"
+                @reload-data="reloadTotals">
+            </payment-form>
         </template>
 
         <history-sales-form :showDialog.sync="showDialogHistorySales" :item_id="history_item_id" :customer_id="form.customer_id"></history-sales-form>
@@ -820,8 +838,15 @@ export default {
             await this.$eventHub.$on("cancelSale", () => {
                 this.is_payment = false;
                 this.initForm();
-                this.changeExchangeRate()
-                this.cancelFormPosLocalStorage()
+                this.getTables();
+                this.filterItems();
+                this.changeExchangeRate();
+                this.cancelFormPosLocalStorage();
+                const customer_default = _.find(this.all_customers, {'number': '222222222222'}) ?? null
+                if (customer_default) {
+                    this.form.customer_id = customer_default.id
+                    this.changeCustomer()
+                }
             });
 
             await this.$eventHub.$on("reloadDataPersons", customer_id => {
@@ -840,6 +865,14 @@ export default {
                 this.setFormPosLocalStorage()
                 this.items_refund = []
             });
+        },
+
+        reloadTotals() {
+            this.calculateTotal()
+            this.filterItems()
+            this.changeDateOfIssue()
+            this.changeExchangeRate()
+            this.setFormPosLocalStorage()
         },
 
         initForm() {

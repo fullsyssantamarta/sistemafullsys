@@ -70,7 +70,9 @@ if ($hostname) {
             Route::get('configurations/visual_defaults', 'Tenant\ConfigurationController@visualDefaults')->name('visual_defaults');
             Route::post('configurations/visual_settings', 'Tenant\ConfigurationController@visualSettings')->name('visual-settings');
             Route::get('configurations/pdf_templates', 'Tenant\ConfigurationController@pdfTemplates')->name('tenant.advanced.pdf_templates');
-
+            Route::get('configurations/get-pos-resolution', 'Tenant\ConfigurationController@getPosResolution');
+            Route::post('cash/cash_document', 'Tenant\CashController@cash_document');
+            Route::post('cash-document', 'Tenant\CashController@cash_document');
             //Certificates
             Route::get('certificates/record', 'Tenant\CertificateController@record');
             Route::post('certificates/uploads', 'Tenant\CertificateController@uploadFile');
@@ -346,6 +348,7 @@ if ($hostname) {
             Route::post('purchases/import', 'Tenant\PurchaseController@import');
             Route::get('purchases/pdf/{id}', 'Tenant\PurchaseController@pdf');
             Route::get('purchases/note/{id}', 'Tenant\PurchaseController@note');
+            Route::get('purchases/search-items', 'Tenant\PurchaseController@searchItems');
 
 
             // Route::get('documents/send/{document}', 'Tenant\DocumentController@send');
@@ -421,6 +424,7 @@ if ($hostname) {
             Route::get('document-pos/voided/resolutions', 'Tenant\DocumentPosController@anulateResolutions');
             Route::post('document-pos/email', 'Tenant\DocumentPosController@email');
             Route::get('document-pos/sincronize', 'Tenant\DocumentPosController@sincronize');
+            Route::get('document-pos/downloadFileCoupon/{id}', 'Tenant\DocumentPosController@downloadFileCoupon');
 
 
            Route::get('sale_note_payments/records/{sale_note}', 'Tenant\SaleNotePaymentController@records');

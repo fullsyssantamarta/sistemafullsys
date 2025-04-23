@@ -1,4 +1,3 @@
-
 <div class="">
     <div class=" ">
         <table class="">
@@ -41,7 +40,19 @@
                         <td class="celda">{{$value->item->internal_id}}</td>
                         <td class="celda">{{$value->item->name ?? ''}}</td>
                         <td class="celda">{{$value->stock}}</td>
-                        <td class="celda">{{$value->item->sale_unit_price}}</td>
+                        <td class="celda">
+                            {{$value->item->sale_unit_price}}
+                            @php
+                                $item_prices = $value->item->item_unit_types;
+                            @endphp
+                            @if($item_prices->count() > 0)
+                                @foreach($item_prices as $price)
+                                    @if($price->price1 > 0)<br>Precio1: {{$price->price1}}@endif
+                                    @if($price->price2 > 0)<br>Precio2: {{$price->price2}}@endif
+                                    @if($price->price3 > 0)<br>Precio3: {{$price->price3}}@endif
+                                @endforeach
+                            @endif
+                        </td>
                         <td class="celda">{{$value->item->purchase_unit_price}}</td>
                         <td class="celda">{{$value->warehouse->description}}</td>
 

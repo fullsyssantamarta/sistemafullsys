@@ -63,7 +63,9 @@ class PosCollection extends ResourceCollection
                 'item_unit_types' => $row->item_unit_types->transform(function($row) { return $row->getSearchRowResource();}),
                 'unit_type' => $row->unit_type,
                 'tax' => $row->tax,
-                'sale_unit_price_with_tax' => $price_with_tax
+                'sale_unit_price_with_tax' => $price_with_tax,
+                'lot_code' => $row->lot_code,
+                'date_of_due' => $row->date_of_due
             ];
         });
     }

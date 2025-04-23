@@ -236,8 +236,9 @@
                         </div>
                     </div>
                     <div class="form-actions text-right mt-4">
+                        <el-button type="primary" @click.prevent="preeliminarView" :loading="loading_preview">Vista Preliminar</el-button>
                         <el-button @click.prevent="close()">Cancelar</el-button>
-                        <el-button class="submit" type="primary" native-type="submit" :loading="loading_submit"
+                        <el-button class="submit" type="primary" native-type="submit" :loading="loading_submit" 
                             v-if="form.items.length > 0">Generar</el-button>
                     </div>
                 </form>
@@ -307,7 +308,8 @@ export default {
             showDialogAddRetention: false,
             showDialogNewPerson: false,
             showDialogOptions: false,
-            loading_submit: false,
+            loading_submit: false, 
+            loading_preview: false, // Variable separada para vista preliminar
             loading_form: false,
             errors: {},
             form: {},
@@ -346,7 +348,7 @@ export default {
                 this.currencies = response.data.currencies
                 this.payment_methods = response.data.payment_methods
                 this.payment_forms = response.data.payment_forms
-                this.form.currency_id = (this.currencies.length > 0) ? this.currencies[0].id : null;
+                this.form.currency_id = 170
                 this.form.type_invoice_id = (this.type_invoices.length > 0) ? this.type_invoices[0].id : null;
                 this.form.payment_form_id = (this.payment_forms.length > 0) ? this.payment_forms[0].id : null;
                 this.form.payment_method_id = (this.payment_methods.length > 0) ? this.payment_methods[0].id : null;
@@ -478,10 +480,10 @@ export default {
         resetForm() {
             this.activePanel = 0
             this.initForm()
-            this.form.currency_id = (this.currencies.length > 0) ? this.currencies[0].id : null
+            this.form.currency_id = 170
             this.form.type_invoice_id = (this.type_invoices.length > 0) ? this.type_invoices[0].id : null
-            this.form.payment_form_id = (this.payment_forms.length > 0) ? this.payment_forms[0].id : null;
-            this.form.payment_method_id = (this.payment_methods.length > 0) ? this.payment_methods[0].id : null;
+            this.form.payment_form_id = (this.payment_forms.length > 0) ? this.payment_forms[0].id : null
+            this.form.payment_method_id = (this.payment_methods.length > 0) ? this.payment_methods[0].id : null
         },
         async changeOperationType() {
             await this.filterCustomers();
@@ -708,7 +710,7 @@ export default {
             }
             this.form.service_invoice = await this.createInvoiceService();
             // return
-            this.loading_submit = true
+            this.loading_submit = true // Usa loading_submit
             this.$http.post(`/${this.resource}/store_aiu`, this.form).then(response => {
                 if (response.data.success) {
                     this.resetForm();
@@ -874,7 +876,8 @@ export default {
                     code: code,
                     type_item_identification_id: 4,
                     price_amount: this.cadenaDecimales(x.price),
-                    base_quantity: x.quantity
+                    base_quantity: x.quantity,
+                    notes: x.notes || ""
                 };
             });
             return data;
@@ -944,6 +947,41 @@ export default {
                 return amount.toString();
             else
                 return amount.toString() + ".00";
+        },
+        async preeliminarView() {
+            try {
+                if (!this.form.customer_id) {
+                    return this.$message.error('Debe seleccionar un cliente')
+                }
+                
+                this.loading_preview = true // Usa loading_preview
+                const response = await this.$http.post(`/${this.resource}/preeliminar-view`, {
+                    ...this.form,
+                    format_print: "1",
+                    service_invoice: await this.createInvoiceService()
+                })
+
+                if (response.data.success) {
+                    // Convertir base64 a PDF y abrirlo en nueva pestaña
+                    const base64 = response.data.base64invoicepdf;
+                    const byteCharacters = atob(base64);
+                    const byteNumbers = new Array(byteCharacters.length);
+                    for (let i = 0; i < byteCharacters.length; i++) {
+                        byteNumbers[i] = byteCharacters.charCodeAt(i);
+                    }
+                    const byteArray = new Uint8Array(byteNumbers);
+                    const file = new Blob([byteArray], { type: 'application/pdf' });
+                    const fileURL = URL.createObjectURL(file);
+                    window.open(fileURL);
+                } else {
+                    this.$message.error(response.data.message)
+                }
+            } catch (error) {
+                console.error(error)
+                this.$message.error('Ocurrió un error al generar la vista preliminar')
+            } finally {
+                this.loading_preview = false // Reset loading_preview
+            }
         },
     }
 }

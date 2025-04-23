@@ -221,7 +221,7 @@ class DocumentPayrollRequest extends FormRequest
             'accrued.compensation' => 'nullable|numeric',
 
             // opcionales
-            'accrued.transportation_allowance' => 'nullable|numeric|gt:0',
+            'accrued.transportation_allowance' => 'nullable|numeric',
             'accrued.telecommuting' => 'nullable|numeric|gt:0',
             'accrued.endowment' => 'nullable|numeric|gt:0',
             'accrued.sustenance_support' => 'nullable|numeric|gt:0',

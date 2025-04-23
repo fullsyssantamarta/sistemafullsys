@@ -219,7 +219,7 @@
                                     <div class="col-md-3">
                                         <div class="form-group" :class="{'has-danger': errors['accrued.worked_days']}">
                                             <label class="control-label">Días trabajados<span class="text-danger"> *</span></label>
-                                            <el-input-number v-model="form.accrued.worked_days" :min="1" :max="30" :precision="0" controls-position="right" @change="changeWorkedDays"></el-input-number>
+                                            <el-input-number v-model="form.accrued.worked_days" :min="0" :max="30" :precision="0" controls-position="right" @change="changeWorkedDays"></el-input-number>
                                             <small class="form-control-feedback" v-if="errors['accrued.worked_days']" v-text="errors['accrued.worked_days'][0]"></small>
                                         </div>
                                     </div>
@@ -1508,8 +1508,9 @@
 
 
                     <div class="form-actions text-right mt-4">
+                        <el-button type="primary" @click.prevent="preeliminarView" :loading="loading_preview">Vista Preliminar</el-button>
                         <el-button @click.prevent="close()">Cancelar</el-button>
-                        <el-button class="submit" type="primary" native-type="submit" :loading="loading_submit" >Generar</el-button>
+                        <el-button class="submit" type="primary" native-type="submit" :loading="loading_submit">Generar</el-button>
                     </div>
                 </form>
             </div>
@@ -1602,7 +1603,8 @@
                 showDialogDocumentPayrollExtraHours: false,
                 quantity_days_month: 30,
                 quantity_days_year: 360,
-                loading: false
+                loading: false,
+                loading_preview: false
             }
         },
         async created() {
@@ -1993,12 +1995,7 @@
             },
             salaryValidation(){
 
-                if(parseFloat(this.form.accrued.salary) <= 0 || parseFloat(this.form.accrued.total_base_salary) <= 0){
-                    return {
-                        success : false,
-                        message : 'El campo Salario debe ser mayor a 0'
-                    }
-                }
+                
 
                 return {
                     success : true
@@ -2613,6 +2610,65 @@
                     this.loading_submit = false;
                 });
             },
+            async preeliminarView() {
+                try {
+                    if (!this.form.worker_id?.length) {
+                        return this.$message.error('Debe seleccionar al menos un empleado')  
+                    }
+                    
+                    // Crear una copia del formulario 
+                    const formData = _.cloneDeep(this.form);
+                    const worker = await _.find(this.workers, {id: this.form.worker_id[0]});
+                    
+                    // Asegurar que todos los campos del trabajador estén presentes
+                    formData.worker = {
+                        type_worker_id: worker.type_worker_id || 1,
+                        sub_type_worker_id: worker.sub_type_worker_id || 1,
+                        payroll_type_document_identification_id: worker.payroll_type_document_identification_id || 1,
+                        municipality_id: worker.municipality_id || 1,
+                        type_contract_id: worker.type_contract_id || 1,
+                        high_risk_pension: worker.high_risk_pension || false,
+                        identification_number: worker.identification_number || worker.number,
+                        surname: worker.surname || '',
+                        second_surname: worker.second_surname || '',
+                        first_name: worker.first_name || '',
+                        address: worker.address || '',
+                        integral_salarary: worker.integral_salarary || false,
+                        salary: parseFloat(worker.salary) || 0
+                    };
+
+                    // Agregar campos faltantes de la nómina
+                    formData.payment = formData.payment || {};
+                    formData.period = formData.period || {};
+                    formData.accrued = formData.accrued || {};
+                    formData.deduction = formData.deduction || {};
+                    
+                    this.loading_preview = true;
+                    const response = await this.$http.post(`/${this.resource}/preeliminar-view`, formData);
+
+                    if (response.data.success) {
+                        const base64 = response.data.base64payrollpdf;
+                        const byteCharacters = atob(base64);
+                        const byteNumbers = new Array(byteCharacters.length);
+                        
+                        for (let i = 0; i < byteCharacters.length; i++) {
+                            byteNumbers[i] = byteCharacters.charCodeAt(i);
+                        }
+                        
+                        const byteArray = new Uint8Array(byteNumbers);
+                        const file = new Blob([byteArray], { type: 'application/pdf' });
+                        const fileURL = URL.createObjectURL(file);
+                        window.open(fileURL);
+                    } else {
+                        this.$message.error(response.data.message);
+                    }
+                } catch (error) {
+                    console.error(error);
+                    this.$message.error('Ocurrió un error al generar la vista previa');
+                } finally {
+                    this.loading_preview = false;
+                }
+            }
         }
     }
 </script>

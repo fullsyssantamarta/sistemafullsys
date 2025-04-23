@@ -89,41 +89,33 @@ class ReportCommissionController extends Controller
 
     private function data($document_type_id, $establishment_id, $date_start, $date_end, $model)
     {
-        // code 1 = factura de venta nacional
         $types = TypeDocument::whereNotNull('resolution_number')->where('code', 1)->pluck('id');
 
         if($establishment_id){
-
-            $data = $model::with(['documents'=>function($q) use($date_start, $date_end, $types){
-
+            $data = $model::with(['documents' => function($q) use($date_start, $date_end, $types){
                                 $q->whereStateTypeAccepted()
                                 ->whereIn('type_document_id', $types)
                                 ->whereBetween('date_of_issue', [$date_start, $date_end]);
-
-                            },'sale_notes'=>function($z) use($date_start, $date_end, $types){
-
+                            },
+                            'sale_notes' => function($z) use($date_start, $date_end, $types){
                                 $z->whereStateTypeAccepted()
                                 ->whereBetween('date_of_issue', [$date_start, $date_end]);
-
-                            }])
+                            },
+                            'user_commission'])
                             ->where('establishment_id', $establishment_id)
                             ->latest()
                             ->whereTypeUser();
-
         }else{
-
-            $data = $model::with(['documents'=>function($q) use($date_start, $date_end, $types){
-
+            $data = $model::with(['documents' => function($q) use($date_start, $date_end, $types){
                                 $q->whereStateTypeAccepted()
                                 ->whereIn('type_document_id', $types)
                                 ->whereBetween('date_of_issue', [$date_start, $date_end]);
-
-                            },'sale_notes'=>function($z) use($date_start, $date_end, $types){
-
+                            },
+                            'sale_notes' => function($z) use($date_start, $date_end, $types){
                                 $z->whereStateTypeAccepted()
                                 ->whereBetween('date_of_issue', [$date_start, $date_end]);
-
-                            }])
+                            },
+                            'user_commission'])
                             ->latest()
                             ->whereTypeUser();
         }

@@ -9,8 +9,21 @@
                                 Producto/Servicio
                                 <a href="#" @click.prevent="showDialogNewItem = true">[+ Nuevo]</a>
                             </label>
-                            <el-select v-model="form.item_id" @change="changeItem" filterable>
-                                <el-option v-for="option in items" :key="option.id" :value="option.id" :label="option.full_description"></el-option>
+                            <el-select 
+                                v-model="form.item_id" 
+                                @change="changeItem"
+                                filterable
+                                remote
+                                reserve-keyword
+                                :remote-method="remoteSearchItems"
+                                :loading="loading_search"
+                                placeholder="Buscar producto o servicio">
+                                <el-option 
+                                    v-for="option in items" 
+                                    :key="option.id" 
+                                    :value="option.id" 
+                                    :label="option.full_description">
+                                </el-option>
                             </el-select>
                             <small class="form-control-feedback" v-if="errors.item_id" v-text="errors.item_id[0]"></small>
                         </div>
@@ -84,7 +97,7 @@
                     </div>
 
                     <div class="col-md-3 col-sm-6">
-                        <div class="form-group"  :class="{'has-danger': errors.discount}">
+                        <div class="form-group" :class="{'has-danger': errors.discount}">
                             <label class="control-label">Descuento</label>
                             <el-input v-model="form.discount"
                                 min="0"
@@ -100,7 +113,20 @@
                             <small class="form-control-feedback" v-if="errors.discount" v-text="errors.discount[0]"></small>
                         </div>
                     </div>
-
+                    <div class="col-md-3 col-sm-6">
+                        <div class="form-group">
+                            <label class="control-label" for="sale_unit_price">
+                                Cambiar precio de venta <el-checkbox v-model="applyWeightedPrice" @change="onChangeApplyWeighted"></el-checkbox>
+                            </label>
+                            <el-input 
+                                v-model="form.sale_unit_price"
+                                :placeholder="applyWeightedPrice ? 'Precio ponderado calculado' : 'Ingrese precio de venta'">
+                                <template slot="prepend" v-if="form.item.currency_type_symbol">
+                                    {{ form.item.currency_type_symbol }}
+                                </template>
+                            </el-input>
+                        </div>
+                    </div>
                     <div class="col-md-12"  v-if="form.item_unit_types.length > 0">
                         <div style="margin:3px" class="table-responsive">
                             <h5 class="separator-title">
@@ -202,6 +228,9 @@
                 all_taxes:[],
                 taxes:[],
                 titleAction: '',
+                showWeightedCalculation: false,
+                applyWeightedPrice: false,
+                loading_search: false,
             }
         },
         computed: {
@@ -259,6 +288,7 @@
                     lots: [],
                     discount_type: 'percentage',
                     discount_percentage: 0,
+                    sale_unit_price: 0,
                 }
 
                 this.item_unit_type = {};
@@ -313,7 +343,6 @@
                 this.form.item.unit_type_id = row.unit_type_id
             },
             changeItem() {
-
                 this.form.item = _.find(this.items, {'id': this.form.item_id})
                 this.form.unit_price = this.form.item.purchase_unit_price
                 // this.form.affectation_igv_type_id = this.form.item.purchase_affectation_igv_type_id
@@ -321,8 +350,26 @@
 
                 this.form.unit_type_id = this.form.item.unit_type_id
                 this.form.tax_id = (this.taxes.length > 0) ? this.form.item.purchase_tax_id: null
-
+                
+                // Establecer el precio de venta inicial al cambiar item
+                this.form.sale_unit_price = this.form.item.sale_unit_price
+                
+                // Si applyWeightedPrice está activo, calcular el precio ponderado
+                // después de establecer los valores iniciales
+                if(this.applyWeightedPrice && this.form.item.stock) {
+                    this.$nextTick(() => {
+                        this.calculateWeightedPrice()
+                    })
+                }
             },
+
+            onChangeApplyWeighted(value) {
+                if(value) {
+                    // Si se activa el checkbox, calcular precio ponderado
+                    this.calculateWeightedPrice()
+                }
+            },
+
             async clickAddItem() {
 
                 if(this.form.item.lots_enabled){
@@ -353,6 +400,12 @@
                 this.form.item.unit_price = this.form.unit_price
                 this.form.item.presentation = this.item_unit_type;
 
+                // Solo incluir sale_unit_price si applyWeightedPrice está activo
+                if (this.applyWeightedPrice) {
+                    this.form.sale_unit_price = this.form.sale_unit_price;
+                } else {
+                    delete this.form.sale_unit_price;
+                }
 
                 this.form.lot_code = await this.lot_code
                 this.form.lots = await this.lots
@@ -382,14 +435,59 @@
                 return form
             },
             reloadDataItems(item_id) {
-                this.$http.get(`/${this.resource}/table/items`).then((response) => {
-                    this.items = response.data
-                    this.form.item_id = item_id
-                    this.changeItem()
-                    // this.filterItems()
-
-                })
+                // Modificar para que incluya el nuevo item en la búsqueda
+                this.loading_search = true
+                this.$http.get(`/purchases/search-items?new_item_id=${item_id}`)
+                    .then((response) => {
+                        this.items = response.data
+                        this.form.item_id = item_id
+                        this.changeItem()
+                        this.loading_search = false
+                    })
+                    .catch(error => {
+                        console.log(error)
+                        this.loading_search = false
+                    })
             },
+            calculateWeightedPrice() {
+                if (!this.applyWeightedPrice || !this.form.item.stock || !this.form.quantity) {
+                    return;
+                }
+
+                const currentStock = parseFloat(this.form.item.stock);
+                const currentPrice = parseFloat(this.form.item.sale_unit_price);
+                const newQuantity = parseFloat(this.form.quantity);
+                const newPrice = parseFloat(this.form.unit_price);
+
+                const weightedPrice = ((currentStock * currentPrice) + (newQuantity * newPrice)) / (currentStock + newQuantity);
+                this.form.sale_unit_price = Number(weightedPrice.toFixed(2));
+            },
+            async remoteSearchItems(query) {
+                if (query.length > 2) {
+                    this.loading_search = true
+                    await this.$http.get(`/purchases/search-items?search=${query}`)
+                        .then(response => {
+                            this.items = response.data
+                            this.loading_search = false
+                        })
+                        .catch(error => {
+                            console.log(error)
+                            this.loading_search = false
+                        })
+                }
+            },
+        },
+        watch: {
+            'form.quantity': function(newVal, oldVal) {
+                if(this.form.item.stock && newVal > 0) {
+                    this.calculateWeightedPrice()
+                }
+            },
+            'form.unit_price': function(newVal, oldVal) {
+                if(this.form.item.stock && this.form.quantity > 0) {
+                    this.calculateWeightedPrice()
+                }
+            }
         }
     }
 

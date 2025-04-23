@@ -18,6 +18,7 @@ if($hostname) {
                     Route::get('table/{table}', 'DocumentPayrollController@table');
                     Route::post('', 'DocumentPayrollController@store');
                     Route::get('record/{record}', 'DocumentPayrollController@record');
+                    Route::post('preeliminar-view', 'DocumentPayrollController@preeliminarview');
                     Route::get('downloadFile/{filename}', 'DocumentPayrollController@downloadFile');
                     Route::post('send-email', 'DocumentPayrollController@sendEmail');
                     Route::post('query-zipkey', 'DocumentPayrollController@queryZipkey');
@@ -47,6 +48,7 @@ if($hostname) {
                     Route::get('search', 'WorkerController@searchWorkers');
                     Route::get('search-by-id/{worker}', 'WorkerController@searchWorkerById');
                     Route::post('import', 'WorkerController@import');
+                    Route::get('municipalities/{department_id}', 'WorkerController@getMunicipalities');
                 });
 
 

@@ -552,7 +552,7 @@ class DocumentPayrollHelper
 
                 'fondossp_type_law_deductions_id' => $deduction->fondossp_type_law_deductions_id,
                 'fondosp_deduction_SP' => $deduction->fondosp_deduction_SP,
-                'fondossp_sub_type_law_deductions_id' => $deduction->fondossp_sub_type_law_deductions_id,
+                'fondossp_sub_type_law_deductions_id' => $deduction->fondosp_deduction_sub,
                 'fondosp_deduction_sub' => $deduction->fondosp_deduction_sub,
 
                 'afc' => $deduction->afc,
@@ -659,5 +659,58 @@ class DocumentPayrollHelper
         throw new Exception($message);
     }
 
+    /**
+     * Obtener url y data para enviar nómina a api (vista previa)
+     *
+     * @param  array $inputs
+     * @param  bool $preview
+     * @return array
+     */
+    private function getEndpointPreviewDataApi($inputs)
+    {
+        // Cambiamos la ruta para que coincida con la API
+        $url = 'ubl2.1/payroll/preeliminar-view';
+
+        // Si estamos en ambiente de pruebas, no necesitamos agregar el test_set_id
+        // ya que la API lo maneja internamente
+        return [
+            'params' => $inputs,
+            'url' => $url,
+        ];
+    }
+
+    /**
+     * Enviar nómina a la api para vista previa
+     *
+     * @param  array $inputs
+     * @return array
+     */
+    public function sendToPreviewApi($inputs)
+    {
+        try {
+            $connection_api = new HttpConnectionApi($this->company->api_token);
+            
+            if (empty($inputs['worker'])) {
+                throw new Exception('Datos del trabajador requeridos para vista previa');
+            }
+    
+            $url = 'ubl2.1/payroll/preeliminar-view';
+            $response = $connection_api->sendRequestToApi($url, $inputs, 'POST');
+    
+            if (isset($response['errors'])) {
+                throw new Exception($connection_api->parseErrorsToString($response['errors']));
+            }
+    
+            return [
+                'success' => true,
+                'message' => $response['message'] ?? 'Vista previa generada',
+                'urlpayrollpdf' => $response['urlpayrollpdf'] ?? '',
+                'base64payrollpdf' => $response['base64payrollpdf'] ?? ''
+            ];
+    
+        } catch (Exception $e) {
+            throw $e;
+        }
+    }
 
 }

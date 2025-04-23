@@ -151,7 +151,6 @@ class PurchaseController extends Controller
         // $charge_types = ChargeDiscountType::whereType('charge')->whereLevel('item')->get();
         // $attribute_types = AttributeType::whereActive()->orderByDescription()->get();
         $warehouses = Warehouse::all();
-
         return compact('items', 'categories', 'taxes','warehouses');
     }
 
@@ -175,19 +174,25 @@ class PurchaseController extends Controller
         return view('tenant.purchases.note', compact('resourceId'));
     }
 
-    public function store(PurchaseRequest $request)
-    {
+    public function store(PurchaseRequest $request) {
         $data = self::convert($request);
-
+        
         $purchase = DB::connection('tenant')->transaction(function () use ($data) {
             $doc = Purchase::create($data);
-            foreach ($data['items'] as $row)
-            {
-                // $doc->items()->create($row);
+            foreach ($data['items'] as $row) {
                 $p_item = new PurchaseItem;
                 $p_item->fill($row);
                 $p_item->purchase_id = $doc->id;
                 $p_item->save();
+
+                $item = Item::find($row['item_id']);
+                if($item) {
+                    $item->purchase_unit_price = $row['unit_price'];
+                    if(isset($row['sale_unit_price'])) {
+                        $item->sale_unit_price = $row['sale_unit_price'];
+                    }
+                    $item->save();
+                }
 
                 if(array_key_exists('lots', $row)){
                     foreach ($row['lots'] as $lot){
@@ -387,6 +392,14 @@ class PurchaseController extends Controller
                 $p_item->purchase_id = $doc->id;
                 $p_item->save();
 
+                if(isset($row['sale_unit_price']) && $row['sale_unit_price'] > 0) {
+                    $item = Item::find($row['item_id']);
+                    if($item) {
+                        $item->sale_unit_price = $row['sale_unit_price'];
+                        $item->save();
+                    }
+                }
+                
                 if(array_key_exists('lots', $row)){
 
                     foreach ($row['lots'] as $lot){
@@ -524,10 +537,25 @@ class PurchaseController extends Controller
                 break;
 
             case 'items':
+                // Modificar para retornar solo los primeros 20 items
+                $items = Item::whereNotIsSet()
+                            ->whereIsActive()
+                            ->orderBy('name')
+                            ->take(20)
+                            ->get();
 
-                $items = Item::whereNotIsSet()->whereIsActive()->orderBy('name')->get(); //whereWarehouse()
                 return collect($items)->transform(function($row) {
                     $full_description = ($row->internal_id)?$row->internal_id.' - '.$row->name:$row->name;
+                    // Obtener el stock del almacén del usuario actual
+                    $establishment = Establishment::where('id', auth()->user()->establishment_id)->first();
+                    $stock = 0;
+                    if($establishment) {
+                        $warehouse = ItemWarehouse::where('item_id', $row->id)
+                                                ->where('warehouse_id', $establishment->id)
+                                                ->first();
+                        $stock = $warehouse ? $warehouse->stock : 0;
+                    }
+
                     return [
                         'id' => $row->id,
                         'item_code'  => $row->item_code,
@@ -569,6 +597,7 @@ class PurchaseController extends Controller
                         //         'stock' => $row->stock,
                         //     ];
                         // })
+                        'stock' => $stock,
                     ];
                 });
 //                return $items;
@@ -580,6 +609,89 @@ class PurchaseController extends Controller
 
                 break;
         }
+    }
+
+    // Agregar nuevo método para búsqueda de items
+    public function searchItems(Request $request)
+    {
+        $search = $request->input('search');
+        $newItemId = $request->input('new_item_id');
+        
+        $query = Item::whereNotIsSet()
+                    ->whereIsActive();
+                    
+        // Si hay un nuevo item, asegurarse de incluirlo
+        if ($newItemId) {
+            $query->where(function($q) use($search, $newItemId) {
+                $q->where('id', $newItemId)
+                  ->orWhere(function($sq) use($search) {
+                      if ($search) {
+                          $sq->where('name', 'like', "%{$search}%")
+                             ->orWhere('internal_id', 'like', "%{$search}%")
+                             ->orWhere('description', 'like', "%{$search}%");
+                      }
+                  });
+            });
+        } else if ($search) {
+            $query->where(function($q) use($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('internal_id', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        $items = $query->orderByDesc('id') // Ordenar por ID descendente para que el nuevo aparezca primero
+                       ->take(20)
+                       ->get();
+
+        return collect($items)->transform(function($row) {
+            $full_description = ($row->internal_id) ? $row->internal_id.' - '.$row->name : $row->name;
+            
+            $establishment = Establishment::where('id', auth()->user()->establishment_id)->first();
+            $stock = 0;
+            if($establishment) {
+                $warehouse = ItemWarehouse::where('item_id', $row->id)
+                                        ->where('warehouse_id', $establishment->id)
+                                        ->first();
+                $stock = $warehouse ? $warehouse->stock : 0;
+            }
+
+            return [
+                'id' => $row->id,
+                'item_code'  => $row->item_code,
+                'name'  => $row->name,
+                'description'  => $row->description,
+                'full_description' => $full_description,
+                'currency_type_id' => $row->currency_type_id,
+                'currency_type_symbol' => $row->currency_type->symbol,
+                'sale_unit_price' => $row->sale_unit_price,
+                'purchase_unit_price' => $row->purchase_unit_price,
+                'unit_type_id' => $row->unit_type_id,
+                'purchase_tax_id' => $row->purchase_tax_id,
+                'purchase_affectation_igv_type_id' => $row->purchase_affectation_igv_type_id,
+                'has_perception' => (bool) $row->has_perception,
+                'lots_enabled' => (bool) $row->lots_enabled,
+                'percentage_perception' => $row->percentage_perception,
+                'item_unit_types' => collect($row->item_unit_types)->transform(function($row) {
+                    return [
+                        'id' => $row->id,
+                        'description' => "{$row->description}",
+                        'item_id' => $row->item_id,
+                        'unit_type_id' => $row->unit_type_id,
+                        'unit_type' => $row->unit_type,
+                        'quantity_unit' => $row->quantity_unit,
+                        'price1' => $row->price1,
+                        'price2' => $row->price2,
+                        'price3' => $row->price3,
+                        'price_default' => $row->price_default,
+                    ];
+                }),
+                'series_enabled' => (bool) $row->series_enabled,
+                'unit_type' => $row->unit_type,
+                'tax' => $row->tax,
+                'stock' => $stock,
+            ];
+        });
     }
 
     public function delete($id)

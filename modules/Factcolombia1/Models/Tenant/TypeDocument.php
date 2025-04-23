@@ -12,7 +12,11 @@ class TypeDocument extends Model
 
     protected $table = 'co_type_documents';
 
-    public const INVOICE_CODE = '1';
+    public const INVOICE_CODE = '1';          // Factura electrónica
+    public const CREDIT_NOTE_CODE = '4';      // Nota crédito 
+    public const DEBIT_NOTE_CODE = '5';       // Nota débito
+    public const POS_CODE = '11';             // Documento POS
+    public const POS_CREDIT_NOTE_CODE = '26'; // Nota crédito POS
     public const DSNOF_CODE = '11';
     public const DSNOF_ADJUST_NOTE_CODE = '13';
 

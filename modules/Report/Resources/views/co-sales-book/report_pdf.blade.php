@@ -16,7 +16,7 @@
 
             html {
                 font-family: sans-serif;
-                font-size: 12px;
+                font-size: 10px;
             }
 
         </style>

@@ -80,16 +80,26 @@
                             </div>
 
                             <div class="col-md-3">
+                                <div class="form-group" :class="{'has-danger': errors.department_id}">
+                                    <label class="control-label">Departamento</label>
+                                    <el-select v-model="form.department_id" filterable @change="onDepartmentChange">
+                                        <el-option v-for="option in departments" :key="option.id" :value="option.id" :label="option.name"></el-option>
+                                    </el-select>
+                                    <small class="form-control-feedback" v-if="errors.department_id" v-text="errors.department_id[0]"></small>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
                                 <div class="form-group" :class="{'has-danger': errors.municipality_id}">
                                     <label class="control-label">Municipalidad</label>
-                                    <el-select v-model="form.municipality_id"  filterable>
-                                        <el-option v-for="option in municipalities" :key="option.id" :value="option.id" :label="option.name"></el-option>
+                                    <el-select v-model="form.municipality_id" filterable>
+                                        <el-option v-for="option in filtered_municipalities" :key="option.id" :value="option.id" :label="option.name"></el-option>
                                     </el-select>
                                     <small class="form-control-feedback" v-if="errors.municipality_id" v-text="errors.municipality_id[0]"></small>
                                 </div>
                             </div>
 
-                            <div class="col-md-9">
+                            <div class="col-md-6">
                                 <div class="form-group" :class="{'has-danger': errors.address}">
                                     <label class="control-label">Dirección</label>
                                     <el-input v-model="form.address" dusk="address"></el-input>
@@ -259,6 +269,8 @@
                 payroll_periods: [],
                 municipalities: [], 
                 payment_methods: [], 
+                departments: [],
+                filtered_municipalities: [],
                 loading_search: false,
                 show_inputs_payment_method: true,
                 activeName: 'general',
@@ -284,12 +296,23 @@
                         this.municipalities = response.data.municipalities 
                         this.payroll_periods = response.data.payroll_periods 
                         this.payment_methods = response.data.payment_methods 
+                        this.departments = response.data.departments
+                        this.filtered_municipalities = response.data.municipalities
 
                         this.form.type_worker_id = this.type_workers.length > 0 ? this.type_workers[0].id : null
                         this.form.sub_type_worker_id = this.sub_type_workers.length > 0 ? this.sub_type_workers[0].id : null
                         this.form.type_contract_id = this.type_contracts.length > 0 ? this.type_contracts[0].id : null
 
                     })
+            },
+            async onDepartmentChange(department_id) {
+                this.form.municipality_id = null
+                if (department_id) {
+                    const response = await this.$http.get(`/${this.resource}/municipalities/${department_id}`)
+                    this.filtered_municipalities = response.data.municipalities
+                } else {
+                    this.filtered_municipalities = []
+                }
             },
             changePaymentMethod(){
 

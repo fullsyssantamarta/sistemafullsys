@@ -62,14 +62,15 @@ class PaymentMethodTypeController extends Controller
         ];
         
         $payment_method_types = PaymentMethodType::whereFilterPayments($params)->get();
-        $expense_method_types = ExpenseMethodType::whereFilterPayments($params)->get();
+        // $expense_method_types = ExpenseMethodType::whereFilterPayments($params)->get();
 
         $records_by_pmt = $this->getRecordsByPaymentMethodTypes($payment_method_types);
-        $records_by_emt = $this->getRecordsByExpenseMethodTypes($expense_method_types);
-        $totals = $this->getTotalsPaymentMethodType($records_by_pmt, $records_by_emt);
+        // $records_by_emt = $this->getRecordsByExpenseMethodTypes($expense_method_types);
+        // $totals = $this->getTotalsPaymentMethodType($records_by_pmt, $records_by_emt);
+        $totals = $this->getTotalsPaymentMethodType($records_by_pmt, collect([]));
 
         return [
-            'records' => $records_by_pmt->merge($records_by_emt),
+            'records' => $records_by_pmt, // Removed merge with $records_by_emt
             'totals' => $totals
         ];
         

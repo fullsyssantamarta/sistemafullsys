@@ -175,6 +175,7 @@ class Worker extends PayrollBaseModel
             'sub_type_worker_id' => $this->sub_type_worker_id,
             'payroll_type_document_identification_id' => $this->payroll_type_document_identification_id,
             'municipality_id' => $this->municipality_id,
+            'department_id' => optional($this->municipality)->department_id,
             'type_contract_id' => $this->type_contract_id,
             'identification_number' => $this->identification_number,
             'surname' => $this->surname,

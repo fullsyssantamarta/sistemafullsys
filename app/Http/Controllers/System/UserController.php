@@ -29,6 +29,9 @@ class UserController extends Controller
             $user->email = $request->input('email');
             $user->name = $request->input('name');
             $user->phone = $request->input('phone');
+            // Agregamos los nuevos campos no obligatorios
+            $user->address_contact = $request->input('address_contact');
+            $user->introduction = $request->input('introduction');
         }
 
         if (strlen($request->input('password')) > 0) {

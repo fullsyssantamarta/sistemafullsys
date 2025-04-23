@@ -4,6 +4,7 @@ namespace App\Http\Resources\Tenant;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 use App\Models\Tenant\DocumentPos;
+use Modules\Factcolombia1\Models\Tenant\CustomerPurchaseCoupon;
 
 class DocumentPosResource extends JsonResource
 {
@@ -18,6 +19,7 @@ class DocumentPosResource extends JsonResource
 
         $sale_note = DocumentPos::find($this->id);
         $sale_note->payments = self::getTransformPayments($sale_note->payments);
+        $has_purchase_coupon = CustomerPurchaseCoupon::where('document_id', $this->id)->where('status', 1)->exists();
 
         return [
             'id' => $this->id,
@@ -31,7 +33,8 @@ class DocumentPosResource extends JsonResource
             'print_html' => url('')."/document-pos/print/{$this->external_id}/html",
             'document_pos' => $sale_note,
             'serie' => $this->series,
-            'number' => $this->number
+            'number' => $this->number,
+            'has_purchase_coupon' => $has_purchase_coupon
         ];
     }
 

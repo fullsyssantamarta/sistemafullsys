@@ -83,6 +83,7 @@
                                 <th>Fecha Emisión</th>
                                 <th class="">Usuario/Vendedor</th>
                                 <th>Cliente</th>
+                                <th>Codigo Producto</th>
                                 <th>Estado</th>
                                 <th>Remisión</th>
                                 <th>Cotización</th>
@@ -91,15 +92,25 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @php
+                                $total_general = 0;
+                            @endphp
                             @foreach($records as $key => $value)
                                 @php
                                     $row = $value->getRowResource();
+                                    $total_general += $row['total'];
                                 @endphp
                                 <tr>
                                     <td class="celda">{{$loop->iteration}}</td>
                                     <td class="celda">{{$row['date_of_issue']}}</td>
                                     <td class="celda">{{$row['user_name']}}</td>
                                     <td class="celda">{{$row['customer_name']}}</td>
+                                    <td class="celda">
+                                        @foreach($value->items as $item)
+                                            {{$item->item->internal_id ?? 'N/A'}}
+                                            @if(!$loop->last), @endif
+                                        @endforeach
+                                    </td>
                                     <td class="celda">{{$row['state_type_description']}}</td>
                                     <td class="celda">{{$row['number_full']}}</td>
                                     <td class="celda">{{$row['quotation_number_full']}}</td>
@@ -107,6 +118,11 @@
                                     <td class="celda">{{$row['total']}}</td>
                                 </tr>
                             @endforeach
+                            <tr>
+                                <td colspan="8" class="celda"></td>
+                                <td class="celda"><strong>TOTAL GENERAL</strong></td>
+                                <td class="celda"><strong>{{number_format($total_general, 2)}}</strong></td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>

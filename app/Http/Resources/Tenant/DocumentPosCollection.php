@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Tenant;
 
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Modules\Factcolombia1\Models\Tenant\CustomerPurchaseCoupon;
 
 class DocumentPosCollection extends ResourceCollection
 {
@@ -18,7 +19,7 @@ class DocumentPosCollection extends ResourceCollection
 
             $total_paid = number_format($row->payments->sum('payment'), 2, ".", "");
             $total_pending_paid = number_format($row->total - $total_paid, 2, ".", "");
-
+            $has_purchase_coupon = CustomerPurchaseCoupon::where('document_id', $row->id)->where('status', 1)->exists();
             //$btn_generate = (count($row->documents) > 0)?false:true;
             //$btn_payments = (count($row->documents) > 0)?false:true;
 
@@ -53,6 +54,7 @@ class DocumentPosCollection extends ResourceCollection
                 'electronic' => $row->electronic,
                 'plate_number' => $row->plate_number,
                 'cash_type' => $row->cash_type,
+                'has_purchase_coupon' => $has_purchase_coupon,
             ];
         });
     }

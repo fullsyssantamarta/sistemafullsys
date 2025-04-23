@@ -21,7 +21,9 @@ use Modules\Factcolombia1\Models\Tenant\{
     Item,
     Tax,
     PaymentMethod,
-    PaymentForm
+    PaymentForm,
+    ConfigurationPurchaseCoupon,
+    CustomerPurchaseCoupon,
 };
 use Carbon\Carbon;
 use Mpdf\Mpdf;
@@ -49,6 +51,7 @@ use Modules\Factcolombia1\Http\Resources\Tenant\DocumentResource;
 use App\Imports\CoDocumentsImport;
 use App\Imports\CoDocumentsImportTwoFormat;
 use Maatwebsite\Excel\Excel;
+use Illuminate\Support\Facades\View;
 
 use Modules\Factcolombia1\Helpers\DocumentHelper;
 use Exception;
@@ -595,11 +598,11 @@ class DocumentController extends Controller
                 $service_invoice['prefix'] = $request->prefix;
                 $service_invoice['resolution_number'] = $request->resolution_number;
                 if($request->format_print != "2"){
-                    $service_invoice['foot_note'] = "Modo de operación: Software Propio - by ".env('APP_NAME', 'FACTURALATAM')." La presente Factura Electrónica de Venta, es un título valor de acuerdo con lo establecido en el Código de Comercio y en especial en los artículos 621,772 y 774. El Decreto 2242 del 24 de noviembre de 2015 y el Decreto Único 1074 de mayo de 2015. El presente título valor se asimila en todos sus efectos a una letra de cambio Art. 779 del Código de Comercio. Con esta el Comprador declara haber recibido real y materialmente las mercancías o prestación de servicios descritos en este título valor.";
+                    $service_invoice['foot_note'] = "Modo de operación: Software Propio - by ".env('APP_NAME', 'FACTURADOR')." La presente Factura Electrónica de Venta, es un título valor de acuerdo con lo establecido en el Código de Comercio y en especial en los artículos 621,772 y 774. El Decreto 2242 del 24 de noviembre de 2015 y el Decreto Único 1074 de mayo de 2015. El presente título valor se asimila en todos sus efectos a una letra de cambio Art. 779 del Código de Comercio. Con esta el Comprador declara haber recibido real y materialmente las mercancías o prestación de servicios descritos en este título valor.";
                 }
             }
             //\Log::debug(json_encode($service_invoice));
-            $service_invoice['web_site'] = env('APP_NAME', 'FACTURALATAM');
+            $service_invoice['web_site'] = env('APP_NAME', 'FACTURADOR');
             //\Log::debug(json_encode($service_invoice));
             if(!is_null($this->company['jpg_firma_facturas']))
               if(file_exists(public_path('storage/uploads/logos/'.$this->company['jpg_firma_facturas']))){
@@ -885,9 +888,15 @@ class DocumentController extends Controller
             }
             $this->document = DocumentHelper::createDocument($request, $nextConsecutive, $correlative_api, $this->company, $response, $response_status, $company->type_environment_id);
             $payments = (new DocumentHelper())->savePayments($this->document, $request->payments);
+<<<<<<< HEAD
             
             // Registrar asientos contables
             $this->registerAccountingSaleEntries($this->document);
+=======
+            // Registrar cupón
+            $this->registerCustomerCoupon($this->document);
+
+>>>>>>> master
         }
         catch (\Exception $e) {
             DB::connection('tenant')->rollBack();
@@ -1093,9 +1102,9 @@ class DocumentController extends Controller
             $service_invoice['prefix'] = $request->prefix;
             $service_invoice['resolution_number'] = $request->resolution_number;
             $service_invoice['head_note'] = "V I S T A   P R E E L I M I N A R  --  V I S T A   P R E E L I M I N A R  --  V I S T A   P R E E L I M I N A R  --  V I S T A   P R E E L I M I N A R";
-            $service_invoice['foot_note'] = "Modo de operación: Software Propio - by ".env('APP_NAME', 'FACTURALATAM')." La presente Factura Electrónica de Venta, es un título valor de acuerdo con lo establecido en el Código de Comercio y en especial en los artículos 621,772 y 774. El Decreto 2242 del 24 de noviembre de 2015 y el Decreto Único 1074 de mayo de 2015. El presente título valor se asimila en todos sus efectos a una letra de cambio Art. 779 del Código de Comercio. Con esta el Comprador declara haber recibido real y materialmente las mercancías o prestación de servicios descritos en este título valor.";
+            $service_invoice['foot_note'] = "Modo de operación: Software Propio - by ".env('APP_NAME', 'FACTURADOR')." La presente Factura Electrónica de Venta, es un título valor de acuerdo con lo establecido en el Código de Comercio y en especial en los artículos 621,772 y 774. El Decreto 2242 del 24 de noviembre de 2015 y el Decreto Único 1074 de mayo de 2015. El presente título valor se asimila en todos sus efectos a una letra de cambio Art. 779 del Código de Comercio. Con esta el Comprador declara haber recibido real y materialmente las mercancías o prestación de servicios descritos en este título valor.";
 //\Log::debug(json_encode($service_invoice));
-            $service_invoice['web_site'] = env('APP_NAME', 'FACTURALATAM');
+            $service_invoice['web_site'] = env('APP_NAME', 'FACTURADOR');
 //\Log::debug(json_encode($service_invoice));
             if(!is_null($this->company['jpg_firma_facturas']))
               if(file_exists(public_path('storage/uploads/logos/'.$this->company['jpg_firma_facturas']))){
@@ -1270,7 +1279,7 @@ class DocumentController extends Controller
                 $note_service['establishment_phone'] = $sucursal->telephone;
             $note_service['establishment_email'] = $sucursal->email;
             $note_service['customer']['dv'] = $this->validarDigVerifDIAN($note_service['customer']['identification_number']);
-            $note_service['foot_note'] = "Modo de operación: Software Propio - by ".env('APP_NAME', 'FACTURALATAM');
+            $note_service['foot_note'] = "Modo de operación: Software Propio - by ".env('APP_NAME', 'FACTURADOR');
 
             $id_test = $company->test_id;
             $base_url = config('tenant.service_fact');
@@ -2251,6 +2260,61 @@ class DocumentController extends Controller
         }
     }
 
+    public function downloadFileCoupon($id)
+    {
+        $purchaseCoupon = CustomerPurchaseCoupon::where('document_id',$id)->where('status',1)->first();
+        if (!$purchaseCoupon) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cupón no encontrado'
+            ], 404);
+        }
+        
+        $coupon = ConfigurationPurchaseCoupon::where('id',$purchaseCoupon->configuration_purchase_coupon_id)->where('status',1)->first();
+
+        if (!$coupon) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cupón no encontrado'
+            ], 404);
+        }
+
+        $data = [
+            'title' => $coupon->title,
+            'description' => $coupon->description,
+            'establishment' => $coupon->establishment,
+            'coupon_date' => $coupon->coupon_date,
+            'document_number' => $purchaseCoupon->document_number,
+            'customer_name' => $purchaseCoupon->customer_name,
+            'customer_number' => $purchaseCoupon->customer_number,
+            'customer_phone' => $purchaseCoupon->customer_phone,
+            'customer_email' => $purchaseCoupon->customer_email,
+        ];
+
+        $html = View::make('factcolombia1::coupon.coupon', $data)->render();
+
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => [72, 297], // 72mm de ancho (tirilla), altura variable
+            'margin_left' => 5,
+            'margin_right' => 5,
+            'margin_top' => 5,
+            'margin_bottom' => 5,
+            'default_font' => 'symbola'
+        ]);
+
+        $mpdf->WriteHTML($html);
+
+        $pdfContent = $mpdf->Output('', 'S'); // 'S' devuelve el string del contenido
+
+        return response()->json([
+            'success' => true,
+            'filebase64' => base64_encode($pdfContent),
+            'filename' => 'cupon-'.$purchaseCoupon->document_number.'.pdf'
+        ]);
+
+    }
+
     public function searchCustomerById($id)
     {
 
@@ -2625,4 +2689,25 @@ class DocumentController extends Controller
            //'data' => $data_document
         ];
     }
+
+    private function registerCustomerCoupon($document) {
+
+        $activeCoupon = ConfigurationPurchaseCoupon::where('status',1)->first();
+        $customer = Person::where('id',$document->customer_id)->first();
+
+        if($activeCoupon && $customer && $document->total >= $activeCoupon->minimum_purchase_amount){
+            CustomerPurchaseCoupon::create([
+                'configuration_purchase_coupon_id'  => $activeCoupon->id,
+                'document_id'  => $document->id,
+                'document_number'  => $document->prefix.'-'.$document->number,
+                'customer_name'  => $customer->name,
+                'customer_number'  => $customer->number,
+                'customer_phone'  => $customer->telephone,
+                'customer_email'  => $customer->email,
+                'document_amount'  => $document->total,
+                'status'  => 1
+            ]);
+        }
+    }
+
 }
