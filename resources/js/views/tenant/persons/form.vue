@@ -251,6 +251,7 @@
         showAdditionalFields: false // Estado del checkbox para mostrar campos adicionales
       }
     },
+
     async created() {
       await this.initForm();
       await this.$http.get(`/${this.resource}/tables`)
@@ -266,8 +267,9 @@
           this.identity_document_types = response.data.typeIdentityDocuments;
         });
     },
+
     computed: {
-    maxLength() {
+      maxLength() {
         // Mapeo: clave numérica => cantidad máxima de dígitos permitidos.
         const mapping = {
         1: 10,    // Registro civil
@@ -283,8 +285,9 @@
         };
         // Se fuerza la conversión a Number para que la llave coincida correctamente en el mapeo.
         return mapping[Number(this.form.identity_document_type_id)] || 10;
-    }
+      }
     },
+
     watch: {
       // Al cambiar el tipo de documento, se asigna automáticamente el tipo de persona:
       // Si es NIT (id == 6) se selecciona "Persona Jurídica" (se asume id 1),
@@ -297,6 +300,7 @@
         }
       }
     },
+
     methods: {
       /**
        * Calcula el dígito verificador y consulta el API DIAN a través del backend.
@@ -333,6 +337,7 @@
           }
         }
       },
+
       // Método original que consultaba el nombre del cliente (si se requiere conservar)
       async searchNameClient() {
         if (this.form.number.length < 8) return;
@@ -345,16 +350,19 @@
           .catch(error => {})
           .then(() => {});
       },
+
       getDepartment(val) {
         return axios.post(`/departments/${val}`)
           .then(response => response.data)
           .catch(error => console.log(error));
       },
+
       getCities(val) {
         return axios.post(`/cities/${val}`)
           .then(response => response.data)
           .catch(error => console.log(error));
       },
+
       initForm() {
         this.errors = {};
         this.$http.get('/companies/record').then(response => {
@@ -399,10 +407,10 @@
         }).catch(error => {
           console.error('Error al obtener los datos de la compañía:', error);
         });
-
         this.departmentss();
         this.citiess();
       },
+
       departmentss(edit = false) {
         if (!edit) {
           this.form.department_id = null;
@@ -436,6 +444,7 @@
           console.error('Error al obtener información de la compañía:', error);
         });
       },
+
       citiess(edit = false) {
         if (!edit) {
           this.form.city_id = null;
@@ -462,6 +471,7 @@
           });
         }
       },
+
       async opened() {
         if (this.external && this.input_person) {
           if (this.form.number.length === 8 || this.form.number.length === 11) {
@@ -473,6 +483,7 @@
           }
         }
       },
+
       create() {
         if (this.external) {
           if (this.document_type_id === '01') {
@@ -505,6 +516,7 @@
           this.initForm();
         }
       },
+
       clickAddAddress() {
         this.form.addresses.push({
           'id': null,
@@ -516,6 +528,7 @@
           'main': false,
         });
       },
+
       submit() {
             // Si no se muestran campos adicionales se asignan valores predeterminados.
             if (!this.showAdditionalFields) {
@@ -559,10 +572,12 @@
             .then(() => {
                 this.loading_submit = false;
             });
-        },
+      },
+
       changeIdentityDocType() {
         (this.recordId == null) ? this.setDataDefaultCustomer() : null;
       },
+
       setDataDefaultCustomer() {
         if (this.form.identity_document_type_id == '0') {
           this.form.number = '99999999';
@@ -572,13 +587,16 @@
           this.form.name = null;
         }
       },
+
       close() {
         this.$eventHub.$emit('initInputPerson');
         this.$emit('update:showDialog', false);
       },
+
       searchCustomer() {
         this.searchServiceNumberByType();
       },
+
       searchNumber(data) {
         this.form.name = (this.form.identity_document_type_id === '1') ? data.nombre_completo : data.nombre_o_razon_social;
         this.form.trade_name = (this.form.identity_document_type_id === '6') ? data.nombre_o_razon_social : '';
@@ -593,6 +611,7 @@
         this.filterProvinces();
         this.filterDistricts();
       },
+
       clickRemoveAddress(index) {
         this.form.addresses.splice(index, 1);
       }

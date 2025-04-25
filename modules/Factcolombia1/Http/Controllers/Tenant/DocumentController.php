@@ -7,6 +7,7 @@ use Modules\Factcolombia1\Http\Requests\Tenant\DocumentRequest;
 use Modules\Factcolombia1\Traits\Tenant\DocumentTrait;
 use Modules\Factcolombia1\Http\Controllers\Controller;
 use Modules\Factcolombia1\Models\TenantService\AdvancedConfiguration;
+use Modules\Factcolombia1\Models\TenantService\Country as ServiceCountry;
 use Illuminate\Http\Request;
 use Modules\Factcolombia1\Models\Tenant\{
     TypeIdentityDocument,
@@ -17,6 +18,9 @@ use Modules\Factcolombia1\Models\Tenant\{
     // Document,
     Currency,
     Company,
+    City,
+    Country,
+    Department,
     Client,
     Item,
     Tax,
@@ -123,7 +127,7 @@ class DocumentController extends Controller
     public function records(Request $request)
     {
         $records = Document::query();
-    
+
         if ($request->column == 'name' && $request->filled('value')) {
             // Convertimos tanto el valor de la columna como el valor de búsqueda a minúsculas
             $value = strtolower($request->value);
@@ -133,16 +137,16 @@ class DocumentController extends Controller
             $value = strtolower($request->value);
             $records->whereRaw("LOWER({$request->column}) LIKE ?", ["%{$value}%"]);
         }
-    
+
         $records->whereTypeUser()->latest();
-    
+
         return new DocumentCollection($records->paginate(config('tenant.items_per_page')));
     }
-    
-    
-  
-    
-    
+
+
+
+
+
 
 
     public function record($id)
@@ -743,9 +747,17 @@ class DocumentController extends Controller
                     $service_invoice['payment_form']['payment_due_date'] = date('Y-m-d', strtotime($request->date_expiration));
                 $service_invoice['payment_form']['duration_measure'] = $request->time_days_credit;
             }
-            $service_invoice['customer']['dv'] = $this->validarDigVerifDIAN($service_invoice['customer']['identification_number']);
-            // $service_invoice['legal_monetary_totals']['line_extension_amount'] = "2350000.00";
-
+            if(in_array($service_invoice['customer']['type_document_identification_id'], [1, 2, 3, 6, 10]))
+                $service_invoice['customer']['dv'] = $this->validarDigVerifDIAN($service_invoice['customer']['identification_number']);
+            else{
+                $city = City::where('id', $service_invoice['customer']['municipality_name'])->first();
+                $service_invoice['customer']['municipality_name'] = $city->name;
+                $state = Department::where('id', $city->department_id)->first();
+                $service_invoice['customer']['state_name'] = $state->name;
+                $country = ServiceCountry::where('code', 'like', '%'.Country::where('id', $state->country_id)->first()->code.'%')->first();
+//                \Log::debug($country);
+                $service_invoice['customer']['country_id'] = $country->id;
+            }
             $id_test = $company->test_id;
             $base_url = config('tenant.service_fact');
 
@@ -1060,18 +1072,18 @@ class DocumentController extends Controller
         }
         catch (\Exception $e) {
             DB::connection('tenant')->rollBack();
-        
+
             // Inicializar el mensaje de error
             $userFriendlyMessage = 'Ocurrió un error inesperado.';
-        
+
             // Verificar si hay un mensaje de error específico en la respuesta de la API
             if (isset($response_model->message)) {
                 $userFriendlyMessage = $response_model->message;  // Mensaje general de la API
-        
+
                 // Verificar si hay detalles de errores específicos
                 if (isset($response_model->errors) && is_object($response_model->errors)) {
                     $errorDetailsArray = []; // Cambia a array para mejorar eficiencia
-        
+
                     foreach ($response_model->errors as $field => $errorMessages) {
                         if (is_array($errorMessages)) {
                             $errorDetailsArray[] = implode(', ', $errorMessages);
@@ -1079,7 +1091,7 @@ class DocumentController extends Controller
                             $errorDetailsArray[] = $errorMessages;
                         }
                     }
-        
+
                     // Concatenar detalles de los errores al mensaje para el usuario
                     if (!empty($errorDetailsArray)) {
                         $userFriendlyMessage .= ' ' . implode(' ', $errorDetailsArray);
@@ -1093,9 +1105,9 @@ class DocumentController extends Controller
                 // Verificar si el mensaje contiene "Undefined property: stdClass::$Response"
                 if (strpos($errorMessage, 'Undefined property: stdClass::$Response') !== false) {
                     // Si el mensaje contiene "Undefined property: stdClass::$Response", no mostrar nada
-                    $errorMessage = ''; 
+                    $errorMessage = '';
                 }
-        
+
             // Devolver la respuesta con un mensaje de error más detallado
             return [
                 'success' => false,
@@ -1103,7 +1115,7 @@ class DocumentController extends Controller
                 'message' =>  $errorMessage . ' ' . $userFriendlyMessage,
             ];
         }
-        
+
 
         DB::connection('tenant')->commit();
         $this->company = Company::query()->with('country', 'version_ubl', 'type_identity_document')->firstOrFail();
@@ -1262,7 +1274,7 @@ class DocumentController extends Controller
             $ch = curl_init("{$base_url}ubl2.1/invoice/preeliminar-view");
             $data_document = json_encode($service_invoice);
             \Log::debug($datoscompany);
-            
+
 //\Log::debug("{$base_url}ubl2.1/invoice");
 //\Log::debug($company->api_token);
 //\Log::debug($correlative_api);
@@ -1782,13 +1794,13 @@ class DocumentController extends Controller
         // Se espera que se envíe "type_document_id" y "prefix" en el cuerpo del request.
         $type_document_id = $request->input('type_document_id');
         $prefix = $request->input('prefix');
-        
+
         // Puedes definir si deseas ignorar el estado del documento (ajusta según tus requerimientos)
         $ignore_state_document_id = false;
-        
+
         // Llama a tu método interno para obtener el correlativo
         $number = $this->getCorrelativeInvoice($type_document_id, $prefix, $ignore_state_document_id);
-        
+
         // Devuelve la respuesta en formato JSON
         return response()->json([
             'success'          => true,
@@ -1908,24 +1920,24 @@ class DocumentController extends Controller
             $health_type_users = $this->api_conection("table/health_type_users", "GET");
             $health_contracting_payment_methods = $this->api_conection("table/health_contracting_payment_methods", "GET");
             $health_coverages = $this->api_conection("table/health_coverages", "GET");
-    
+
             // Puedes hacer un dd() o log para ver la respuesta cruda y confirmar la estructura.
             // dd($health_type_document_identifications);
-    
+
             // Si la respuesta es diferente a lo esperado, ajusta aquí para leer la propiedad correcta.
             return response()->json([
                 'success' => true,
                 'health_type_document_identifications' => isset($health_type_document_identifications->health_type_document_identifications)
-                    ? $health_type_document_identifications->health_type_document_identifications 
+                    ? $health_type_document_identifications->health_type_document_identifications
                     : $health_type_document_identifications,
                 'health_type_users' => isset($health_type_users->health_type_users)
-                    ? $health_type_users->health_type_users 
+                    ? $health_type_users->health_type_users
                     : $health_type_users,
                 'health_contracting_payment_methods' => isset($health_contracting_payment_methods->health_contracting_payment_methods)
-                    ? $health_contracting_payment_methods->health_contracting_payment_methods 
+                    ? $health_contracting_payment_methods->health_contracting_payment_methods
                     : $health_contracting_payment_methods,
                 'health_coverages' => isset($health_coverages->health_coverages)
-                    ? $health_coverages->health_coverages 
+                    ? $health_coverages->health_coverages
                     : $health_coverages,
             ]);
         } catch (\Exception $e) {
@@ -1936,7 +1948,7 @@ class DocumentController extends Controller
             ], 500);
         }
     }
-    
+
 
 
     public function table($table)
@@ -2158,7 +2170,7 @@ class DocumentController extends Controller
      * @param  $decimal_quantity
      * @return double
      */
-    
+
     private function getSaleUnitPriceWithTax($item)
     {
         // Siempre retorna el precio base sin aplicar IVA por que en la factura se hace la validación.

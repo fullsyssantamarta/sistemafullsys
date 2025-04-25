@@ -1492,27 +1492,46 @@ export default {
 
                 return invoice;
             },
+
             getCustomer() {
+                let obj = {};
                 let customer = this.customers.find(x => x.id == this.form.customer_id);
-                let obj = {
-                    identification_number: customer.number,
-                    name: customer.name,
-                    phone: customer.telephone,
-                    address: customer.address,
-                    email: customer.email,
-                    merchant_registration: "000000",
-                    type_document_identification_id: customer.identity_document_type_id,
-                    type_organization_id: customer.type_person_id,
-                    municipality_id_fact: customer.city_id,
-                    type_regime_id: customer.type_regime_id,
-                    type_liability_id: customer.type_obligation_id
-                };
-
+                if ([4, 7, 8, 9].includes(customer.identity_document_type_id)){
+                    obj = {
+                        identification_number: customer.number,
+                        name: customer.name,
+                        phone: customer.telephone,
+                        address: customer.address,
+                        email: customer.email,
+                        merchant_registration: "000000",
+                        type_document_identification_id: customer.identity_document_type_id,
+                        type_organization_id: customer.type_person_id,
+                        municipality_name: customer.city_id,
+                        state_name: null,
+                        type_regime_id: customer.type_regime_id,
+                        type_liability_id: customer.type_obligation_id
+                    };
+                }
+                else{
+                    obj = {
+                        identification_number: customer.number,
+                        name: customer.name,
+                        phone: customer.telephone,
+                        address: customer.address,
+                        email: customer.email,
+                        merchant_registration: "000000",
+                        type_document_identification_id: customer.identity_document_type_id,
+                        type_organization_id: customer.type_person_id,
+                        municipality_id_fact: customer.city_id,
+                        type_regime_id: customer.type_regime_id,
+                        type_liability_id: customer.type_obligation_id
+                    };
+                }
                 this.form.customer_id = customer.id
-
                 if (customer.type_person_id == 1) {
                     obj.dv = customer.dv;
                 }
+                console.log(JSON.parse(JSON.stringify(obj)))
                 return obj;
             },
 
