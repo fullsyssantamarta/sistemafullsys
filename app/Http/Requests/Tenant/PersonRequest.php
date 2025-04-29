@@ -20,7 +20,7 @@ class PersonRequest extends FormRequest
         $type = $this->input('type');
 
         // Definir las reglas básicas para los campos sin la verificación de unicidad
-        $numberRules = ['required', 'numeric', 'digits_between:1,15'];
+        $numberRules = ['required', 'numeric', 'digits_between:1,22'];
         $nameRules   = ['required'];
         $codeRules   = ['required'];
 
@@ -48,7 +48,7 @@ class PersonRequest extends FormRequest
             'email' => ['required', 'email'],
             'telephone' => ['required', 'numeric', 'integer', 'digits_between:7,10'],
             'code' => $codeRules,
-            'dv' => ['nullable','numeric', 'max:1'],
+            'dv' => ['nullable','numeric', 'digits_between:0,1'],
             'postal_code' => ['nullable', 'numeric'],
         ];
     }

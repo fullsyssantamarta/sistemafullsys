@@ -279,8 +279,8 @@
         5: 10,   // Cédula de extranjería
         6: 11,   // NIT
         7: 10,   // Pasaporte
-        8: 10,   // Documento de identificación extranjero
-        9: 11,   // NIT de otro país
+        8: 22,   // Documento de identificación extranjero
+        9: 22,   // NIT de otro país
         10: 10,  // NUIP *
         };
         // Se fuerza la conversión a Number para que la llave coincida correctamente en el mapeo.
