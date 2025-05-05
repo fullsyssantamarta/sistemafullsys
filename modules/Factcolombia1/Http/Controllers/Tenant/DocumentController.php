@@ -579,7 +579,7 @@ class DocumentController extends Controller
      */
     public function store(DocumentRequest $request, $invoice_json = NULL){
         // \Log::debug($invoice_json);
-//         \Log::debug($request->all());
+//        \Log::debug($request->all());
         DB::connection('tenant')->beginTransaction();
         try {
             if($invoice_json !== NULL)
@@ -602,7 +602,7 @@ class DocumentController extends Controller
                 ]);
                 $request['customer_id'] = $person->id;
             }
-
+//\Log::debug($request->all());
             $response =  null;
             $response_status =  null;
             // $correlative_api = $this->getCorrelativeInvoice(1, $request->prefix);
@@ -626,7 +626,7 @@ class DocumentController extends Controller
             else
                 $correlative_api = $this->getCorrelativeInvoice($request->type_invoice_id, $request->prefix, $ignore_state_document_id);
 
-            // \Log::debug($correlative_api);
+//            \Log::debug($correlative_api);
             if(isset($request->number))
                 $correlative_api = $request->number;
 
@@ -747,6 +747,7 @@ class DocumentController extends Controller
                     $service_invoice['payment_form']['payment_due_date'] = date('Y-m-d', strtotime($request->date_expiration));
                 $service_invoice['payment_form']['duration_measure'] = $request->time_days_credit;
             }
+//\Log::debug(json_encode($service_invoice));
             if(in_array($service_invoice['customer']['type_document_identification_id'], [1, 2, 3, 6, 10]))
                 $service_invoice['customer']['dv'] = $this->validarDigVerifDIAN($service_invoice['customer']['identification_number']);
             else{
@@ -758,6 +759,7 @@ class DocumentController extends Controller
 //                \Log::debug($country);
                 $service_invoice['customer']['country_id'] = $country->id;
             }
+//            \Log::debug("A");
             $id_test = $company->test_id;
             $base_url = config('tenant.service_fact');
 
@@ -775,10 +777,10 @@ class DocumentController extends Controller
             }
 
             $data_document = json_encode($service_invoice);
-            \Log::debug("{$base_url}ubl2.1/invoice");
-            \Log::debug($company->api_token);
-            \Log::debug($correlative_api);
-            \Log::debug($data_document);
+//            \Log::debug("{$base_url}ubl2.1/invoice");
+//            \Log::debug($company->api_token);
+//            \Log::debug($correlative_api);
+//            \Log::debug($data_document);
 //            \Log::debug($service_invoice);
 //            return ['success' => false, 'validation_errors' => true, 'message' => "Guardado en el Log...",];
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -792,7 +794,7 @@ class DocumentController extends Controller
                 "Authorization: Bearer {$company->api_token}"
             ));
             $response = curl_exec($ch);
-            \Log::debug($response);
+//            \Log::debug($response);
             curl_close($ch);
             $response_model = json_decode($response);
             $zip_key = null;
@@ -836,7 +838,7 @@ class DocumentController extends Controller
                         \Log::debug($f->getMessage());
                     }
                 }
-        }
+            }
             else{
                 if(isset($response_model->success) && ($response_model->success === true) && ($response_model->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->IsValid == "false") && ($response_model->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->ErrorMessage->string == 'Regla: 90, Rechazo: Documento procesado anteriormente.')){
                     $ch = curl_init("{$base_url}ubl2.1/xml/document/{$response_model->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->XmlDocumentKey}");
@@ -1020,6 +1022,8 @@ class DocumentController extends Controller
 
             if($invoice_json === NULL){
 //                if($request->type_document_id === '3')
+//\Log::debug($request->all());
+                    $request->resolution_id = $request->resolution_id ? $request->resolution_id : $request->type_document_id;
                     $nextConsecutive = FacadeDocument::nextConsecutive($request->resolution_id);
 //                else
 //                    $nextConsecutive = FacadeDocument::nextConsecutive($request->type_document_id);
@@ -1113,9 +1117,10 @@ class DocumentController extends Controller
                 'success' => false,
                 'validation_errors' => true,
                 'message' =>  $errorMessage . ' ' . $userFriendlyMessage,
+                'linea' => $e->getLine(),
+                'file' => $e->getFile()
             ];
         }
-
 
         DB::connection('tenant')->commit();
         $this->company = Company::query()->with('country', 'version_ubl', 'type_identity_document')->firstOrFail();

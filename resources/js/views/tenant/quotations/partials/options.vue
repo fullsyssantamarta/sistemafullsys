@@ -298,7 +298,6 @@ export default {
     },
     initDocument() {
       this.document = {
-
         customer_id: null,
         type_document_id: null,
         currency_id: null,
@@ -316,9 +315,9 @@ export default {
         service_invoice: {},
         payment_form_id: 1,
         payment_method_id: 1,
-
       };
     },
+
     changeDateOfIssue() {
       // this.document.date_of_due = this.document.date_of_issue;
     },
@@ -329,6 +328,9 @@ export default {
       this.changeDocumentType();
     },
     async submit() {
+      if(!this.document.type_document_id)
+          return this.$message.error('Debe seleccionar una Resolución')
+
       this.loading_submit = true;
       await this.assignDocument();
 
@@ -340,12 +342,13 @@ export default {
         this.document.resolution_number = this.document.service_invoice.resolution_number
         this.resource_documents = "co-documents";
       }
+//      console.log(this.document.customer)
       this.$http
         .post(`/${this.resource_documents}`, this.document)
         .then(response => {
+//          console.log(response.data)
           if (response.data.success) {
             this.documentNewId = response.data.data.id;
-
             this.$http.get(`/${this.resource}/changed/${this.form.id}`).then(() => {
                 this.$eventHub.$emit('reloadData');
             });
@@ -355,16 +358,13 @@ export default {
             } else {
               this.showDialogDocumentOptions = true;
             }
-
             this.$eventHub.$emit("reloadData");
             this.resetDocument();
             this.getRecord()
             // this.document.customer_id = this.form.quotation.customer_id;
             // this.changeCustomer();
           } else {
-
-            //this.$message.error(response.data.message);
-
+            this.$message.error(response.data.message);
             if(response.data.errors){
                 const mhtl = this.parseMesaageError(response.data.errors)
                 this.$message({
@@ -549,13 +549,13 @@ export default {
         invoice.with_holding_tax_total = await this.getWithHolding();
         return invoice;
     },
-    getCustomer() {
 
+    getCustomer() {
         let customer = this.document.customer
         // let customer = this.customers.find(x => x.id == this.document.customer_id);
-
         let obj = {
             identification_number: customer.number,
+            type_document_identification_id: customer.identity_document_type.id,
             name: customer.name,
             phone: customer.telephone,
             address: customer.address,

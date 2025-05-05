@@ -48,6 +48,7 @@ class Document extends Model
      * @return int
      */
     public function nextConsecutive($type_document_id) {
+//        \Log::debug($type_document_id);
         $typeDocument = TypeDocument::findOrFail($type_document_id);
 
 //        $file = fopen("C:\\DEBUG.TXT", "w");
