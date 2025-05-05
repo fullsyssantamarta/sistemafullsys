@@ -775,10 +775,10 @@ class DocumentController extends Controller
             }
 
             $data_document = json_encode($service_invoice);
-//            \Log::debug("{$base_url}ubl2.1/invoice");
-//            \Log::debug($company->api_token);
-//            \Log::debug($correlative_api);
-//            \Log::debug($data_document);
+            \Log::debug("{$base_url}ubl2.1/invoice");
+            \Log::debug($company->api_token);
+            \Log::debug($correlative_api);
+            \Log::debug($data_document);
 //            \Log::debug($service_invoice);
 //            return ['success' => false, 'validation_errors' => true, 'message' => "Guardado en el Log...",];
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -792,7 +792,7 @@ class DocumentController extends Controller
                 "Authorization: Bearer {$company->api_token}"
             ));
             $response = curl_exec($ch);
-//            \Log::debug($response);
+            \Log::debug($response);
             curl_close($ch);
             $response_model = json_decode($response);
             $zip_key = null;

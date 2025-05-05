@@ -28,7 +28,37 @@
                                 </div>
                             </div>
 
-                            <!-- Selector de productos, visible solo si search_item_by_barcode es false -->
+                            <template v-if="!search_item_by_barcode" id="select-append">
+                                <el-input id="custom-input">
+                                    <el-select :disabled="recordItem != null"
+                                            v-model="form.item_id"
+                                            @change="changeItem"
+                                            filterable
+                                            remote
+                                            placeholder="Buscar"
+                                            popper-class="el-select-items"
+                                            @visible-change="focusTotalItem"
+                                            slot="prepend"
+                                            id="select-width"
+                                            :remote-method="searchRemoteItems"
+                                            :loading="loading_search">
+                                        <el-tooltip v-for="option in items"  :key="option.id" placement="top">
+                                            <div slot="content">
+                                                Marca: {{option.brand}} <br>
+                                                Categoria: {{option.category}} <br>
+                                                Stock: {{option.stock}} <br>
+                                                Precio: {{option.currency_type_symbol}} {{option.sale_unit_price}} <br>
+                                            </div>
+                                            <el-option  :value="option.id" :label="option.full_description"></el-option>
+                                        </el-tooltip>
+                                    </el-select>
+                                    <el-tooltip slot="append" class="item" effect="dark" content="Ver Stock del Producto" placement="bottom" :disabled="recordItem != null">
+                                        <el-button :disabled="isEditItemNote"  @click.prevent="clickWarehouseDetail()"><i class="fa fa-search"></i></el-button>
+                                    </el-tooltip>
+                                </el-input>
+                            </template>
+
+                            <!-- Selector de productos, visible solo si search_item_by_barcode es false
                             <el-input id="custom-input" v-else>
                                 <el-select :disabled="recordItem != null"
                                         v-model="form.item_id"
@@ -55,8 +85,7 @@
                                 <el-tooltip slot="append" class="item" effect="dark" content="Ver Stock del Producto" placement="bottom" :disabled="recordItem != null">
                                     <el-button :disabled="isEditItemNote" @click.prevent="clickWarehouseDetail()"><i class="fa fa-search"></i></el-button>
                                 </el-tooltip>
-                            </el-input>
-
+                            </el-input> -->
                             <small class="form-control-feedback" v-if="errors.item_id" v-text="errors.item_id[0]"></small>
                         </div>
                     </div>

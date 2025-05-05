@@ -1531,7 +1531,7 @@ export default {
                 if (customer.type_person_id == 1) {
                     obj.dv = customer.dv;
                 }
-                console.log(JSON.parse(JSON.stringify(obj)))
+//                console.log(JSON.parse(JSON.stringify(obj)))
                 return obj;
             },
 
@@ -1574,7 +1574,8 @@ export default {
                 let bolsa_per_unit_amount = null; // Almacenará el precio unitario de las bolsas
 
                 this.form.items.forEach(element => {
-                    if (element.tax.type_tax_id !== 10) { // Procesar todos los impuestos excepto el de bolsas
+//                    console.log(element)
+                    if (element.tax !== undefined && element.tax.type_tax_id !== 10) { // Procesar todos los impuestos excepto el de bolsas
                         let find = tax.find(x => x.tax_id == element.tax.type_tax_id && x.percent == element.tax.rate);
                         if(find) {
                             find.tax_amount = this.cadenaDecimales(Number(find.tax_amount) + Number(element.total_tax));
@@ -1592,10 +1593,7 @@ export default {
                         bolsaTaxAmount += Number(element.total_tax);
                         // Acumular la base imponible para el impuesto a las bolsas
                         bolsaTaxableAmount += (Number(element.price) * Number(element.quantity));
-
                         bolsa_per_unit_amount = (Number(element.price));
-
-
                         if (!bolsaUnitMeasureId) {
                             bolsaUnitMeasureId = element.item.unit_type.code.trim();
                         }
@@ -1613,7 +1611,6 @@ export default {
                         base_unit_measure: "1.00" // Si la medida base es siempre 1
                     });
                 }
-
                 this.tax_amount_calculate = tax;
                 return tax;
             },
@@ -1661,59 +1658,81 @@ export default {
 
             getInvoiceLines() {
                 let data = this.form.items.map(x => {
+                    if (x.tax !== undefined) {
                     // se definen variables
-                    let percent;
-                    let base_amount_incbp;
-                    if (x.tax.type_tax_id === 10 && Number(x.price) === 0) {
-                        base_amount_incbp = this.cadenaDecimales(Number(x.tax.rate) * Number(x.quantity));
-                        percent = "0";
-                    } else {
-                        base_amount_incbp = this.cadenaDecimales(Number(x.price) * Number(x.quantity));
-                        percent = this.cadenaDecimales(x.tax.rate);
-                    }
+                        let percent;
+                        let base_amount_incbp;
+                        if (x.tax !== undefined && x.tax.type_tax_id === 10 && Number(x.price) === 0) {
+                            base_amount_incbp = this.cadenaDecimales(Number(x.tax.rate) * Number(x.quantity));
+                            percent = "0";
+                        } else {
+                            base_amount_incbp = this.cadenaDecimales(Number(x.price) * Number(x.quantity));
+                            percent = x.tax !== undefined ? this.cadenaDecimales(x.tax.rate) : 0;
+                        }
 
-                    let item = {
-                        unit_measure_id: x.item.unit_type.code,
-                        invoiced_quantity: x.quantity,
-                        line_extension_amount: this.cadenaDecimales((Number(x.price) * Number(x.quantity)) - x.discount),
-                        notes: x.notes,
-                        free_of_charge_indicator: false,
-                        allowance_charges: [
-                            {
-                                charge_indicator: false,
-                                allowance_charge_reason: "DESCUENTO GENERAL",
-                                amount: this.cadenaDecimales(x.discount),
-                                base_amount: base_amount_incbp
-                            }
-                        ],
-                        tax_totals: [
-                            {
-                                tax_id: x.tax.type_tax_id,
-                                tax_amount: this.cadenaDecimales(x.total_tax),
-                                taxable_amount: this.cadenaDecimales((Number(x.price) * Number(x.quantity)) - x.discount),
-                                percent: percent
-                            }
-                        ],
-                        description: x.item.name,
-                        code: x.item.internal_id,
-                        type_item_identification_id: 4,
-                        price_amount: this.cadenaDecimales(Number(x.price) + (Number(x.total_tax) / Number(x.quantity))),
-                        base_quantity: x.quantity,
-                    };
-
-                    // Verificar si el ítem es el impuesto a la bolsa
-                    if (x.tax.type_tax_id === 10) {
-                        item.tax_totals[0] = {
-                            ...item.tax_totals[0], // Conservar la estructura base del impuesto
+                        let item = {
                             unit_measure_id: x.item.unit_type.code,
-                            per_unit_amount: x.tax.rate, // Agregar el monto del impuesto por unidad
-                            base_unit_measure: "1" // Agregar la unidad de medida base para el cálculo del impuesto
+                            invoiced_quantity: x.quantity,
+                            line_extension_amount: this.cadenaDecimales((Number(x.price) * Number(x.quantity)) - x.discount),
+                            notes: x.notes,
+                            free_of_charge_indicator: false,
+                            allowance_charges: [
+                                {
+                                    charge_indicator: false,
+                                    allowance_charge_reason: "DESCUENTO GENERAL",
+                                    amount: this.cadenaDecimales(x.discount),
+                                    base_amount: base_amount_incbp
+                                }
+                            ],
+                            tax_totals: [
+                                {
+                                    tax_id: x.tax.type_tax_id,
+                                    tax_amount: this.cadenaDecimales(x.total_tax),
+                                    taxable_amount: this.cadenaDecimales((Number(x.price) * Number(x.quantity)) - x.discount),
+                                    percent: percent
+                                }
+                            ],
+                            description: x.item.name,
+                            code: x.item.internal_id,
+                            type_item_identification_id: 4,
+                            price_amount: this.cadenaDecimales(Number(x.price) + (Number(x.total_tax) / Number(x.quantity))),
+                            base_quantity: x.quantity,
+                        };
+
+                        // Verificar si el ítem es el impuesto a la bolsa
+                        if (x.tax.type_tax_id === 10) {
+                            item.tax_totals[0] = {
+                                ...item.tax_totals[0], // Conservar la estructura base del impuesto
+                                unit_measure_id: x.item.unit_type.code,
+                                per_unit_amount: x.tax.rate, // Agregar el monto del impuesto por unidad
+                                base_unit_measure: "1" // Agregar la unidad de medida base para el cálculo del impuesto
+                            };
+                        }
+                        return item;
+                    }
+                    else {
+                        return {
+                            unit_measure_id: x.item.unit_type.code, //codigo api dian de unidad
+                            invoiced_quantity: x.quantity,
+                            line_extension_amount: this.cadenaDecimales((Number(x.price) * Number(x.quantity)) - x.discount),
+                            notes: x.notes,
+                            free_of_charge_indicator: false,
+                            allowance_charges: [
+                                {
+                                    charge_indicator: false,
+                                    allowance_charge_reason: "DESCUENTO GENERAL",
+                                    amount: this.cadenaDecimales(x.discount),
+                                    base_amount: this.cadenaDecimales(Number(x.price) * Number(x.quantity))
+                                }
+                            ],
+                            description: x.item.name,
+                            code: x.item.internal_id,
+                            type_item_identification_id: 4,
+                            price_amount: this.cadenaDecimales(Number(x.price) + (Number(x.total_tax) / Number(x.quantity))),
+                            base_quantity: x.quantity
                         };
                     }
-
-                    return item;
                 });
-
                 return data;
             },
 
