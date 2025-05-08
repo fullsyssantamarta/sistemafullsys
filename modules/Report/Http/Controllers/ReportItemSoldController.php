@@ -48,7 +48,15 @@ class ReportItemSoldController extends Controller
                 $records = $document_items->concat($document_items_pos);
                 break;
         }
-        return $records;
+
+        // Agrupación por item_id
+        $grouped = $records->groupBy('item_id')->map(function ($group) {
+            $first = $group->first();
+            $first->total_quantity = $group->sum('quantity');
+            return $first;
+        })->values();
+
+        return $grouped;
     }
 
     public function export(Request $request, $type)
