@@ -35,7 +35,7 @@ class DocumentHelper
         $document->establishment_id = auth()->user()->establishment_id;
         $document->establishment = $establishment;
         $document->soap_type_id = Company::active()->soap_type_id;
-//        $document->calculationrate = $request->calculationrate ? $request->calculationrate : 0;
+        $document->calculationrate = $request->calculationrate ? $request->calculationrate : 1;
 //        $document->calculationratedate = $request->calculationratedate ? $request->calculationratedate : Carbon::parse("1900-01-01")->format('Y-m-d');
 //        $document->incoterm_id = $request->incoterm_id ? $request->incoterm_id : null;
 //\Log::debug("2");

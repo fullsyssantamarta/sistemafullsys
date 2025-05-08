@@ -84,7 +84,6 @@ class TenantSystemTable extends Migration
             $table->string('description');
             $table->string('number');
             $table->string('currency_type_id');
-
             $table->foreign('bank_id')->references('id')->on('banks');
             $table->foreign('currency_type_id')->references('id')->on('cat_currency_types');
         });

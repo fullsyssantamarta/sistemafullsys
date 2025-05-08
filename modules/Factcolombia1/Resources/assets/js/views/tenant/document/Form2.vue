@@ -113,6 +113,15 @@
                                         v-text="errors.currency_id[0]"></small>
                                 </div>
                             </div>
+                            <template v-if="form.currency_id != 170">
+                                <div class="col-lg-2">
+                                    <div class="form-group" :class="{'has-danger': errors.trm}">
+                                        <label class="control-label">T.R.M</label>
+                                        <el-input v-model="form.trm" ></el-input>
+                                        <small class="form-control-feedback" v-if="errors.trm" v-text="errors.trm[0]"></small>
+                                    </div>
+                                </div>
+                            </template>
                             <div class="col-lg-2">
                                 <div class="form-group" :class="{ 'has-danger': errors.payment_form_id }">
                                     <label class="control-label">Forma de pago</label>
@@ -585,8 +594,8 @@ export default {
                     this.currencies = response.data.currencies
                     this.payment_methods = response.data.payment_methods
                     this.payment_forms = response.data.payment_forms
-                    this.form.currency_id = (this.currencies.length > 0)?170:null;
-                    this.form.type_invoice_id = (this.type_invoices.length > 0)?this.type_invoices[0].id:null;
+                    this.form.currency_id = (this.currencies.length > 0) ? 170 : null;
+                    this.form.type_invoice_id = (this.type_invoices.length > 0) ? this.type_invoices[0].id : null;
                     //his.form.payment_form_id = (this.payment_forms.length > 0)?this.payment_forms[0].id:null;
                     this.form.payment_method_id = 10;//(this.payment_methods.length > 0)?this.payment_methods[0].id:null;
                     this.resolutions = response.data.resolutions
@@ -951,11 +960,12 @@ export default {
                 this.form.currency_id = this.invoice ? this.invoice.currency_id : null;
                 this.form.date_issue = this.invoice ? moment(this.invoice.date_of_issue, 'YYYY-MM-DD hh:mm:ss').format('YYYY-MM-DD') : moment().format('YYYY-MM-DD');
                 this.form.date_expiration = this.invoice ? moment(this.invoice.date_expiration, 'YYYY-MM-DD hh:mm:ss').format('YYYY-MM-DD') : null;
+                this.form.trm = this.invoice ? this.invoice.trm : 0;
                 this.form.type_invoice_id = this.invoice ? this.invoice.type_invoice_id : 1;
                 this.form.total_discount = this.invoice ? this.invoice.total_discount : 0;
                 this.form.total_tax = this.invoice ? (this.invoice.total_tax < 0 ? 0 : this.invoice.total_tax) : 0;
                 this.form.customer_id = this.invoice ? this.invoice.customer_id : null,
-                    this.form.subtotal = this.invoice ? this.invoice.subtotal : 0;
+                this.form.subtotal = this.invoice ? this.invoice.subtotal : 0;
                 this.form.items = this.invoice ? this.prepareItems(this.invoice.items) : [];
                 this.form.users_info = this.invoice ? this.invoice.users_info : []
                 this.form.taxes = this.invoice ? this.invoice.taxes : [];
@@ -997,6 +1007,7 @@ export default {
                 currency_id: this.invoice ? this.invoice.currency_id : null,
                 date_issue: this.invoice ? moment(this.invoice.date_of_issue, 'YYYY-MM-DD hh:mm:ss').format('YYYY-MM-DD') : moment().format('YYYY-MM-DD'),
                 date_expiration: this.invoice ? moment(this.invoice.date_expiration, 'YYYY-MM-DD hh:mm:ss').format('YYYY-MM-DD') : null,
+                trm: this.invoice ? this.invoice.trm : 1,
                 type_invoice_id: this.invoice ? this.invoice.type_invoice_id : 1,
                 total_discount: this.invoice ? this.invoice.total_discount : 0,
                 total_tax: this.invoice ? (this.invoice.total_tax < 0 ? 0 : this.invoice.total_tax) : 0,
@@ -1476,10 +1487,11 @@ export default {
                 // let resol = this.resolution.resolution; //TODO
                 let invoice = {
                     number: 0,
+                    currency_id: this.form.currency_id,
+                    calculationrate: this.form.trm,
                     type_document_id: 1,
                     prefix: this.form.prefix,
                     resolution_number: this.form.resolution_number,
-
                 };
 
                 invoice.customer =  this.getCustomer();

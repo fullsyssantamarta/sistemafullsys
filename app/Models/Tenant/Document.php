@@ -42,6 +42,7 @@ class Document extends ModelTenant
         'establishment_id',
         'establishment',
         'soap_type_id',
+        'calculationrate',
         // 'state_type_id',
         // 'ubl_version',
         // 'group_id',

@@ -8,6 +8,8 @@ use Modules\Factcolombia1\Traits\Tenant\DocumentTrait;
 use Modules\Factcolombia1\Http\Controllers\Controller;
 use Modules\Factcolombia1\Models\TenantService\AdvancedConfiguration;
 use Modules\Factcolombia1\Models\TenantService\Country as ServiceCountry;
+//use Modules\Factcolombia1\Models\TenantService\TypeCurrency;
+use Modules\Factcolombia1\Models\SystemService\TypeCurrency;
 use Illuminate\Http\Request;
 use Modules\Factcolombia1\Models\Tenant\{
     TypeIdentityDocument,
@@ -404,7 +406,8 @@ class DocumentController extends Controller
                 else
                     $request->customer_id = $p[0]->id;
 
-                $request->currency_id = 170;
+                $request->currency_id = $service_invoice['currency_id'];
+                $request->calculationrate = $service_invoice['calculationrate'];
                 $request->date_expiration = isset($service_invoice['payment_form']['payment_due_date']) ? $service_invoice['payment_form']['payment_due_date'] : $service_invoice['date'];
                 $request->date_issue = $service_invoice['date'];
                 $request->observation = (key_exists('notes', $service_invoice)) ? $service_invoice['notes'] : "";
@@ -776,16 +779,27 @@ class DocumentController extends Controller
                     $ch = curl_init("{$base_url}ubl2.1/invoice");
             }
 
+            if($request->currency_id != 170)
+                $service_invoice['currency_id'] = TypeCurrency::where('code', 'like', Currency::where('id', $request->currency_id)->first()['code'].'%')->first()['id'];
+            else
+                $service_invoice['currency_id'] = 35;
+
+            $calculationRate = $service_invoice['calculationrate'] ?? 1;
             $data_document = json_encode($service_invoice);
+            $data_document_foreign_currency = json_encode($this->multiplyMonetaryValues($service_invoice, $calculationRate));
 //            \Log::debug("{$base_url}ubl2.1/invoice");
 //            \Log::debug($company->api_token);
 //            \Log::debug($correlative_api);
 //            \Log::debug($data_document);
+//            \Log::debug($data_document_foreign_currency);
 //            \Log::debug($service_invoice);
 //            return ['success' => false, 'validation_errors' => true, 'message' => "Guardado en el Log...",];
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-            curl_setopt($ch, CURLOPT_POSTFIELDS,($data_document));
+            if($request->currency_id != 170)
+                curl_setopt($ch, CURLOPT_POSTFIELDS,($data_document_foreign_currency));
+            else
+                curl_setopt($ch, CURLOPT_POSTFIELDS,($data_document));
             curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
             curl_setopt($ch, CURLOPT_HTTPHEADER, array(
@@ -1044,7 +1058,7 @@ class DocumentController extends Controller
                 $request->resolution_id = $resolution[0]->id;
                 $request->type_invoice_id = $resolution[0]->code;
                 $request->customer_id = $service_invoice['customer']['customer_id'];
-                $request->currency_id = 170;
+                $request->currency_id = $service_invoice['currency_id'];
                 $request->date_expiration = $service_invoice['payment_form']['payment_due_date'];
                 $request->date_issue = $service_invoice['date'];
                 $request->observation = $service_invoice['notes'];
@@ -1071,6 +1085,7 @@ class DocumentController extends Controller
                 }
                 $request->items = $service_invoice['invoice_lines'];
             }
+            $request->calculationrate = $service_invoice['calculationrate'];
             $this->document = DocumentHelper::createDocument($request, $nextConsecutive, $correlative_api, $this->company, $response, $response_status, $company->type_environment_id);
             $payments = (new DocumentHelper())->savePayments($this->document, $request->payments);
         }
@@ -1754,6 +1769,21 @@ class DocumentController extends Controller
         return $url;
     }
 
+    // Función recursiva para procesar los valores
+    public function multiplyMonetaryValues($data, $rate) {
+        foreach ($data as $key => $value) {
+            if (is_array($value)) {
+                $data[$key] = $this->multiplyMonetaryValues($value, $rate);
+            }
+            else {
+                // Detectar claves que representan montos
+                if (is_numeric($value) && preg_match('/line_extension_amount|tax_exclusive_amount|tax_inclusive_amount|allowance_total_amount|charge_total_amount|payable_amount|tax_amount|taxable_amount|amount|base_amount|price_amount/i', $key)) {
+                    $data[$key] = number_format($value * $rate, 2, '.', '');
+                }
+            }
+        }
+        return $data;
+    }
 
     public function getCorrelativeInvoice($type_service, $prefix = null, $ignore_state_document_id = false)
     {
