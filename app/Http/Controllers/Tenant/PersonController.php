@@ -107,14 +107,14 @@ class PersonController extends Controller
                           ->where('identity_document_type_id', $request->identity_document_type_id)
                           ->first();
 
-        if ($existing) {
-            // Si ya existe, retornamos el cliente existente para que se cargue en la factura.
-            return response()->json([
-                'success' => true,
-                'message' => 'El cliente ya existe, se cargará Automaticamente',
-                'id' => $existing->id
-            ]);
-        }
+//        if ($existing) {
+//            // Si ya existe, retornamos el cliente existente para que se cargue en la factura.
+//            return response()->json([
+//                'success' => true,
+//                'message' => 'El cliente ya existe, se cargará Automaticamente',
+//                'id' => $existing->id
+//            ]);
+//        }
 
         // Si no existe, se procede a crear el cliente.
         $id = $request->input('id');

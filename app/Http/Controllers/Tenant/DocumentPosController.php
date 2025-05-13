@@ -113,7 +113,6 @@ class DocumentPosController extends Controller
         $records = DocumentPos::where($request->column, 'like', "%{$request->value}%")
                             ->latest('id');
 
-
         return new DocumentPosCollection($records->paginate(config('tenant.items_per_page')));
     }
 

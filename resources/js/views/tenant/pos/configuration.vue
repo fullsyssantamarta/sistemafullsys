@@ -35,7 +35,7 @@
                     </el-table-column>
                     <el-table-column
                         prop="electronic"
-                        label="POS Electronico">
+                        label="Electronico">
                         <template slot-scope="scope">
                             <el-checkbox
                                 v-model="scope.row.electronic"
@@ -43,13 +43,18 @@
                             ></el-checkbox>
                         </template>
                     </el-table-column>
-                    <el-table-column
+<!--                    <el-table-column
                         prop="plate_number"
                         label="Serial Caja">
                     </el-table-column>
                     <el-table-column
                         prop="cash_type"
                         label="Tipo Caja">
+                    </el-table-column>  -->
+                    <el-table-column
+                        prop="type_resolution"
+                        label="Tipo Resolucion"
+                        width="320">
                     </el-table-column>
                     <el-table-column
                         fixed="right"
@@ -188,8 +193,8 @@
 
                             <div class="col-lg-1">
                                 <div class="form-group" :class="{'has-danger': errors.electronic}">
-                                    <label class="control-label">POS Electronico</label><br>
-                                    <el-checkbox  v-model="resolution.electronic"></el-checkbox>
+                                    <label class="control-label">Electronico</label><br>
+                                    <el-checkbox  @change="setTypeResolution()" v-model="resolution.electronic"></el-checkbox>
                                     <small class="form-control-feedback" v-if="errors.electronic" v-text="errors.electronic[0]"></small>
                                 </div>
                             </div>
@@ -197,28 +202,54 @@
 
                         <div class="row mt-4" v-if="resolution.electronic">
                             <div class="col-lg-4">
-                                <div class="form-group" :class="{'has-danger': errors.plate_number}">
-                                    <label class="control-label">Serial Caja</label>
-                                    <el-input
-                                        v-model="resolution.plate_number"
-                                        placeholder="Introduzca el numero serial de la caja."
-                                        :disabled="false">
-                                    </el-input>
-                                    <small class="form-control-feedback" v-if="errors.plate_number" v-text="errors.plate_number[0]"></small>
+                                <div class="form-group">
+                                    <label class="control-label">Tipo de resolucion</label>
+                                    <el-select v-model="resolution.type_resolution" popper-class="el-select-document_type"
+                                        dusk="type_resolution" class="border-left rounded-left border-info">
+                                        <el-option v-for="option in typeResolutions" :key="option.id" :value="option.name"
+                                            :label="option.name"></el-option>
+                                    </el-select>
                                 </div>
                             </div>
 
-                            <div class="col-lg-4">
-                                <div class="form-group" :class="{'has-danger': errors.cash_type}">
-                                    <label class="control-label">Tipo Caja</label>
-                                    <el-input
-                                        v-model="resolution.cash_type"
-                                        placeholder="Digite el tipo de caja."
-                                        :disabled="false">
-                                    </el-input>
-                                    <small class="form-control-feedback" v-if="errors.cash_type" v-text="errors.cash_type[0]"></small>
+                            <template v-if="resolution.type_resolution == 'Documento Equivalente POS Electronico'">
+                                <div class="col-lg-4">
+                                    <div class="form-group" :class="{'has-danger': errors.plate_number}">
+                                        <label class="control-label">Serial Caja</label>
+                                        <el-input
+                                            v-model="resolution.plate_number"
+                                            placeholder="Introduzca el numero serial de la caja."
+                                            :disabled="false">
+                                        </el-input>
+                                        <small class="form-control-feedback" v-if="errors.plate_number" v-text="errors.plate_number[0]"></small>
+                                    </div>
                                 </div>
-                            </div>
+
+                                <div class="col-lg-4">
+                                    <div class="form-group" :class="{'has-danger': errors.cash_type}">
+                                        <label class="control-label">Tipo Caja</label>
+                                        <el-input
+                                            v-model="resolution.cash_type"
+                                            placeholder="Digite el tipo de caja."
+                                            :disabled="false">
+                                        </el-input>
+                                        <small class="form-control-feedback" v-if="errors.cash_type" v-text="errors.cash_type[0]"></small>
+                                    </div>
+                                </div>
+                            </template>
+                            <template v-else>
+                                <div class="col-lg-4">
+                                    <div class="form-group" :class="{'has-danger': errors.technical_key}">
+                                        <label class="control-label">Clave Tecnica</label>
+                                        <el-input
+                                            v-model="resolution.technical_key"
+                                            placeholder="Introduzca la clave tecnica de la resolucion FE."
+                                            :disabled="false">
+                                        </el-input>
+                                        <small class="form-control-feedback" v-if="errors.technical_key" v-text="errors.technical_key[0]"></small>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
 
                         <div class="form-actions text-right mt-4">
@@ -242,19 +273,16 @@
        // mixins: [Helper],
         props: ['configuration'],
         data: () => ({
-            typeDocuments: [
-                { id: 1, name: "Factura de Venta Nacional" },
-                //{ id: 2, name: "Factura de Exportación" },
-                //{ id: 3, name: "Factura de Contingencia" },
-                { id: 4, name: "Nota Crédito" },
-                { id: 5, name: "Nota Débito" },
-                { id: 6, name: "ZIP" }
+            typeResolutions: [
+                { id: 1, name: "Factura Electronica de Venta" },
+                { id: 2, name: "Documento Equivalente POS Electronico" },
             ],
 
             errors: {
             },
 
             resolution: {
+                type_resolution: 'Documento Equivalente POS Electronico'
             },
 
             loadingResolution: false,
@@ -309,9 +337,11 @@
                     from: '',
                     to: '',
                     electronic: true,
+                    type_resolution: 'Documento Equivalente POS Electronico',
                     generated: '',
                     plate_number: '',
                     cash_type: '',
+                    technical_key: ''
                 }
             },
 
@@ -352,10 +382,18 @@
                     from: row.from,
                     to: row.to,
                     electronic: row.electronic,
+                    type_resolution: row.type_resolution,
                     generated: row.generated,
                     plate_number: row.plate_number,
-                    cash_type: row.cash_type
+                    cash_type: row.cash_type,
+                    technical_key: row.technical_key
                 }
+            },
+
+            setTypeResolution(){
+//                console.log(this.resolution)
+                if(!this.resolution.type_resolution)
+                    this.resolution.type_resolution = 'Documento Equivalente POS Electronico'
             },
 
             clearFields(){
