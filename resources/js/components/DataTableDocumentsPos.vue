@@ -166,6 +166,7 @@
                 return (this.pagination.per_page * (this.pagination.current_page - 1)) + index + 1
             },
             getRecords() {
+                console.log(`/${this.resource}/records`)
                 return this.$http.get(`/${this.resource}/records?${this.getQueryParameters()}`).then((response) => {
                     this.records = response.data.data
                     this.pagination = response.data.meta

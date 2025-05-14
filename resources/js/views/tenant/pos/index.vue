@@ -12,7 +12,7 @@
                 <h2>
                     <el-switch v-model="search_item_by_barcode" active-text="Buscar por código de barras" @change="changeSearchItemBarcode"></el-switch>
                 </h2>
-            
+
                 <template v-if="!electronic">
                     <h2>
                         <el-switch v-model="type_refund" active-text="Devolución"></el-switch>
@@ -25,13 +25,13 @@
                 <!-- Modal para el formulario de gastos -->
                 <!-- Modal para el formulario de gastos -->
                 <el-dialog :visible.sync="showExpenseFormModal" :modal="false" title="Nuevo Gasto" @close="handleCloseExpenseForm">
-                    <ExpenseForm 
+                    <ExpenseForm
                     @close="handleCloseExpenseForm"
                     @expenseAdded="handleExpenseAdded"
-                    :isModal="true"                    
+                    :isModal="true"
                     />
                 </el-dialog>
-            
+
 
             </div>
             <div class="col-md-4">
@@ -540,7 +540,7 @@ export default {
 //        console.log(localStorage.getItem("plate_number"))
 //        console.log(this.configuration.configuration_pos.plate_number)
 //        console.log(this.electronic)
-        if(localStorage.getItem("plate_number") == this.configuration.configuration_pos.plate_number || this.electronic == false){
+        if(localStorage.getItem("plate_number") == this.configuration.configuration_pos.plate_number || this.electronic == false || this.configuration.configuration_pos.type_resolution == 'Factura Electronica de Venta'){
             this.plate_number_valid = true
             await this.initForm();
             await this.getTables();
@@ -952,8 +952,8 @@ export default {
         },
 
         async clickPayment() {
-
             let flag = 0;
+            this.form.type_resolution = this.configuration.configuration_pos.type_resolution
             this.form.items.forEach(row => {
                 if (row.aux_quantity < 0 || row.total < 0 || isNaN(row.total)) {
                     flag++;
@@ -972,11 +972,12 @@ export default {
             await this.sleep(800);
             this.is_payment = true;
             this.loading = false;
-
         },
+
         sleep(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
         },
+
         clickDeleteCustomer() {
             this.form.customer_id = null;
             this.setFormPosLocalStorage()
@@ -1004,7 +1005,7 @@ export default {
                         if (this.form_item.item.tax &&
                             this.form_item.item.tax.rate &&
                             this.form_item.item.tax.conversion) {
-                            
+
                             const taxRate = parseFloat(this.form_item.item.tax.rate);
                             const conversion = parseFloat(this.form_item.item.tax.conversion);
                             // Calcula el precio base quitando el IVA: precio_con_iva / (1 + tasa efectiva)
@@ -1123,7 +1124,7 @@ export default {
                             if (this.form_item.item.tax &&
                                 this.form_item.item.tax.rate &&
                                 this.form_item.item.tax.conversion) {
-                                
+
                                 const taxRate = parseFloat(this.form_item.item.tax.rate);
                                 const conversion = parseFloat(this.form_item.item.tax.conversion);
                                 // Calcula el precio base quitando el IVA: precio_con_iva / (1 + tasa efectiva)

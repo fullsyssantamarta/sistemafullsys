@@ -64,12 +64,8 @@ use App\Http\Resources\Tenant\DocumentPosResource;
 use App\Models\Tenant\Cash;
 use Modules\Factcolombia1\Http\Controllers\Tenant\DocumentController;
 
-
-
-
 class DocumentPosController extends Controller
 {
-
     use StorageDocument, FinanceTrait;
 
     protected $sale_note;
@@ -110,15 +106,12 @@ class DocumentPosController extends Controller
 
     public function records(Request $request)
     {
-        $records = DocumentPos::where($request->column, 'like', "%{$request->value}%")
-                            ->latest('id');
-
+        $records = DocumentPos::where($request->column, 'like', "%{$request->value}%")->latest('id');
         return new DocumentPosCollection($records->paginate(config('tenant.items_per_page')));
     }
 
     public function searchCustomers(Request $request)
     {
-
         $customers = Person::where('number','like', "%{$request->input}%")
                             ->orWhere('name','like', "%{$request->input}%")
                             ->whereType('customers')->orderBy('name')
@@ -185,7 +178,6 @@ class DocumentPosController extends Controller
     public function record($id)
     {
         $record = new DocumentPosResource(DocumentPos::findOrFail($id));
-
         return $record;
     }
 
@@ -193,7 +185,6 @@ class DocumentPosController extends Controller
     public function record2($id)
     {
         $record = new SaleNoteResource2(DocumentPos::findOrFail($id));
-
         return $record;
     }
 
@@ -203,7 +194,7 @@ class DocumentPosController extends Controller
         try{
 //        DB::connection('tenant')->transaction(function () use ($request) {
             $data = $this->mergeData($request);
-//            \Log::debug($request);
+//            \Log::debug($request->type_resolution);
 //            \Log::debug(json_encode($data));
             $customer = Person::where('number', $data['customer']['number'])->where('type', 'customers')->firstOrFail();
             $tax_totals = [];
@@ -351,24 +342,43 @@ class DocumentPosController extends Controller
                 'allowance_charges' => $data['allowance_charges'] ?? [],
                 'invoice_lines' => $invoice_lines,
             ];
-            // \Log::debug(json_encode($data_invoice_pos));
+            if($request->type_resolution == 'Factura Electronica de Venta')
+                $data_invoice_pos['type_document_id'] = 1;
+//            \Log::debug(json_encode($data_invoice_pos));
 //            return [
 //                'success' => false,
 //                'message' => "Abortando...",
-//                'data' => [
-//                    'id' => null,
-//                ]
 //            ];
             // gestion DIAN
             if ($data['electronic'] === true && (!isset($data['sincronize']) || $data['sincronize'] !== true)) {
                 $company = ServiceTenantCompany::firstOrFail();
-                $id_test = $company->test_set_id_eqdocs;
-                $base_url = config('tenant.service_fact');
-                if($company->eqdocs_type_environment_id == 2 && $company->test_set_id_eqdocs != 'no_test_set_id'){
-                    $ch = curl_init("{$base_url}ubl2.1/eqdoc/{$id_test}");
-                }
+                if($request->type_resolution == 'Factura Electronica de Venta')
+                    $id_test = $company->test_id;
                 else
-                    $ch = curl_init("{$base_url}ubl2.1/eqdoc");
+                    $id_test = $company->test_set_id_eqdocs;
+//                \Log::debug(json_encode($company));
+//                \Log::debug("id test: ".$id_test);
+                $base_url = config('tenant.service_fact');
+                if($request->type_resolution == 'Factura Electronica de Venta'){
+                    if($company->type_environment_id == 2 && $id_test != 'no_test_set_id'){
+                        $ch = curl_init("{$base_url}ubl2.1/invoice/{$id_test}");
+//                        \Log::debug("{$base_url}ubl2.1/invoice/{$id_test}");
+                    }
+                    else{
+                        $ch = curl_init("{$base_url}ubl2.1/invoice");
+//                        \Log::debug("{$base_url}ubl2.1/invoice");
+                    }
+                }
+                else{
+                    if($company->eqdocs_type_environment_id == 2 && $id_test != 'no_test_set_id'){
+                        $ch = curl_init("{$base_url}ubl2.1/eqdoc/{$id_test}");
+//                        \Log::debug("{$base_url}ubl2.1/eqdoc/{$id_test}");
+                    }
+                    else{
+                        $ch = curl_init("{$base_url}ubl2.1/eqdoc");
+//                        \Log::debug("{$base_url}ubl2.1/eqdoc");
+                    }
+                }
                 $data_document = json_encode($data_invoice_pos);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
@@ -383,7 +393,7 @@ class DocumentPosController extends Controller
                 $response = curl_exec($ch);
 //                 \Log::debug($data);
 //                 \Log::debug($company->eqdocs_type_environment_id);
-//                 \Log::debug($company->test_set_id_eqdocs);
+//                 \Log::debug($id_test);
 //                 \Log::debug("{$base_url}ubl2.1/eqdoc");
 //                 \Log::debug($company->api_token);
 //                 \Log::debug($data_document);
@@ -406,7 +416,18 @@ class DocumentPosController extends Controller
                     ];
                 }
 
-                if($company->eqdocs_type_environment_id == 2 && $company->test_set_id_eqdocs != 'no_test_set_id'){
+                if($request->type_resolution == 'Factura Electronica de Venta'){
+                    $company_eqdocs_type_environment_id_for_use = $company->type_environment_id;
+                    $company_test_set_id_eqdocs_for_use = $company->test_id;
+                    $type_document_string = 'la Factura Electronica de Venta Nro: ';
+                }
+                else{
+                    $company_eqdocs_type_environment_id_for_use = $company->eqdocs_type_environment_id;
+                    $company_test_set_id_eqdocs_for_use = $company->test_set_id_eqdocs;
+                    $type_document_string = 'el Documento Equivalente POS Nro: ';
+                }
+
+                if($company_eqdocs_type_environment_id_for_use == 2 && $company_test_set_id_eqdocs_for_use != 'no_test_set_id'){
                     if(property_exists($response_model, 'urlinvoicepdf') && property_exists($response_model, 'urlinvoicexml')){
                         if(!is_string($response_model->ResponseDian->Envelope->Body->SendTestSetAsyncResponse->SendTestSetAsyncResult->ZipKey)){
                             if(is_string($response_model->ResponseDian->Envelope->Body->SendTestSetAsyncResponse->SendTestSetAsyncResult->ErrorMessageList->XmlParamsResponseTrackId->Success)){
@@ -428,7 +449,7 @@ class DocumentPosController extends Controller
                     else{
                         return [
                             'success' => false,
-                            'message' => "Error el Documento Equivalente POS Nro: {$data['series']}{$data['number']}, Errores: ",
+                            'message' => "Error {$type_document_string}{$data['series']}{$data['number']}, Errores: ",
                             'data' => [
                                 'id' => null,
                             ],
@@ -445,10 +466,18 @@ class DocumentPosController extends Controller
                         curl_setopt($ch2, CURLOPT_SSL_VERIFYHOST, 0);
                         curl_setopt($ch2, CURLOPT_SSL_VERIFYPEER, 0);
 
-                        if(file_exists(storage_path('sendmail.api')))
-                            curl_setopt($ch2, CURLOPT_POSTFIELDS, json_encode(array("sendmail" => true, "is_payroll" => false, "is_eqdoc" => true)));
-                        else
-                            curl_setopt($ch2, CURLOPT_POSTFIELDS, json_encode(array("sendmail" => false, "is_payroll" => false, "is_eqdoc" => true)));
+                        if($request->type_resolution == 'Factura Electronica de Venta'){
+                            if(file_exists(storage_path('sendmail.api')))
+                                curl_setopt($ch2, CURLOPT_POSTFIELDS, json_encode(array("sendmail" => true, "is_payroll" => false, "is_eqdoc" => false)));
+                            else
+                                curl_setopt($ch2, CURLOPT_POSTFIELDS, json_encode(array("sendmail" => false, "is_payroll" => false, "is_eqdoc" => false)));
+                        }
+                        else{
+                            if(file_exists(storage_path('sendmail.api')))
+                                curl_setopt($ch2, CURLOPT_POSTFIELDS, json_encode(array("sendmail" => true, "is_payroll" => false, "is_eqdoc" => true)));
+                            else
+                                curl_setopt($ch2, CURLOPT_POSTFIELDS, json_encode(array("sendmail" => false, "is_payroll" => false, "is_eqdoc" => true)));
+                        }
 
                         curl_setopt($ch2, CURLOPT_HTTPHEADER, array(
                             'Content-Type: application/json',
@@ -456,12 +485,12 @@ class DocumentPosController extends Controller
                             "Authorization: Bearer {$company->api_token}"
                         ));
                         $response_status = curl_exec($ch2);
-                        //\Log::debug($response_status);
+//                        \Log::debug($response_status);
                         curl_close($ch2);
                         $response_status_decoded = json_decode($response_status);
                         if(property_exists($response_status_decoded, 'ResponseDian')){
                             if($response_status_decoded->ResponseDian->Envelope->Body->GetStatusZipResponse->GetStatusZipResult->DianResponse->IsValid == "true"){
-                                $data['ambient_id'] = $company->eqdocs_type_environment_id;
+                                $data['ambient_id'] = $company_eqdocs_type_environment_id_for_use;
                                 $data['request_api'] = $data_document;
                                 $data['response_api'] = $response_status;
                                 $data['cude'] = $response_status_decoded->ResponseDian->Envelope->Body->GetStatusZipResponse->GetStatusZipResult->DianResponse->XmlDocumentKey;
@@ -483,7 +512,7 @@ class DocumentPosController extends Controller
                                 if($response_status_decoded->ResponseDian->Envelope->Body->GetStatusZipResponse->GetStatusZipResult->DianResponse->IsValid == 'false'){
                                     return [
                                         'success' => false,
-                                        'message' => "Error el Documento Equivalente POS Nro: {$data['series']}{$data['number']}, Errores: ".$mensajeerror,
+                                        'message' => "Error {$type_document_string}{$data['series']}{$data['number']}, Errores: ".$mensajeerror,
                                         'data' => [
                                             'id' => null,
                                         ],
@@ -495,7 +524,7 @@ class DocumentPosController extends Controller
                             $mensajeerror = $response_status_decoded->message;
                             return [
                                 'success' => false,
-                                'message' => "Error el Documento Equivalente POS Nro: {$data['series']}{$data['number']} Errores: ".$mensajeerror,
+                                'message' => "Error {$type_document_string}{$data['series']}{$data['number']} Errores: ".$mensajeerror,
                                 'data' => [
                                     'id' => null,
                                 ],
@@ -516,7 +545,7 @@ class DocumentPosController extends Controller
                 else{
                     if(property_exists($response_model, 'send_email_success')){
                         if($response_model->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->IsValid == "true"){
-                            $data['ambient_id'] = $company->eqdocs_type_environment_id;
+                            $data['ambient_id'] = $company_eqdocs_type_environment_id_for_use;
                             $data['request_api'] = $data_document;
                             $data['response_api'] = json_encode($response_model);
                             $data['cude'] = $response_model->ResponseDian->Envelope->Body->SendBillSyncResponse->SendBillSyncResult->XmlDocumentKey;
@@ -532,7 +561,7 @@ class DocumentPosController extends Controller
                                 // if($invoice_json == NULL) // no existe $invoice_json en este archivo
                                 return [
                                     'success' => false,
-                                    'message' => "Error al Validar Factura Nro: {$data['series']}{$data['number']} Errores: ".$mensajeerror,
+                                    'message' => "Error al Validar {$type_document_string}{$data['series']}{$data['number']} Errores: ".$mensajeerror,
                                     'data' => [
                                         'id' => null,
                                     ],
@@ -543,7 +572,7 @@ class DocumentPosController extends Controller
                     else{
                         return [
                             'success' => false,
-                            'message' => "Error al Validar Factura Nro: {$data['series']}{$data['number']} Errores: ".$response_model->message,
+                            'message' => "Error al Validar {$type_document_string}{$data['series']}{$data['number']} Errores: ".$response_model->message,
                             'data' => [
                                 'id' => null,
                             ],
@@ -586,7 +615,7 @@ class DocumentPosController extends Controller
             // }
             $this->savePayments($this->sale_note, $data['payments']);
             $this->setFilename();
-            $this->createPdf($this->sale_note,"ticket", $this->sale_note->filename);
+            $this->createPdf($this->sale_note, "ticket", $this->sale_note->filename);
 //        });
         }catch(\Exception $e){
 //            \Log::debug(json_encode([
@@ -607,7 +636,7 @@ class DocumentPosController extends Controller
 
         return [
             'success' => true,
-            'message' => "Documento Equivalente POS Nro: {$data['series']}{$data['number']} Procesado Correctamente.",
+            'message' => "{$type_document_string}{$data['series']}{$data['number']} Procesado Correctamente.",
             'data' => [
                 'id' => $this->sale_note->id,
             ],
@@ -725,7 +754,6 @@ class DocumentPosController extends Controller
     }
 
     public function createPdf($sale_note = null, $format_pdf = null, $filename = null) {
-
         ini_set("pcre.backtrack_limit", "5000000");
         $template = new Template();
         $pdf = new Mpdf();
@@ -787,8 +815,6 @@ class DocumentPosController extends Controller
                 }
             }
             $legends = $this->document->legends != '' ? '10' : '0';
-
-
             $pdf = new Mpdf([
                 'mode' => 'utf-8',
                 'format' => [
@@ -816,14 +842,12 @@ class DocumentPosController extends Controller
                 'margin_left' => 2
             ]);
         } else if($format_pdf === 'a5'){
-
             $company_name      = (strlen($this->company->name) / 20) * 10;
             $company_address   = (strlen($this->document->establishment->address) / 30) * 10;
             $company_number    = $this->document->establishment->telephone != '' ? '10' : '0';
             $customer_name     = strlen($this->document->customer->name) > '25' ? '10' : '0';
             $customer_address  = (strlen($this->document->customer->address) / 200) * 10;
             $p_order           = $this->document->purchase_order != '' ? '10' : '0';
-
             $total_exportation = $this->document->total_exportation != '' ? '10' : '0';
             $total_free        = $this->document->total_free != '' ? '10' : '0';
             $total_unaffected  = $this->document->total_unaffected != '' ? '10' : '0';
@@ -837,7 +861,6 @@ class DocumentPosController extends Controller
                 }
             }
             $legends           = $this->document->legends != '' ? '10' : '0';
-
 
             $alto = ($quantity_rows * 8) +
                     ($discount_global * 3) +
@@ -866,20 +889,14 @@ class DocumentPosController extends Controller
                 'margin_bottom' => 0,
                 'margin_left' => 5
             ]);
-
-
        } else {
-
             $pdf_font_regular = config('tenant.pdf_name_regular');
             $pdf_font_bold = config('tenant.pdf_name_bold');
-
             if ($pdf_font_regular != false) {
                 $defaultConfig = (new ConfigVariables())->getDefaults();
                 $fontDirs = $defaultConfig['fontDir'];
-
                 $defaultFontConfig = (new FontVariables())->getDefaults();
                 $fontData = $defaultFontConfig['fontdata'];
-
                 $pdf = new Mpdf([
                     'fontDir' => array_merge($fontDirs, [
                         app_path('CoreFacturalo'.DIRECTORY_SEPARATOR.'Templates'.

@@ -30,11 +30,12 @@
                         <th>#</th>
                         <th class="text-center">Fecha Emisión</th>
                         <th>Cliente</th>
-                        <th>Nota de Venta</th>
+                        <th>Nro Documento</th>
                         <th>Estado</th>
-                        <th class="text-center">Moneda</th>
+<!--                        <th class="text-center">Moneda</th>     -->
+                        <th class="text-center">Tipo Resolucion</th>
                         <th class="text-right">Total</th>
-                        <th class="text-center">POS Electronico</th>
+                        <th class="text-center">Electronico</th>
                         <th class="text-center" v-if="columns.total_paid.visible">Pagado</th>
                         <th class="text-center" v-if="columns.total_pending_paid.visible">Por pagar</th>
                         <th class="text-center">Estado pago</th>
@@ -59,7 +60,8 @@
                         <td>
                             <span class="badge bg-secondary text-white" :class="{'bg-danger': (row.state_type_id === '11'), 'bg-warning': (row.state_type_id === '13'), 'bg-secondary': (row.state_type_id === '01'), 'bg-info': (row.state_type_id === '03'), 'bg-success': (row.state_type_id === '05'), 'bg-secondary': (row.state_type_id === '07'), 'bg-dark': (row.state_type_id === '09')}">{{row.state_type_description}}</span>
                         </td>
-                        <td class="text-center">{{ row.currency_type_id }}</td>
+<!--                        <td class="text-center">{{ row.currency_type_id }}</td>     -->
+                        <td class="text-center">{{ row.type_resolution }}</td>
                         <td class="text-right">{{ row.total }}</td>
                         <td class="text-center">
                             <span class="badge text-white" :class="{ 'bg-success': (row.electronic), 'bg-primary' : (!row.electronic) }">{{ row.electronic ? 'Electronico' : 'Ticket Papel' }}</span>
@@ -106,12 +108,9 @@
             </div>
         </div>
 
-
         <sale-notes-options :showDialog.sync="showDialogOptions"
                           :recordId="saleNotesNewId"
                           :showClose="true"></sale-notes-options>
-
-
     </div>
 </template>
 

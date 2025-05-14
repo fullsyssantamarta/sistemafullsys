@@ -69,14 +69,6 @@
         <td colspan="2"> <h6>{{ $sucursal->description }}. {{ $establishment->address }}</h6></td>
     </tr>
     <br>
-    <tr>
-        @if($is_epos)
-            <td colspan="2"> <h6>DOCUMENTO EQUIVALENTE ELECTRONICO DEL TIQUETE DE MAQUINA REGISTRADORA CON SISTEMA P.O.S. No: {{ $tittle }}</h6> </td>
-        @else
-            <td colspan="2"> <h6>Documento Equivalente POS #: {{ $tittle }}</h6> </td>
-        @endif
-    </tr>
-    <br>
     @if($is_epos)
         <?php
             if(is_string($document->request_api))
@@ -84,10 +76,26 @@
             else
                 $request_api = json_decode(json_encode($document->request_api), true);
         ?>
-        <tr>
-            <td><h6>Serial de caja: {{ $request_api['cash_information']['plate_number'] }}</h6></td>
-            <td class=""><h6>Tipo de caja: {{ $request_api['cash_information']['cash_type'] }}</h6></td>
-        </tr>
+    @endif
+    <tr>
+        @if($is_epos)
+            @if($request_api['type_document_id'] == 1)
+                <td colspan="2"> <h6>FACTURA ELECTRONICA DE VENTA No: {{ $tittle }}</h6> </td>
+            @else
+                <td colspan="2"> <h6>DOCUMENTO EQUIVALENTE ELECTRONICO DEL TIQUETE DE MAQUINA REGISTRADORA CON SISTEMA P.O.S. No: {{ $tittle }}</h6> </td>
+            @endif
+        @else
+            <td colspan="2"> <h6>Documento Equivalente POS #: {{ $tittle }}</h6> </td>
+        @endif
+    </tr>
+    <br>
+    @if($is_epos)
+        @if($request_api['type_document_id'] != 1)
+            <tr>
+                <td><h6>Serial de caja: {{ $request_api['cash_information']['plate_number'] }}</h6></td>
+                <td class=""><h6>Tipo de caja: {{ $request_api['cash_information']['cash_type'] }}</h6></td>
+            </tr>
+        @endif
         <tr>
             <td><h6>Cajero:  {{ $request_api['cash_information']['cashier'] }} </h6></td>
         </tr>
@@ -204,9 +212,9 @@
                             <ul>
                                 @foreach($payments as $row)
                                     <li>
-                                        {{ $row->payment_method_type->number_days ? $row->date_of_payment->addDays($row->payment_method_type->number_days)->format('d/m/Y') : $row->date_of_payment->format('d/m/Y') }} 
-                                        {{ $row->payment_method_type->description }} 
-                                        {{ $row->reference ? $row->reference.' - ' : '' }} 
+                                        {{ $row->payment_method_type->number_days ? $row->date_of_payment->addDays($row->payment_method_type->number_days)->format('d/m/Y') : $row->date_of_payment->format('d/m/Y') }}
+                                        {{ $row->payment_method_type->description }}
+                                        {{ $row->reference ? $row->reference.' - ' : '' }}
                                         {{ $document->currency_type->symbol }}{{ $row->payment }}
                                     </li>
                                     @php
@@ -216,7 +224,7 @@
                             </ul>
                             <span><strong>SALDO:</strong> {{ $document->currency_type->symbol }} {{ number_format($document->total - $payment, 2) }}</span>
                         </div>
-                        
+
                         @if($resolution)
                             <div style="margin-top: 10px;">
                                 <span>Resol. DIAN #: {{ $resolution->resolution_number }}</span><br>
@@ -264,7 +272,11 @@
 </table>
 
 @if($is_epos)
-    <p style="text-align: center; font-size: 6pt;"><strong>CUDE:</strong> {{ $document->cude }}</p>
+    @if($request_api['type_document_id'] != 1)
+        <p style="text-align: center; font-size: 6pt;"><strong>CUDE:</strong> {{ $document->cude }}</p>
+    @else
+        <p style="text-align: center; font-size: 6pt;"><strong>CUFE:</strong> {{ $document->cude }}</p>
+    @endif
 @endif
 
 </body>

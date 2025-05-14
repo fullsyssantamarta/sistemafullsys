@@ -58,6 +58,7 @@ class PosController extends Controller
 
         $configuration = Configuration::first();
         $configuration_pos = ConfigurationPos::where('id', $cash->resolution_id)->firstOrFail();
+//        \Log::debug($configuration_pos);
         $configuration->configuration_pos = $configuration_pos;
 
         $company = Company::select('soap_type_id')->first();
@@ -99,6 +100,8 @@ class PosController extends Controller
                     'date_from' => Carbon::parse($request->date_from)->toDateString(),
                     'date_to' => Carbon::parse($request->date_end)->toDateString(),
                 ];
+                if($request->type_resolution == "Factura Electronica de Venta")
+                    $data['type_document_id'] = 1;
 
                 $data_resolution = json_encode($data);
                 curl_setopt($ch3, CURLOPT_RETURNTRANSFER, true);
@@ -343,12 +346,12 @@ class PosController extends Controller
          }
          return self::$advancedConfig;
      }
-     
+
      private function getSaleUnitPriceWithTax($item, $decimal_quantity)
      {
          // Obtenemos la configuración avanzada (se consulta solo una vez gracias al cache estático).
          $advancedConfig = $this->getAdvancedConfiguration();
-     
+
          // Se utiliza el valor de item_tax_included de AdvancedConfiguration para determinar el cálculo.
          if ($advancedConfig->item_tax_included) {
              // Si Incluir impuesto al precio de registro falso sedebe dejar el producto con el iva incluido
@@ -358,9 +361,9 @@ class PosController extends Controller
          } else {
              // Incluir impuesto al precio de registro se debe sumar el iva pero como el precio se esta sumando el iva se deja tal cual
              $price = $item->sale_unit_price;
- 
+
          }
-     
+
          return number_format($price, $decimal_quantity, ".", "");
      }
 
