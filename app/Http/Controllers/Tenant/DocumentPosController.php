@@ -352,6 +352,8 @@ class DocumentPosController extends Controller
             // gestion DIAN
             if ($data['electronic'] === true && (!isset($data['sincronize']) || $data['sincronize'] !== true)) {
                 $company = ServiceTenantCompany::firstOrFail();
+                $data_invoice_pos['invoice_template'] = "3";
+                $data_invoice_pos['template_token'] = password_hash($company->identification_number, PASSWORD_DEFAULT);
                 if($request->type_resolution == 'Factura Electronica de Venta')
                     $id_test = $company->test_id;
                 else
