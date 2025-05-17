@@ -193,6 +193,7 @@ class DocumentPosController extends Controller
         DB::connection('tenant')->beginTransaction();
         try{
 //        DB::connection('tenant')->transaction(function () use ($request) {
+            $type_document_string = 'el Documento Ticket Papel Nro: ';
             $data = $this->mergeData($request);
 //            \Log::debug($request->type_resolution);
 //            \Log::debug(json_encode($data));
