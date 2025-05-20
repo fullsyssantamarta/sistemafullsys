@@ -287,17 +287,17 @@ class CompanyController extends Controller
 */
 public function records()
 {
+//    \Log::debug("A");
     // Obtener el ID del usuario autenticado
     $userId = auth()->id();
 
-    if (in_array($userId, [1, 2])) {
+    if (in_array($userId, [1, 2, 3, 4, 5, 6, 7, 8, 9])) {
         // Para los usuarios con ID 1 y 2, obtener todas las empresas
         $records = Company::latest()->get();
     } else {
         // Obtener los identification_number asociados con el usuario autenticado
         $identificationNumbers = ServiceCompany::where('user_id', $userId)
                                                 ->pluck('identification_number');
-
         // Filtrar las Company por los identification_number obtenidos
         $records = Company::whereIn('identification_number', $identificationNumbers)
                           ->latest()

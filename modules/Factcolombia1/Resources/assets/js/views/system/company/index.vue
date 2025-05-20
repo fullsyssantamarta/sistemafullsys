@@ -404,14 +404,14 @@ export default {
         this.text_limit_users = "El límite de usuarios fue superado";
     },
 
-    watch: {
-        records(newVal, oldVal) {
-            console.log('[WATCH] records ha cambiado');
-            console.log('Anterior:', oldVal);
-            console.log('Nuevo:', newVal);
-            console.trace('¿Quién modificó `records`?');
-        }
-    },
+//    watch: {
+//        records(newVal, oldVal) {
+//            console.log('[WATCH] records ha cambiado');
+//            console.log('Anterior:', oldVal);
+//            console.log('Nuevo:', newVal);
+//            console.trace('¿Quién modificó `records`?');
+//        }
+//    },
 
     methods: {
         //obtener el id del ususario de la session activa
@@ -462,7 +462,7 @@ export default {
             this.$http.get(`/${this.resource}/all`).then(response => {
 //                console.log(response.data)
                 this.servicecompany = response.data.servicecompany;
-                console.log(this.servicecompany)
+//                console.log(this.servicecompany)
                 this.getData(); // Llama a getData para actualizar records con los user_id correctos
             });
         },
@@ -556,10 +556,10 @@ export default {
                 return;
             }
 
-//            console.log(this.records)
+//            console.log(`/${this.resource}/records`)
             this.$http.get(`/${this.resource}/records`).then(response => {
                     // Convertimos servicecompany en un diccionario para acceso rápido
-                    console.log(response.data.data)
+//                    console.log(response.data.data)
                     const serviceMap = this.servicecompany.reduce((map, sc) => {
                         map[String(sc.identification_number)] = sc;
                         return map;
