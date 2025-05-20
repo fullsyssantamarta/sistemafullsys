@@ -559,6 +559,7 @@ export default {
 //            console.log(this.records)
             this.$http.get(`/${this.resource}/records`).then(response => {
                     // Convertimos servicecompany en un diccionario para acceso rápido
+                    console.log(response.data.data)
                     const serviceMap = this.servicecompany.reduce((map, sc) => {
                         map[String(sc.identification_number)] = sc;
                         return map;
