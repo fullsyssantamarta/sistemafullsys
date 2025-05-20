@@ -404,6 +404,15 @@ export default {
         this.text_limit_users = "El límite de usuarios fue superado";
     },
 
+    watch: {
+        records(newVal, oldVal) {
+            console.log('[WATCH] records ha cambiado');
+            console.log('Anterior:', oldVal);
+            console.log('Nuevo:', newVal);
+            console.trace('¿Quién modificó `records`?');
+        }
+    },
+
     methods: {
         //obtener el id del ususario de la session activa
         getCurrentUser() {
