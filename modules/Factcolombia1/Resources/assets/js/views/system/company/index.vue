@@ -556,15 +556,25 @@ export default {
                 return;
             }
 
+            console.log(this.records)
             this.$http.get(`/${this.resource}/records`).then(response => {
-                this.records = response.data.data.map(company => {
-                    const serviceCompany = this.servicecompany.find(sc => String(sc.identification_number) === String(company.identification_number));
+                    // Convertimos servicecompany en un diccionario para acceso rápido
+                    const serviceMap = this.servicecompany.reduce((map, sc) => {
+                        map[String(sc.identification_number)] = sc;
+                        return map;
+                    }, {});
+
+                    // Construimos el array de records usando el mapa
+                    this.records = response.data.data.map(company => {
+                    const serviceCompany = serviceMap[String(company.identification_number)];
+
                     return {
                         ...company,
                         user_id: serviceCompany ? serviceCompany.user_id : null
                     };
                 });
             });
+            console.log(this.records)
         },
 
         clickCreate(recordId = null) {
