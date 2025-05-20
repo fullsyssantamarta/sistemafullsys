@@ -109,6 +109,11 @@
                             </tr>
                         </thead>
                         <tbody>
+                            <tr>
+<td colspan="16">
+    <pre>{{ records }}</pre>
+  </td>
+</tr>
                             <tr v-for="(row, index) in records" :key="index">
                                 <td>{{ index + 1 }}</td>
                                 <td>{{ row.identification_number }}</td>
@@ -446,7 +451,7 @@ export default {
 
         getServiceCompany() {
             this.$http.get(`/${this.resource}/all`).then(response => {
-                console.log(response.data)
+//                console.log(response.data)
                 this.servicecompany = response.data.servicecompany;
                 this.getData(); // Llama a getData para actualizar records con los user_id correctos
             });
