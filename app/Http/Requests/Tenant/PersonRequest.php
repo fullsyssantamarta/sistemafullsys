@@ -63,7 +63,7 @@ class PersonRequest extends FormRequest
             return in_array($input->identity_document_type_id, [1, 2, 3, 6, 10]);
         });
 
-        $validator->sometimes('number', ['regex:/^[A-Za-z0-9\-]+$/', 'max:15'], function ($input) {
+        $validator->sometimes('number', ['regex:/^[A-Za-z0-9\-]+$/', 'max:20'], function ($input) {
             return in_array($input->identity_document_type_id, [4, 7, 8, 9]);
         });
 
