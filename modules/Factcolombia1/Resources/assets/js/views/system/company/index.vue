@@ -76,8 +76,7 @@
                         <button
                             type="button"
                             class="btn btn-custom btn-sm mt-2 mr-2 mb-3"
-                            @click.prevent="clickCreate()"
-                        >
+                            @click.prevent="clickCreate()">
                             <i class="fa fa-plus-circle"></i> Nuevo
                         </button>
                     </div>
@@ -95,9 +94,7 @@
                                 <th class="text-center">Limite de documentos</th>
                                 <th class="text-center">Limite usuarios</th>
                                 <th class="text-center"># Comprobantes</th>
-
                                 <th class="text-center" v-if="currentUserId === 1 || currentUserId === 2">Bloquear cuenta</th>
-
                                 <th class="text-right" v-if="currentUserId === 1 || currentUserId === 2">Limitar Doc.</th>
                                 <th class="text-center" v-if="currentUserId === 1 || currentUserId === 2">Limitar Usuarios</th>
                                 <th class="text-center" v-if="currentUserId === 1 || currentUserId === 2">Pagos</th>
@@ -106,7 +103,6 @@
                                 <th class="text-center" v-if="currentUserId === 1 || currentUserId === 2">Asignar usuario</th>
                                 <th class="text-right">Acciones</th>
                                 <!-- <th class="text-right">Pagos</th> -->
-
                                 <!-- <th class="text-right">Editar</th> -->
                                 <!-- <th class="text-right">Inicio Ciclo Facturacion</th>
                                 <th class="text-center">Comprobantes Ciclo Facturacion</th>-->
@@ -202,13 +198,14 @@
                                     ></el-switch>
                                 </td>
 
-                                    <td class="text-center" v-if="currentUserId === 1 || currentUserId === 2">
-                                        <el-switch
-                                          style="display: block"
-                                          v-model="row.locked_users"
-                                          @change="changeLockedUser(row)"
-                                        ></el-switch>
-                                    </td>
+                                <td class="text-center" v-if="currentUserId === 1 || currentUserId === 2">
+                                    <el-switch
+                                        style="display: block"
+                                        v-model="row.locked_users"
+                                        @change="changeLockedUser(row)"
+                                    ></el-switch>
+                                </td>
+
                                 <td class="text-right" v-if="currentUserId === 1 || currentUserId === 2">
                                     <button
                                         type="button"
@@ -216,6 +213,7 @@
                                         @click.prevent="clickPayments(row.id)"
                                     >Pagos</button>
                                 </td>
+
                                 <td class="text-right" v-if="currentUserId === 1 || currentUserId === 2">
                                     <button
                                         type="button"
@@ -223,6 +221,7 @@
                                         @click.prevent="clickAccountStatus(row.id)"
                                     >E. Cuenta</button>
                                 </td>
+
                                 <td class="text-right">
                                     <template v-if="row.start_billing_cycle">
                                         <span></span>
@@ -238,6 +237,7 @@
                                         ></el-date-picker>
                                     </template>
                                 </td>
+
                                 <td class="text-center" v-if="currentUserId === 1 || currentUserId === 2">
                                     <el-select v-model="row.user_id" @change="assignUser(row)">
                                         <el-option
@@ -248,6 +248,7 @@
                                         </el-option>
                                     </el-select>
                                 </td>
+
                                 <td class="text-right">
                                 <template v-if="!row.locked">
                                     <button
@@ -275,10 +276,7 @@
                                     >Eliminar</button>
                                 </template>
                             </td>
-
-                                
-
-                                <!-- <td class="text-right">
+                        <!-- <td class="text-right">
                         <button
                             type="button"
                             class="btn waves-effect waves-light btn-xs btn-warning m-1__2"
@@ -327,13 +325,9 @@
 
         <companies-form :showDialog.sync="showDialog" :recordId="recordId"></companies-form>
         <client-payments :showDialog.sync="showDialogPayments" :clientId="recordId"></client-payments>
-
-
         <!--<system-clients-form-edit :showDialog.sync="showDialogEdit"
         :recordId="recordId"></system-clients-form-edit>-->
-
         <!-- <client-payments :showDialog.sync="showDialogPayments" :clientId="recordId"></client-payments>-->
-
         <account-status :showDialog.sync="showDialogAccountStatus" :clientId="recordId"></account-status>
     </div>
 </template>
@@ -345,8 +339,6 @@ import { deletable } from "@mixins/deletable";
 import { changeable } from "@mixins/changeable";
 import ClientPayments from "@viewsSystem/clients/partials/payments";
 import AccountStatus from "@viewsSystem/clients/partials/account_status";
-
-
 // import ChartLine from "./charts/Line";
 // import ClientPayments from "./partials/payments.vue";
 // import AccountStatus from "./partials/account_status.vue";
@@ -388,26 +380,25 @@ export default {
     async mounted() {
         this.getCurrentUser();
         this.loaded = false;
-
         // await this.$http.get(`/${this.resource}/charts`).then(response => {
         //   let line = response.data.line;
         //   this.dataChartLine.labels = line.labels;
         //   this.dataChartLine.datasets[0].data = line.data;
         //   this.total_documents = response.data.total_documents;
         // });
-
         this.loaded = true;
     },
+
     created() {
         this.$eventHub.$on("reloadData", () => {
             this.getData();
-        });        
+        });
         this.getUsers();
         this.getServiceCompany();
-
         this.text_limit_doc = "El límite de comprobantes fue superado";
         this.text_limit_users = "El límite de usuarios fue superado";
     },
+
     methods: {
         //obtener el id del ususario de la session activa
         getCurrentUser() {
@@ -419,10 +410,12 @@ export default {
                     console.error('Error al obtener el ID del usuario actual:', error);
                 });
         },
+
         //cambio de empresa tenancy por Cristian
         switchToTenant(companyId) {
             window.open(`/switch-tenant/${companyId}`, '_blank');
         },
+
         changeLockedTenant(row) {
             this.$http
                 .post(`${this.resource}/locked_tenant`, row)
@@ -444,18 +437,21 @@ export default {
                 .then(() => {});
         },
 
-        getUsers() {            
+        getUsers() {
             this.$http.get(`/${this.resource_users}/records`).then(response => {
+//                console.log(response.data.data)
                 this.users = response.data.data;
-               // console.log(this.users);
             });
         },
+
         getServiceCompany() {
             this.$http.get(`/${this.resource}/all`).then(response => {
+                console.log(response.data)
                 this.servicecompany = response.data.servicecompany;
                 this.getData(); // Llama a getData para actualizar records con los user_id correctos
             });
         },
+
         assignUser(row) {
             this.$http.post(`/${this.resource}/update-user`, {
                 identification_number: row.identification_number,
@@ -471,6 +467,7 @@ export default {
                 this.$message.error('Error al asignar usuario');
             });
         },
+
         changeLockedUser(row) {
             this.$http
                 .post(`${this.resource}/locked_user`, row)
@@ -536,6 +533,7 @@ export default {
                 })
                 .then(() => {});
         },
+
         getData() {
             this.$http.get(`/${this.resource}/records`).then(response => {
                 this.records = response.data.data.map(company => {
@@ -547,6 +545,7 @@ export default {
                 });
             });
         },
+
         clickCreate(recordId = null) {
             this.recordId = recordId;
             this.showDialog = true;

@@ -382,6 +382,8 @@ class DocumentPosController extends Controller
 //                        \Log::debug("{$base_url}ubl2.1/eqdoc");
                     }
                 }
+//                \Log::debug(json_encode($data_invoice_pos));
+//                return ['success' => false, 'message' => "Guardado en Log...", 'errors' => null, 'data' => ['id' => null,],];
                 $data_document = json_encode($data_invoice_pos);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");

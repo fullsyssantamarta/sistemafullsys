@@ -14,13 +14,13 @@ class UserController extends Controller
         $currentUserId = auth()->id();
         return view('system.users.form', compact('currentUserId'));
     }
-    
+
 
     public function record()
     {
         // Obtener el usuario autenticado actualmente
         $user = auth()->user();
-    
+
         // Retornar el usuario como un recurso de API
         return new UserResource($user);
     }
@@ -31,12 +31,11 @@ class UserController extends Controller
         return UserResource::collection($users);
     }
 
-    
     public function store(UserRequest $request)
     {
         // Obtiene el ID del usuario desde la solicitud, puede ser null si es un nuevo usuario
         $id = $request->input('id');
-        
+
         if ($id) {
             // Actualizar un usuario existente
             $user = User::findOrFail($id); // Cambiado a findOrFail para asegurar que el usuario exista
@@ -48,20 +47,20 @@ class UserController extends Controller
             // Genera un token para nuevos usuarios
             $user->api_token = Str::random(60); // Genera un token único para nuevos usuarios
         }
-        
+
         // Asignar campos comunes
         $user->email = $request->input('email');
         $user->name = $request->input('name');
         $user->phone = $request->input('phone');
-        
+
         // Asignar o actualizar la contraseña si se proporciona
         if (strlen($request->input('password')) > 0) {
             $user->password = bcrypt($request->input('password'));
         }
-        
+
         // Guardar el usuario
         $user->save();
-        
+
         return [
             'success' => true,
             'message' => $id ? 'Usuario actualizado con nuevo token' : 'Usuario creado con token',
@@ -76,13 +75,13 @@ class UserController extends Controller
         if ($request->filled('password')) {
             $user->password = bcrypt($request->input('password'));
         }
-        
+
         // Omitir el campo password si está vacío
         $input = $request->except(['password', 'password_confirmation']);
         $user->fill($input);
-        
+
         $user->save();
-        
+
         return [
             'success' => true,
             'message' => 'Usuario actualizado correctamente',
@@ -90,9 +89,9 @@ class UserController extends Controller
         ];
     }
 
-    
-    
-    
+
+
+
 
     public function getPhone()
     {

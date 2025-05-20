@@ -11,7 +11,6 @@ class HomeController extends Controller
     public function index()
     {
         $clients = Client::get();
-
         return view('system.dashboard')->with('clients', count($clients));
     }
 }

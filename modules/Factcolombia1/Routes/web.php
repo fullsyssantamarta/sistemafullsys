@@ -140,16 +140,13 @@ if($current_hostname) {
         Route::get('/switch-tenant/{companyId}', 'System\CompanyController@switchTenant')->name('switch-tenant');
 
         Route::middleware('auth:admin')->group(function() {
-
             Route::get('/', function () {
                 return redirect()->route('system.co-companies');
             });
             Route::get('/dashboard', function () {
                 return redirect()->route('system.co-companies');
             });
-
             Route::prefix('co-companies')->group(function () {
-
                 Route::get('', 'System\HomeController@index')->name('system.co-companies');
                 Route::get('tables', 'System\CompanyController@tables');
                 Route::post('', 'System\CompanyController@store')->name('system.company');

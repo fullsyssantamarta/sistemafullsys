@@ -95,9 +95,7 @@
                 <th class="text-center">Comprobantes</th>
                 <th class="text-center">Usuarios</th>
                 <th class="text-center">F.Creación</th>
-
                 <th class="text-center">Bloquear cuenta</th>
-
                 <th class="text-right">Limitar Doc.</th>
                 <th class="text-center">Limitar Usuarios</th>
                 <th class="text-right">Acciones</th>
