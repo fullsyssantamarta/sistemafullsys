@@ -462,6 +462,7 @@ export default {
             this.$http.get(`/${this.resource}/all`).then(response => {
 //                console.log(response.data)
                 this.servicecompany = response.data.servicecompany;
+                console.log(this.servicecompany)
                 this.getData(); // Llama a getData para actualizar records con los user_id correctos
             });
         },
@@ -527,6 +528,7 @@ export default {
                     this.$eventHub.$emit("reloadData");
                 });
         },
+
         changeLockedEmission(row) {
             this.$http
                 .post(`${this.resource}/locked_emission`, row)
@@ -549,6 +551,11 @@ export default {
         },
 
         getData() {
+            if (!this.servicecompany || this.servicecompany.length === 0) {
+                console.warn('⚠️ No se ha cargado servicecompany aún. Aborting getData().');
+                return;
+            }
+
             this.$http.get(`/${this.resource}/records`).then(response => {
                 this.records = response.data.data.map(company => {
                     const serviceCompany = this.servicecompany.find(sc => sc.identification_number === company.identification_number);

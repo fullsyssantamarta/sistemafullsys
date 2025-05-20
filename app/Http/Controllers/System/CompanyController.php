@@ -6,9 +6,6 @@ use App\Http\Resources\System\CompanyResource;
 use App\Models\System\Configuration;
 use App\Http\Requests\System\CompanyRequest;
 
-
-
-
 class CompanyController extends Controller
 {
     public function create()
@@ -20,8 +17,6 @@ class CompanyController extends Controller
     {
         $soap_sends = config('tables.system.soap_sends');
         $soap_types = SoapType::all();
-
-
         return compact('soap_types', 'soap_sends');
     }
 

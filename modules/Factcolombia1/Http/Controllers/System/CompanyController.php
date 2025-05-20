@@ -157,7 +157,7 @@ class CompanyController extends Controller
         $currentUserId = auth()->id();
         return response()->json(['currentUserId' => $currentUserId]);
     }
-    
+
 
     public function validateWebsite($uuid, $website){
 
@@ -178,30 +178,30 @@ class CompanyController extends Controller
         $company = Company::findOrFail($companyId);
         // Asegúrate de que la relación o método 'hostname' exista y devuelva el objeto esperado
         $hostname = $company->hostname;
-    
+
         // Obtiene el usuario administrador autenticado
         $user = auth()->user();
-    
+
         // Verifica si el usuario tiene un token; si no, crea uno nuevo
         if (empty($user->api_token)) {
             $user->api_token = Str::random(60); // Usa Str::random o cualquier otro método que prefieras para generar el token
             $user->save();
         }
-    
+
         // Prepara la URL para redireccionar al tenant
         $urlToRedirect = "http://{$hostname->fqdn}/switch-tenant?token={$user->api_token}";
-    
+
         // Redirecciona al usuario
         return redirect()->away($urlToRedirect);
     }
     */
 
-    
+
     public function switchTenant($companyId)
     {
         // Obtener la compañía y su hostname asociado
         $company = Company::findOrFail($companyId);
-        $hostname = $company->hostname; // Asume que tienes una relación o atributo 
+        $hostname = $company->hostname; // Asume que tienes una relación o atributo
 
        // dd($company->subdomain);
 
@@ -209,10 +209,10 @@ class CompanyController extends Controller
         $environment = app(Environment::class);
         $environment->tenant($company->website);
 
-     
+
         $tenantDatabaseName = 'tenancy_' . $company->subdomain; // O cualquier lógica que utilices para nombrar las bases de datos
 
-           
+
         config([
             'database.connections.tenant' => [
                 'driver' => 'mysql',
@@ -239,7 +239,7 @@ class CompanyController extends Controller
 
         // Genera la URL con el token encriptado como parámetro
         $urlToRedirect = "http://{$hostname->fqdn}/dashboard?api_token={$encryptedToken}";
-    
+
         // Redirecciona al usuario al tenant con el token incluido en la URL
         return redirect()->away($urlToRedirect);
     }

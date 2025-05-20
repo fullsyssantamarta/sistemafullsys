@@ -157,19 +157,13 @@ if($current_hostname) {
                 Route::get('record/{id}', 'System\CompanyController@record');
                 Route::post('update-user', 'System\CompanyController@updateUser');
                 Route::delete('{company}', 'System\CompanyController@destroy');
-
                 // Route::post('locked_emission', 'System\CompanyController@lockedEmission');
                 Route::post('locked_tenant', 'System\CompanyController@lockedTenant');
                 Route::post('locked_user', 'System\CompanyController@lockedUser');
                 Route::post('locked_emission', 'System\CompanyController@lockedEmission');
                 Route::post('set_billing_cycle', 'System\CompanyController@startBillingCycle');
-
-
             });
-
-
         });
     });
-
 }
 
