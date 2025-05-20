@@ -110,10 +110,10 @@
                         </thead>
                         <tbody>
                             <tr>
-<td colspan="16">
+<!-- <td colspan="16">
     <pre>{{ records }}</pre>
   </td>
-</tr>
+</tr> -->
                             <tr v-for="(row, index) in records" :key="index">
                                 <td>{{ index + 1 }}</td>
                                 <td>{{ row.identification_number }}</td>
@@ -404,14 +404,14 @@ export default {
         this.text_limit_users = "El límite de usuarios fue superado";
     },
 
-    watch: {
-        records(newVal, oldVal) {
-            console.log('[WATCH] records ha cambiado');
-            console.log('Anterior:', oldVal);
-            console.log('Nuevo:', newVal);
-            console.trace('¿Quién modificó `records`?');
-        }
-    },
+//    watch: {
+//        records(newVal, oldVal) {
+//            console.log('[WATCH] records ha cambiado');
+//            console.log('Anterior:', oldVal);
+//            console.log('Nuevo:', newVal);
+//            console.trace('¿Quién modificó `records`?');
+//        }
+//    },
 
     methods: {
         //obtener el id del ususario de la session activa
@@ -558,7 +558,7 @@ export default {
 
             this.$http.get(`/${this.resource}/records`).then(response => {
                 this.records = response.data.data.map(company => {
-                    const serviceCompany = this.servicecompany.find(sc => sc.identification_number === company.identification_number);
+                    const serviceCompany = this.servicecompany.find(sc => String(sc.identification_number) === String(company.identification_number));
                     return {
                         ...company,
                         user_id: serviceCompany ? serviceCompany.user_id : null
