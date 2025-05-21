@@ -66,7 +66,7 @@ class ItemController extends Controller
             'lot_code' => 'Código lote',
             'active' => 'Habilitados',
             'inactive' => 'Inhabilitados',
-            // 'description' => 'Descripción'
+            'description' => 'Descripción'
         ];
     }
 

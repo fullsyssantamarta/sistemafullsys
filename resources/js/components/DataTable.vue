@@ -13,7 +13,7 @@
                             </el-select>
                         </div>
                     </div>
-                    <div class="col-lg-3 col-md-4 col-sm-12 pb-2">                        
+                    <div class="col-lg-3 col-md-4 col-sm-12 pb-2">
                         <template v-if="search.column == 'date_of_issue' || search.column == 'date_of_due' || search.column == 'date_of_payment' || search.column == 'delivery_date' || search.column == 'date_opening' || search.column == 'date_closed'">
                             <el-date-picker
                                 v-model="search.value"
@@ -98,7 +98,8 @@
 
         async mounted () {
             let column_resource = _.split(this.resource, '/')
-           // console.log(column_resource)
+            // console.log(column_resource)
+            console.log(`/${_.head(column_resource)}/columns`)
             await this.$http.get(`/${_.head(column_resource)}/columns`).then((response) => {
                 this.columns = response.data
                 this.search.column = _.head(Object.keys(this.columns))
