@@ -387,27 +387,27 @@ class DocumentController extends Controller
                     $person = new Person();
                     $person->type = 'customers';
                     $person->dv = isset($customer->dv) ? $customer->dv : NULL;
-                    $person->type_regime_id = $customer->type_regime_id ? $customer->type_regime_id : 2;
-                    $person->type_person_id = $customer->type_organization_id ? $customer->type_organization_id : 2;
-                    $person->type_obligation_id = $customer->type_liability_id ? $customer->type_liability_id : 117;
-                    $person->identity_document_type_id = $customer->type_document_identification_id;
+                    $person->type_regime_id = isset($customer->type_regime_id) ? $customer->type_regime_id : 2;
+                    $person->type_person_id = isset($customer->type_organization_id) ? $customer->type_organization_id : 2;
+                    $person->type_obligation_id = isset($customer->type_liability_id) ? $customer->type_liability_id : 117;
+                    $person->identity_document_type_id = isset($customer->type_document_identification_id) ? $customer->type_document_identification_id : 3;
                     $person->number = $customer->identification_number;
                     $person->code = $customer->identification_number;
                     $person->name = $customer->name;
                     $person->country_id = 47;
                     $person->department_id = 779;
                     $person->city_id = 12688;
-                    $person->address = $customer->address;
-                    $person->email = $customer->email;
-                    $person->telephone = $customer->phone;
+                    $person->address = isset($customer->address) ? $customer->address : "";
+                    $person->email = isset($customer->email) ? $customer->email : "nomail@nomail.com";
+                    $person->telephone = isset($customer->phone) ? $customer->phone : "";
                     $person->save();
                     $request->customer_id = $person->id;
                 }
                 else
                     $request->customer_id = $p[0]->id;
-
-                $request->currency_id = $service_invoice['currency_id'];
-                $request->calculationrate = $service_invoice['calculationrate'];
+                $request->currency_id = Currency::where('code', 'like', TypeCurrency::where('id', $service_invoice['currency_id'])->first()['code'].'%')->first()['id']  ?? 170;
+//                $request->currency_id = $service_invoice['currency_id'] ?? 170;
+                 $request->calculationrate = $service_invoice['calculationrate'] ?? 1;
                 $request->date_expiration = isset($service_invoice['payment_form']['payment_due_date']) ? $service_invoice['payment_form']['payment_due_date'] : $service_invoice['date'];
                 $request->date_issue = $service_invoice['date'];
                 $request->observation = (key_exists('notes', $service_invoice)) ? $service_invoice['notes'] : "";
