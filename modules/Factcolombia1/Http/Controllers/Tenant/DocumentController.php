@@ -1219,7 +1219,7 @@ class DocumentController extends Controller
             $service_invoice['prefix'] = $request->prefix;
             $service_invoice['resolution_number'] = $request->resolution_number;
             $service_invoice['head_note'] = "V I S T A   P R E E L I M I N A R  --  V I S T A   P R E E L I M I N A R  --  V I S T A   P R E E L I M I N A R  --  V I S T A   P R E E L I M I N A R";
-            $service_invoice['foot_note'] = "Modo de operación: Software Propio - by ".env('APP_NAME', 'TORRE SOFTWARE')." La presente Factura Electrónica de Venta, es un título valor de acuerdo con lo establecido en el Código de Comercio y en especial en los artículos 621,772 y 774. El Decreto 2242 del 24 de noviembre de 2015 y el Decreto Único 1074 de mayo de 2015. El presente título valor se asimila en todos sus efectos a una letra de cambio Art. 779 del Código de Comercio. Con esta el Comprador declara haber recibido real y materialmente las mercancías o prestación de servicios descritos en este título valor.";
+//            $service_invoice['foot_note'] = "Modo de operación: Software Propio - by ".env('APP_NAME', 'TORRE SOFTWARE')." La presente Factura Electrónica de Venta, es un título valor de acuerdo con lo establecido en el Código de Comercio y en especial en los artículos 621,772 y 774. El Decreto 2242 del 24 de noviembre de 2015 y el Decreto Único 1074 de mayo de 2015. El presente título valor se asimila en todos sus efectos a una letra de cambio Art. 779 del Código de Comercio. Con esta el Comprador declara haber recibido real y materialmente las mercancías o prestación de servicios descritos en este título valor.";
 //\Log::debug(json_encode($service_invoice));
             $service_invoice['web_site'] = env('APP_NAME', 'TORRE SOFTWARE');
 //\Log::debug(json_encode($service_invoice));
@@ -1293,9 +1293,9 @@ class DocumentController extends Controller
 
             $ch = curl_init("{$base_url}ubl2.1/invoice/preeliminar-view");
             $data_document = json_encode($service_invoice);
-            \Log::debug($datoscompany);
+//            \Log::debug($datoscompany);
 
-//\Log::debug("{$base_url}ubl2.1/invoice");
+//\Log::debug("{$base_url}ubl2.1/invoice/preeliminar-view");
 //\Log::debug($company->api_token);
 //\Log::debug($correlative_api);
 //\Log::debug($data_document);

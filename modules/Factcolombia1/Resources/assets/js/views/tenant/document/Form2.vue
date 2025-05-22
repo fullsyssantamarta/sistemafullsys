@@ -168,7 +168,7 @@
                                     <label class="control-label">Formato de Impresión</label>
                                     <el-select v-model="form.format_print">
                                         <el-option label="Media Carta" value="1"></el-option>
-                                        <el-option label="Carta" value="2"></el-option>
+                                        <el-option label="Carta" value="6"></el-option>
                                         <el-option label="Tirilla" value="3"></el-option>
                                     </el-select>
                                     <small class="form-control-feedback" v-if="errors.format_print">{{
