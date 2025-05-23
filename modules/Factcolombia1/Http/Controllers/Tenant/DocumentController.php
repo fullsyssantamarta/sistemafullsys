@@ -1287,18 +1287,26 @@ class DocumentController extends Controller
             else
                 $service_invoice['payment_form']['payment_due_date'] = date('Y-m-d', strtotime($request->date_expiration));
             $service_invoice['payment_form']['duration_measure'] = $request->time_days_credit;
-            $service_invoice['customer']['dv'] = $this->validarDigVerifDIAN($service_invoice['customer']['identification_number']);
-
+            if(in_array($service_invoice['customer']['type_document_identification_id'], [1, 2, 3, 6, 10]))
+                $service_invoice['customer']['dv'] = $this->validarDigVerifDIAN($service_invoice['customer']['identification_number']);
+            else{
+                $city = City::where('id', $service_invoice['customer']['municipality_name'])->first();
+                $service_invoice['customer']['municipality_name'] = $city->name;
+                $state = Department::where('id', $city->department_id)->first();
+                $service_invoice['customer']['state_name'] = $state->name;
+                $country = ServiceCountry::where('code', 'like', '%'.Country::where('id', $state->country_id)->first()->code.'%')->first();
+//                \Log::debug($country);
+                $service_invoice['customer']['country_id'] = $country->id;
+            }
             $base_url = config('tenant.service_fact');
-
             $ch = curl_init("{$base_url}ubl2.1/invoice/preeliminar-view");
             $data_document = json_encode($service_invoice);
 //            \Log::debug($datoscompany);
 
-//\Log::debug("{$base_url}ubl2.1/invoice/preeliminar-view");
-//\Log::debug($company->api_token);
+\Log::debug("{$base_url}ubl2.1/invoice/preeliminar-view");
+\Log::debug($company->api_token);
 //\Log::debug($correlative_api);
-//\Log::debug($data_document);
+\Log::debug($data_document);
 //            return $data_document;
 //return "";
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -1312,7 +1320,7 @@ class DocumentController extends Controller
                 "Authorization: Bearer {$company->api_token}"
             ));
             $response = curl_exec($ch);
-//\Log::debug($response);
+\Log::debug($response);
             curl_close($ch);
             $response_model = json_decode($response);
             // dd($response_model);
