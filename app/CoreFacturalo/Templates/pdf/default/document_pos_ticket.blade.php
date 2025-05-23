@@ -222,6 +222,7 @@
                                     @endphp
                                 @endforeach
                             </ul>
+                            <span>VUELTO: {{ $document->currency_type->symbol }} {{ number_format(abs($balance),2, ".", "") }}</span><br>
                             <span><strong>SALDO:</strong> {{ $document->currency_type->symbol }} {{ number_format($document->total - $payment, 2) }}</span>
                         </div>
 
