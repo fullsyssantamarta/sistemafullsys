@@ -23,7 +23,7 @@ use Barryvdh\DomPDF\Facade as PDF;
 use App\Models\Tenant\DocumentItem;
 use App\Models\Tenant\PaymentMethodType;
 use App\Models\Tenant\ConfigurationPos;
-
+use Modules\Factcolombia1\Models\TenantService\AdvancedConfiguration;
 
 class CashController extends Controller
 {
@@ -65,13 +65,13 @@ class CashController extends Controller
             $users = User::where('type', 'seller')->get();
             $users->push($user);  // Asegura que el administrador siempre está incluido
         }
-    
+
         // Obtiene el ID de la resolución actual desde la solicitud, si existe
         $currentResolutionId = request()->input('current_resolution_id');
-    
+
         // Obtiene todas las resoluciones, pero asegura que la actualmente en uso por el registro editado esté incluida
         $resolutionsInUse = Cash::where('state', true)->pluck('resolution_id')->unique();
-    
+
         $resolutions = ConfigurationPos::select('id', 'prefix', 'resolution_number')
             ->where(function ($query) use ($currentResolutionId, $resolutionsInUse) {
                 $query->whereNotIn('id', $resolutionsInUse->reject(function ($id) use ($currentResolutionId) {
@@ -80,10 +80,10 @@ class CashController extends Controller
             })
             ->orWhere('id', $currentResolutionId)  // Asegura incluir la resolución actual si está siendo editada
             ->get();
-    
-        return compact('users', 'user', 'resolutions');
+        $blindCash = AdvancedConfiguration::first()->blind_cash ?? false;
+        return compact('users', 'user', 'resolutions', 'blindCash');
     }
-    
+
 
     public function opening_cash()
     {

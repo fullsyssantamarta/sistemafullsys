@@ -27,7 +27,7 @@
                             <small class="form-control-feedback" v-if="errors.reference_number" v-text="errors.reference_number[0]"></small>
                         </div>
                     </div>-->
-                    <div class="col-md-6" v-if="!recordId"> <!-- Solo muestra esto si no hay recordId, indicando creación -->
+                    <div class="col-md-6" v-if="!blindCash"> <!-- Solo muestra esto si no se especifico caja ciega -->
                         <div class="form-group" :class="{'has-danger': errors.resolution_id}" >
                             <label class="control-label">Resolución</label>
                             <el-select v-model="form.resolution_id">
@@ -53,6 +53,7 @@
 
         data() {
             return {
+                blindCash: false, // Esta propiedad se puede pasar como prop si es necesario
                 loading_submit: false,
                 titleDialog: null,
                 resource: 'cash',
@@ -76,6 +77,7 @@
                     this.users = response.data.users
                     this.user = response.data.user,
                     this.resolutions = response.data.resolutions
+                    this.blindCash = response.data.blindCash
                 })
             this.initForm()
         },
