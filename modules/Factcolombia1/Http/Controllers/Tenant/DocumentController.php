@@ -1298,15 +1298,20 @@ class DocumentController extends Controller
 //                \Log::debug($country);
                 $service_invoice['customer']['country_id'] = $country->id;
             }
+            if($request->currency_id != 170)
+                $service_invoice['currency_id'] = TypeCurrency::where('code', 'like', Currency::where('id', $request->currency_id)->first()['code'].'%')->first()['id'];
+            else
+                $service_invoice['currency_id'] = 35;
+
             $base_url = config('tenant.service_fact');
             $ch = curl_init("{$base_url}ubl2.1/invoice/preeliminar-view");
             $data_document = json_encode($service_invoice);
 //            \Log::debug($datoscompany);
 
-//\Log::debug("{$base_url}ubl2.1/invoice/preeliminar-view");
-//\Log::debug($company->api_token);
+\Log::debug("{$base_url}ubl2.1/invoice/preeliminar-view");
+\Log::debug($company->api_token);
 //\Log::debug($correlative_api);
-//\Log::debug($data_document);
+\Log::debug($data_document);
 //            return $data_document;
 //return "";
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -1320,7 +1325,7 @@ class DocumentController extends Controller
                 "Authorization: Bearer {$company->api_token}"
             ));
             $response = curl_exec($ch);
-//\Log::debug($response);
+\Log::debug($response);
             curl_close($ch);
             $response_model = json_decode($response);
             // dd($response_model);

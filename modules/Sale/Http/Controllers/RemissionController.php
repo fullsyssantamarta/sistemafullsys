@@ -65,13 +65,18 @@ class RemissionController extends Controller
 
     public function records(Request $request)
     {
-
-        $records = Remission::where($request->column, 'like', "%{$request->value}%")
-                                ->latest();
-
+        $records = Remission::with([
+            'payments.payment_method_type',
+            'documents',
+            'state_type',
+            'user',
+            'currency',
+            'quotation'
+        ])
+        ->where($request->column, 'like', "%{$request->value}%")
+        ->latest();
         return new RemissionCollection($records->paginate(config('tenant.items_per_page')));
     }
-
 
     public function tables()
     {
@@ -83,7 +88,6 @@ class RemissionController extends Controller
 
         return compact('customers', 'payment_methods', 'payment_forms', 'currencies', 'taxes');
     }
-
 
     public function item_tables()
     {
