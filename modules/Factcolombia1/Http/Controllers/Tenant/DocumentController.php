@@ -1308,10 +1308,10 @@ class DocumentController extends Controller
             $data_document = json_encode($service_invoice);
 //            \Log::debug($datoscompany);
 
-\Log::debug("{$base_url}ubl2.1/invoice/preeliminar-view");
-\Log::debug($company->api_token);
+//\Log::debug("{$base_url}ubl2.1/invoice/preeliminar-view");
+//\Log::debug($company->api_token);
 //\Log::debug($correlative_api);
-\Log::debug($data_document);
+//\Log::debug($data_document);
 //            return $data_document;
 //return "";
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -1325,7 +1325,7 @@ class DocumentController extends Controller
                 "Authorization: Bearer {$company->api_token}"
             ));
             $response = curl_exec($ch);
-\Log::debug($response);
+//\Log::debug($response);
             curl_close($ch);
             $response_model = json_decode($response);
             // dd($response_model);
