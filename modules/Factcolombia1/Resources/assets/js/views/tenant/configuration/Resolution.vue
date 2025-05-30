@@ -318,6 +318,7 @@
                         if (response.data.success) {
                             this.$message.success(response.data.message)
                             this.getRecords()
+                            this.initForm()
                         } else {
                             this.$message.error(response.data.message)
                         }
@@ -331,7 +332,7 @@
                     })
                     .then(() => {
                         this.loadingResolution = false
-                        this.initForm()
+//                        this.initForm()
                     })
             },
 

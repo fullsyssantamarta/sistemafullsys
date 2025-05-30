@@ -1303,6 +1303,14 @@ class DocumentController extends Controller
             else
                 $service_invoice['currency_id'] = 35;
 
+            if($request->currency_id != 170)
+                $service_invoice['currency_id'] = TypeCurrency::where('code', 'like', Currency::where('id', $request->currency_id)->first()['code'].'%')->first()['id'];
+            else
+                $service_invoice['currency_id'] = 35;
+
+            $calculationRate = $service_invoice['calculationrate'] ?? 1;
+            $data_document = json_encode($service_invoice);
+            $data_document_foreign_currency = json_encode($this->multiplyMonetaryValues($service_invoice, $calculationRate));
             $base_url = config('tenant.service_fact');
             $ch = curl_init("{$base_url}ubl2.1/invoice/preeliminar-view");
             $data_document = json_encode($service_invoice);
@@ -1316,7 +1324,10 @@ class DocumentController extends Controller
 //return "";
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-            curl_setopt($ch, CURLOPT_POSTFIELDS,($data_document));
+            if($request->currency_id != 170)
+                curl_setopt($ch, CURLOPT_POSTFIELDS,($data_document_foreign_currency));
+            else
+                curl_setopt($ch, CURLOPT_POSTFIELDS,($data_document));
             curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
             curl_setopt($ch, CURLOPT_HTTPHEADER, array(
