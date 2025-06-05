@@ -31,7 +31,7 @@
                 </div>
                 <div class="col-md-6">
                     <template v-if="originPos">
-                        <el-button  type="primary"  class="float-right" @click="clickNewSale">Nueva venta</el-button>                             
+                        <el-button  type="primary"  class="float-right" @click="clickNewSale">Nueva venta</el-button>
                     </template>
                     <template v-else>
                         <template v-if="showClose">
