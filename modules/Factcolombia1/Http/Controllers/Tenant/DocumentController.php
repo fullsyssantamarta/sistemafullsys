@@ -405,6 +405,8 @@ class DocumentController extends Controller
                 }
                 else
                     $request->customer_id = $p[0]->id;
+                if(!isset($service_invoice['currency_id']))
+                    $service_invoice['currency_id'] = 35;
                 $request->currency_id = Currency::where('code', 'like', TypeCurrency::where('id', $service_invoice['currency_id'])->first()['code'].'%')->first()['id']  ?? 170;
 //                $request->currency_id = $service_invoice['currency_id'] ?? 170;
                  $request->calculationrate = $service_invoice['calculationrate'] ?? 1;
@@ -786,6 +788,33 @@ class DocumentController extends Controller
 
             $calculationRate = $service_invoice['calculationrate'] ?? 1;
             $data_document = json_encode($service_invoice);
+            if($request->currency_id != 170){
+                $service_invoice['k_supplement_national']['FctConvCop'] = $calculationRate;
+                $service_invoice['k_supplement_national']['MonedaCop'] = Currency::where('id', $request->currency_id)->first()['code'];
+                $service_invoice['k_supplement_national']['SubTotalCop'] = $service_invoice['legal_monetary_totals']['line_extension_amount'];
+                $service_invoice['k_supplement_national']['DescuentoDetalleCop'] = isset($service_invoice['legal_monetary_totals']['allowance_total_amount']) ? $service_invoice['legal_monetary_totals']['allowance_total_amount']: 0.00;
+                $service_invoice['k_supplement_national']['TotalFacturaCop'] = $service_invoice['legal_monetary_totals']['payable_amount'];
+                $service_invoice['k_supplement_national']['RecargoDetalleCop'] = isset($service_invoice['legal_monetary_totals']['charge_total_amount']) ? $service_invoice['legal_monetary_totals']['charge_total_amount'] : 0;
+                $service_invoice['k_supplement_national']['TotalBrutoFacturaCop'] = $service_invoice['legal_monetary_totals']['tax_exclusive_amount'];
+                $service_invoice['k_supplement_national']['TotIvaCop'] = number_format(array_sum(array_map(fn($t) => isset($t['tax_id']) && $t['tax_id'] == 1 ? ((float)$t['tax_amount']) : 0, $service_invoice['tax_totals'])), 2, '.', '');
+                $service_invoice['k_supplement_national']['TotIncCop'] = number_format(array_sum(array_map(fn($t) => isset($t['tax_id']) && $t['tax_id'] == 4 ? ((float)$t['tax_amount']) : 0, $service_invoice['tax_totals'])), 2, '.', '');
+                $service_invoice['k_supplement_national']['TotBolCop'] = number_format(array_sum(array_map(fn($t) => isset($t['tax_id']) && $t['tax_id'] == 10 ? ((float)$t['tax_amount']) : 0, $service_invoice['tax_totals'])), 2, '.', '');
+                $service_invoice['k_supplement_national']['TotICLCop'] = number_format(array_sum(array_map(fn($t) => isset($t['tax_id']) && $t['tax_id'] == 19 ? ((float)$t['tax_amount']) : 0, $service_invoice['tax_totals'])), 2, '.', '');
+                $service_invoice['k_supplement_national']['TotINPPCop'] = number_format(array_sum(array_map(fn($t) => isset($t['tax_id']) && $t['tax_id'] == 20 ? ((float)$t['tax_amount']) : 0, $service_invoice['tax_totals'])), 2, '.', '');
+                $service_invoice['k_supplement_national']['TotIBUACop'] = number_format(array_sum(array_map(fn($t) => isset($t['tax_id']) && $t['tax_id'] == 21 ? ((float)$t['tax_amount']) : 0, $service_invoice['tax_totals'])), 2, '.', '');
+                $service_invoice['k_supplement_national']['TotICUICop'] = number_format(array_sum(array_map(fn($t) => isset($t['tax_id']) && $t['tax_id'] == 22 ? ((float)$t['tax_amount']) : 0, $service_invoice['tax_totals'])), 2, '.', '');
+                $service_invoice['k_supplement_national']['TotADVCop'] = number_format(array_sum(array_map(fn($t) => isset($t['tax_id']) && $t['tax_id'] == 23 ? ((float)$t['tax_amount']) : 0, $service_invoice['tax_totals'])), 2, '.', '');
+                $service_invoice['k_supplement_national']['ImpOtroCop'] = number_format(array_sum(array_map(fn($t) => isset($t['tax_id']) && $t['tax_id'] == 15 ? ((float)$t['tax_amount']) : 0, $service_invoice['tax_totals'])), 2, '.', '');
+                $service_invoice['k_supplement_national']['MntImpCop'] = "0.00";
+                $service_invoice['k_supplement_national']['TotalNetoFacturaCop'] = $service_invoice['legal_monetary_totals']['payable_amount'];
+                $service_invoice['k_supplement_national']['MntDctoCop'] = isset($service_invoice['legal_monetary_totals']['allowance_total_amount']) ? $service_invoice['legal_monetary_totals']['allowance_total_amount'] : 0.00;
+                $service_invoice['k_supplement_national']['MntRcgoCop'] = isset($service_invoice['legal_monetary_totals']['charge_total_amount']) ? $service_invoice['legal_monetary_totals']['charge_total_amount'] : 0;
+                $service_invoice['k_supplement_national']['VlrPagarCop'] = $service_invoice['legal_monetary_totals']['payable_amount'];
+                $service_invoice['k_supplement_national']['ReteFueCop'] = "0.00";
+                $service_invoice['k_supplement_national']['ReteIvaCop'] = "0.00";
+                $service_invoice['k_supplement_national']['ReteIcaCop'] = "0.00";
+                $service_invoice['k_supplement_national']['TotAnticiposCop'] = "0.00";
+            }
             $data_document_foreign_currency = json_encode($this->multiplyMonetaryValues($service_invoice, $calculationRate));
 //            \Log::debug("{$base_url}ubl2.1/invoice");
 //            \Log::debug($company->api_token);
