@@ -450,6 +450,8 @@ if ($hostname) {
            Route::get('pos/status_configuration', 'Tenant\PosController@status_configuration');
            Route::get('pos/validate_stock/{item}/{quantity}', 'Tenant\PosController@validate_stock');
            Route::get('pos/records', 'Tenant\PosController@records');
+           Route::get('pos/app_data', 'Tenant\DocumentPosController@app_data');
+           Route::post('pos/store_app_data', 'Tenant\DocumentPosController@store_app_data');
 
            Route::get('cash', 'Tenant\CashController@index')->name('tenant.cash.index');
            Route::get('cash/columns', 'Tenant\CashController@columns');

@@ -4,14 +4,55 @@
             <h3 class="my-0">Configuración POS</h3>
         </div>
         <div class="card-body">
-            <div class="table-responsive">
-                <el-button
-                    type="primary"
-                    icon="el-icon-plus"
-                    @click="initForm()">
-                    Nueva Resolucion
-                </el-button>
+            <div class="app_data">
+                <form autocomplete="off">
+                    <div class="form-body">
+                        <div class="row mt-4">
+                            <div class="col-lg-4">
+                                <div class="form-group" :class="{'has-danger': errors.app_name}">
+                                    <label class="control-label">App Name</label>
+                                    <el-input
+                                        v-model="app_data.app_name"
+                                        placeholder="Digite el nombre de la aplicación."
+                                        :disabled="false">
+                                    </el-input>
+                                    <small class="form-control-feedback" v-if="errors.app_name" v-text="errors.app_name[0]"></small>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="form-group" :class="{'has-danger': errors.app_owner_name}">
+                                    <label class="control-label">App Owner Name</label>
+                                    <el-input
+                                        v-model="app_data.app_owner_name"
+                                        placeholder="Digite el nombre del propietario de la aplicación."
+                                        :disabled="false">
+                                    </el-input>
+                                    <small class="form-control-feedback" v-if="errors.app_owner_name" v-text="errors.app_owner_name[0]"></small>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="form-group" :class="{'has-danger': errors.app_business_name}">
+                                    <label class="control-label">App Business Name</label>
+                                    <el-input
+                                        v-model="app_data.app_business_name"
+                                        placeholder="Digite el nombre de la empresa creadora de la aplicación."
+                                        :disabled="false">
+                                    </el-input>
+                                    <small class="form-control-feedback" v-if="errors.app_business_name" v-text="errors.app_business_name[0]"></small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-actions text-right mt-4">
+                            <el-button
+                                :loading="loadingAppData"
+                                type="primary"
+                                @click="validateAppData()">Guardar App Data
+                            </el-button>
+                        </div>
+                    </div>
+                </form>
             </div>
+            <br>
             <div>
                 <el-table
                 :data="records"
@@ -293,7 +334,14 @@
                 type_resolution: 'Documento Equivalente POS Electronico'
             },
 
+            app_data: {
+                app_name: '',
+                app_owner_name: '',
+                app_business_name: ''
+            },
+
             loadingResolution: false,
+            loadingAppData: false,
             records: []
         }),
 
@@ -333,6 +381,17 @@
                     })
                     .then(() => {
                     })
+
+                this.$http.get(`/pos/app_data`)
+                    .then(response => {
+                        console.log(response.data)
+                        this.app_data = response.data;
+                    })
+                    .catch(error => {
+
+                    })
+                    .then(() => {
+                    })
             },
 
             initForm() {
@@ -351,6 +410,29 @@
                     cash_type: '',
                     technical_key: ''
                 }
+            },
+
+            validateAppData() {
+                this.loadingAppData = true
+                this.$http.post(`/pos/store_app_data`, this.app_data)
+                    .then(response => {
+                        if (response.data.success) {
+                            this.$message.success(response.data.message)
+                            this.getRecords()
+                        } else {
+                            this.$message.error(response.data.message)
+                        }
+                    })
+                    .catch(error => {
+                        if (error.response.status === 422) {
+                            this.errors = error.response.data
+                        } else {
+                            console.log(error)
+                        }
+                    })
+                    .then(() => {
+                        this.loadingAppData = false
+                    })
             },
 
             validateResolution() {

@@ -110,6 +110,28 @@ class DocumentPosController extends Controller
         return new DocumentPosCollection($records->paginate(config('tenant.items_per_page')));
     }
 
+    public function app_data()
+    {
+        $record = Company::firstOrFail();
+        return $record->only([
+            'app_name',
+            'app_owner_name',
+            'app_business_name',
+        ]);
+    }
+
+    public function store_app_data(Request $request)
+    {
+        $record = Company::firstOrFail();
+        $record->fill($request->all());
+        $record->save();
+
+        return [
+            'success' => true,
+            'message' => 'Datos de la aplicación actualizados correctamente.',
+        ];
+    }
+
     public function searchCustomers(Request $request)
     {
         $customers = Person::where('number','like', "%{$request->input}%")
@@ -192,6 +214,7 @@ class DocumentPosController extends Controller
     {
         DB::connection('tenant')->beginTransaction();
         try{
+            $app_data = $this->app_data();
 //        DB::connection('tenant')->transaction(function () use ($request) {
             $type_document_string = 'el Documento Ticket Papel Nro: ';
             $data = $this->mergeData($request);
@@ -294,9 +317,9 @@ class DocumentPosController extends Controller
                 'sendmail' => true,
                 'sendmailtome' => true,
                 'software_manufacturer' => [
-                    'name' => config('tenant.app_owner_name'),
-                    'business_name' => config('tenant.app_business_name'),
-                    'software_name' => config('app.name'),
+                    'name' => $app_data['app_owner_name'] ?? config('tenant.app_owner_name'),
+                    'business_name' => $app_data['app_business_name'] ?? config('tenant.app_business_name'),
+                    'software_name' => $app_data['app_name'] ?? config('tenant.app_name'),
                 ],
                 'buyer_benefits' => [
                     'code' => $data['customer']['number'],
