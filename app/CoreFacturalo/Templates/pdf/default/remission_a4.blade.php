@@ -22,7 +22,7 @@
         <tr>
             <td style="width: 25%;" class="text-center vertical-align-top">
                 <div id="reference">
-                    <p style="font-weight: 700;"><strong>REMISIÓN No.</strong></p>
+                    <p style="font-weight: 700;"><strong>NOTA DE ENTREGA No.</strong></p>
                     <br>
                     <p style="color: red;
                         font-weight: bold;

@@ -852,7 +852,6 @@
                     @endif --}}
 
                     @if(in_array('finance', $vc_modules))
-
                     <li class="nav-parent {{$path[0] === 'finances' && in_array($path[1], [
                                                 'global-payments', 'balance','payment-method-types', 'unpaid', 'to-pay', 'income'
                                             ])
@@ -864,6 +863,13 @@
                             <span>Finanzas</span>
                         </a>
                         <ul class="nav nav-children" style="">
+                            @if(auth()->user()->type != 'integrator')
+                                <li class="{{($path[0] === 'finances') ? 'nav-active' : ''}}">
+                                    <a class="nav-link" href="{{route('tenant.catalogs.index')}}">
+                                        Catálogos
+                                    </a>
+                                </li>
+                            @endif
                             <li class="{{(($path[0] === 'finances') && ($path[1] == 'global-payments')) ? 'nav-active' : ''}}">
                                 <a class="nav-link" href="{{route('tenant.finances.global_payments.index')}}">
                                     Pagos
@@ -991,14 +997,14 @@
                                 <a class="nav-link" href="{{route('tenant.bussiness_turns.index')}}">
                                     Giro de negocio
                                 </a>
-                            </li> --}}
+                            </li>
                             @if(auth()->user()->type != 'integrator')
                             <li class="{{($path[0] === 'catalogs') ? 'nav-active' : ''}}">
                                 <a class="nav-link" href="{{route('tenant.catalogs.index')}}">
                                     Catálogos
                                 </a>
                             </li>
-                            @endif
+                            @endif  --}}
 
                             <li class="{{($path[0] === 'co-advanced-configuration') ? 'nav-active' : ''}}">
                                 <a class="nav-link" href="{{route('tenant.co-advanced-configuration.index')}}">

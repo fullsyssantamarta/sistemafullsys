@@ -195,6 +195,7 @@ class DocumentController extends Controller
     public function note($id) {
         $note = Document::with(['items'])->findOrFail($id);
         $invoice = Document::with(['items'])->findOrFail($id);
+//        \Log::debug($note);
         return view('factcolombia1::document.tenant.note', compact('note', 'invoice'));
     }
 

@@ -356,7 +356,7 @@
             },
 
             typeNoteDocuments() {
-                console.log(this.all_type_documents)
+//                console.log(this.all_type_documents)
                 this.type_documents = this.all_type_documents.filter(row => row.code === "4" || row.code === "5");
             },
 
@@ -428,8 +428,8 @@
                 this.showDialogAddItem = true
 
             },
-            searchRemoteCustomers(input) {
 
+            searchRemoteCustomers(input) {
                 if (input.length > 0) {
 
                     this.loading_search = true
@@ -450,10 +450,10 @@
                     this.filterCustomers()
                     this.input_person.number = null
                 }
-
             },
 
             load_invoice(){
+//                console.log(JSON.stringify(this.invoice))
                 if (typeof this.invoice !== 'undefined'){
                     this.form.items = this.invoice ? this.prepareItems(this.invoice.items) : [];
                     this.calculateTotal();
@@ -463,7 +463,8 @@
             prepareItems(items){
                 return items.map(row => {
                     row.item = this.prepareIndividualItem(row)
-                    row.price = row.unit_price
+//                    row.price = row.unit_price
+                    row.price = row.item.price_amount
                     row.id = row.item.id
                     return row
                 })
@@ -505,7 +506,6 @@
                     response_api_cufe: this.note ? this.note.response_api_cufe : null,
                     note_service: {}
                 }
-
                 this.noteService.customer = {
                     identification_number: this.note ? this.note.customer.number : null,
                     name: this.note ? this.note.customer.name : null,
@@ -526,19 +526,18 @@
                 }
                 else
                     this.noteService.customer.dv = null;
-
                 this.errors = {}
                 this.$eventHub.$emit('eventInitForm')
-
                 this.initInputPerson()
-
             },
+
             initInputPerson(){
                 this.input_person = {
                     number:null,
                     identity_type_document_id:null
                 }
             },
+
             resetForm() {
                 this.activePanel = 0
                 this.initForm()
