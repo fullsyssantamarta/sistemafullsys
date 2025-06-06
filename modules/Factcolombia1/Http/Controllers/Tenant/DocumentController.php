@@ -195,7 +195,6 @@ class DocumentController extends Controller
     public function note($id) {
         $note = Document::with(['items'])->findOrFail($id);
         $invoice = Document::with(['items'])->findOrFail($id);
-//        \Log::debug($note);
         return view('factcolombia1::document.tenant.note', compact('note', 'invoice'));
     }
 
@@ -799,15 +798,15 @@ class DocumentController extends Controller
                 $service_invoice['k_supplement_national']['TotalFacturaCop'] = $service_invoice['legal_monetary_totals']['payable_amount'];
                 $service_invoice['k_supplement_national']['RecargoDetalleCop'] = isset($service_invoice['legal_monetary_totals']['charge_total_amount']) ? $service_invoice['legal_monetary_totals']['charge_total_amount'] : 0;
                 $service_invoice['k_supplement_national']['TotalBrutoFacturaCop'] = $service_invoice['legal_monetary_totals']['tax_exclusive_amount'];
-                $service_invoice['k_supplement_national']['TotIvaCop'] = number_format(array_sum(array_map(fn($t) => isset($t['tax_id']) && $t['tax_id'] == 1 ? ((float)$t['tax_amount']) : 0, $service_invoice['tax_totals'])), 2, '.', '');
-                $service_invoice['k_supplement_national']['TotIncCop'] = number_format(array_sum(array_map(fn($t) => isset($t['tax_id']) && $t['tax_id'] == 4 ? ((float)$t['tax_amount']) : 0, $service_invoice['tax_totals'])), 2, '.', '');
-                $service_invoice['k_supplement_national']['TotBolCop'] = number_format(array_sum(array_map(fn($t) => isset($t['tax_id']) && $t['tax_id'] == 10 ? ((float)$t['tax_amount']) : 0, $service_invoice['tax_totals'])), 2, '.', '');
-                $service_invoice['k_supplement_national']['TotICLCop'] = number_format(array_sum(array_map(fn($t) => isset($t['tax_id']) && $t['tax_id'] == 19 ? ((float)$t['tax_amount']) : 0, $service_invoice['tax_totals'])), 2, '.', '');
-                $service_invoice['k_supplement_national']['TotINPPCop'] = number_format(array_sum(array_map(fn($t) => isset($t['tax_id']) && $t['tax_id'] == 20 ? ((float)$t['tax_amount']) : 0, $service_invoice['tax_totals'])), 2, '.', '');
-                $service_invoice['k_supplement_national']['TotIBUACop'] = number_format(array_sum(array_map(fn($t) => isset($t['tax_id']) && $t['tax_id'] == 21 ? ((float)$t['tax_amount']) : 0, $service_invoice['tax_totals'])), 2, '.', '');
-                $service_invoice['k_supplement_national']['TotICUICop'] = number_format(array_sum(array_map(fn($t) => isset($t['tax_id']) && $t['tax_id'] == 22 ? ((float)$t['tax_amount']) : 0, $service_invoice['tax_totals'])), 2, '.', '');
-                $service_invoice['k_supplement_national']['TotADVCop'] = number_format(array_sum(array_map(fn($t) => isset($t['tax_id']) && $t['tax_id'] == 23 ? ((float)$t['tax_amount']) : 0, $service_invoice['tax_totals'])), 2, '.', '');
-                $service_invoice['k_supplement_national']['ImpOtroCop'] = number_format(array_sum(array_map(fn($t) => isset($t['tax_id']) && $t['tax_id'] == 15 ? ((float)$t['tax_amount']) : 0, $service_invoice['tax_totals'])), 2, '.', '');
+                $service_invoice['k_supplement_national']['TotIvaCop'] = number_format(array_sum(array_map(function($t) { return isset($t['tax_id']) && $t['tax_id'] == 1 ? ((float)$t['tax_amount']) : 0; }, $service_invoice['tax_totals'])), 2, '.', '');
+                $service_invoice['k_supplement_national']['TotIncCop'] = number_format(array_sum(array_map(function($t) { return isset($t['tax_id']) && $t['tax_id'] == 4 ? ((float)$t['tax_amount']) : 0; }, $service_invoice['tax_totals'])), 2, '.', '');
+                $service_invoice['k_supplement_national']['TotBolCop'] = number_format(array_sum(array_map(function($t) { return isset($t['tax_id']) && $t['tax_id'] == 10 ? ((float)$t['tax_amount']) : 0; }, $service_invoice['tax_totals'])), 2, '.', '');
+                $service_invoice['k_supplement_national']['TotICLCop'] = number_format(array_sum(array_map(function($t) { return isset($t['tax_id']) && $t['tax_id'] == 19 ? ((float)$t['tax_amount']) : 0; }, $service_invoice['tax_totals'])), 2, '.', '');
+                $service_invoice['k_supplement_national']['TotINPPCop'] = number_format(array_sum(array_map(function($t) { return isset($t['tax_id']) && $t['tax_id'] == 20 ? ((float)$t['tax_amount']) : 0; }, $service_invoice['tax_totals'])), 2, '.', '');
+                $service_invoice['k_supplement_national']['TotIBUACop'] = number_format(array_sum(array_map(function($t) { return isset($t['tax_id']) && $t['tax_id'] == 21 ? ((float)$t['tax_amount']) : 0; }, $service_invoice['tax_totals'])), 2, '.', '');
+                $service_invoice['k_supplement_national']['TotICUICop'] = number_format(array_sum(array_map(function($t) { return isset($t['tax_id']) && $t['tax_id'] == 22 ? ((float)$t['tax_amount']) : 0; }, $service_invoice['tax_totals'])), 2, '.', '');
+                $service_invoice['k_supplement_national']['TotADVCop'] = number_format(array_sum(array_map(function($t) { return isset($t['tax_id']) && $t['tax_id'] == 23 ? ((float)$t['tax_amount']) : 0; }, $service_invoice['tax_totals'])), 2, '.', '');
+                $service_invoice['k_supplement_national']['ImpOtroCop'] = number_format(array_sum(array_map(function($t) { return isset($t['tax_id']) && $t['tax_id'] == 15 ? ((float)$t['tax_amount']) : 0; }, $service_invoice['tax_totals'])), 2, '.', '');
                 $service_invoice['k_supplement_national']['MntImpCop'] = "0.00";
                 $service_invoice['k_supplement_national']['TotalNetoFacturaCop'] = $service_invoice['legal_monetary_totals']['payable_amount'];
                 $service_invoice['k_supplement_national']['MntDctoCop'] = isset($service_invoice['legal_monetary_totals']['allowance_total_amount']) ? $service_invoice['legal_monetary_totals']['allowance_total_amount'] : 0.00;

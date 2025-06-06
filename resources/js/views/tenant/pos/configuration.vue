@@ -4,6 +4,14 @@
             <h3 class="my-0">Configuración POS</h3>
         </div>
         <div class="card-body">
+            <div class="table-responsive">
+                <el-button
+                    type="primary"
+                    icon="el-icon-plus"
+                    @click="initForm()">
+                    Nueva Resolucion
+                </el-button>
+            </div>
             <div>
                 <el-table
                 :data="records"
