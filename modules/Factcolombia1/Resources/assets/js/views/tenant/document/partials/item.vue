@@ -144,7 +144,6 @@
                         <a href="#"  class="text-center font-weight-bold text-info" @click.prevent="clickSelectLots">[&#10004; Seleccionar series]</a>
                     </div>
 
-
                     <div class="col-md-3 col-sm-6" v-show="form.item.calculate_quantity">
                         <div class="form-group"  :class="{'has-danger': errors.total_item}">
                             <label class="control-label">Total venta producto</label>
@@ -154,7 +153,6 @@
                             <small class="form-control-feedback" v-if="errors.total_item" v-text="errors.total_item[0]"></small>
                         </div>
                     </div>
-
 
                     <div class="col-md-3 col-sm-6">
                         <div class="form-group"  :class="{'has-danger': errors.discount}">
@@ -167,7 +165,6 @@
                     </div>
 
                     <template v-if="!is_client">
-
                         <div class="col-md-12"  v-if="form.item_unit_types.length > 0">
                             <div style="margin:3px" class="table-responsive">
                                 <h5 class="separator-title">
@@ -641,12 +638,14 @@
                     item_unit_types: [],
                 };
             },
+
             focusTotalItem(change) {
                 if(!change && this.form.item.calculate_quantity) {
                     this.$refs.total_item.$el.getElementsByTagName('input')[0].focus()
                     this.total_item = this.form.unit_price_value
                 }
             },
+
             calculateQuantity() {
                 // debugger
                 if(this.form.item.calculate_quantity) {
@@ -654,47 +653,40 @@
                     this.form.quantity = _.round((this.total_item / this.form.price), 4)
                 }
             },
+
             cleanTotalItem(){
                 this.total_item = null
             },
+
             async clickAddItem() {
                 if(this.form.item.lots_enabled){
                     if(!this.form.IdLoteSelected)
                         return this.$message.error('Debe seleccionar un lote.');
                 }
-
-                if (this.validateTotalItem().total_item) return;
-
+                if (this.validateTotalItem().total_item)
+                    return;
                 if(null === this.form.tax_id)
                     this.form.tax = {'code': "ZZ", 'conversion': "100.00", 'id': 0, 'in_base': false, 'in_tax': null, 'is_fixed_value': false, 'is_percentage': true, 'is_retention': false, 'name': "EXCLUIDO", 'rate': "0.00", 'retention': 0, 'total': 0, 'type_tax': {'code': "ZZ", 'description': "Articulos Excluidos de Impuesto", 'id': 99, 'name': "EXCLUIDO"}}
                 else
                     this.form.tax = _.find(this.taxes, {'id': this.form.tax_id})
                 this.form.type_unit = this.form.item.type_unit
                 this.form.item.presentation = this.item_unit_type;
-
                 if (this.recordItem){
                     this.form.indexi = this.recordItem.indexi
                 }
-
                 let IdLoteSelected = this.form.IdLoteSelected
-
                 let select_lots = await _.filter(this.form.item.lots, {'has_sale':true})
                 let un_select_lots = await _.filter(this.form.item.lots, {'has_sale':false})
-
                 if(this.form.item.series_enabled){
                     if(select_lots.length != this.form.quantity)
                         return this.$message.error('La cantidad de series seleccionadas son diferentes a la cantidad a vender');
                 }
                 this.form.IdLoteSelected = IdLoteSelected
-
 //                console.log(this.form)
                 this.$emit('add', this.form);
-
-
                 if (this.recordItem){
                     this.close()
                 }
-
                 // Agrega estas líneas al final del método clickAddItem
                 this.initForm(); // Reinicia el formulario
                 this.$nextTick(() => {
@@ -702,47 +694,40 @@
                     this.$refs.barcodeInput.focus(); // Mueve el foco al campo de entrada del código de barras
                     }
                 });
-
                 // let unit_price = (this.form.has_igv)?this.form.unit_price_value:this.form.unit_price_value*1.18;
                 // this.form.input_unit_price_value = this.form.unit_price_value;
                 // this.form.unit_price = unit_price;
                 // this.form.item.unit_price = unit_price;
                 // this.row = calculateRowItem(this.form, this.currencyTypeIdActive, this.exchangeRateSale);
-               // this.row.edit = false;
+                // this.row.edit = false;
                 //this.initializeFields()
             },
+
             validateTotalItem(){
-
                 this.errors = {}
-
                 if(this.form.item.calculate_quantity){
                     if(this.total_item < 0.01)
                         this.$set(this.errors, 'total_item', ['total venta item debe ser mayor a 0.01']);
                 }
-
                 return this.errors
             },
+
             reloadDataItems(item_id) {
-
                 if(!item_id){
-
                     this.$http.get(`/${this.resource}/table/items`).then((response) => {
                         this.items = response.data
                         this.form.item_id = item_id
                     })
-
-                }else{
-
+                }
+                else{
                     this.$http.get(`/${this.resource}/search/item/${item_id}`).then((response) => {
-
                         this.items = response.data.items
                         this.form.item_id = item_id
                         this.changeItem()
-
                     })
                 }
-
             },
+
             change_price_tax_included()
             {
                 if(parseFloat(this.form.price) == 0){

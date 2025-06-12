@@ -1117,38 +1117,42 @@ export default {
         },
 
         async addRow(row) {
-        // Verificamos que exista la configuración avanzada y los datos del impuesto
-        if (this.localConfiguration && row.item.tax && row.item.tax.rate && row.item.tax.conversion) {
-            const taxRate = parseFloat(row.item.tax.rate);          // Ejemplo: 19.00
-            const conversion = parseFloat(row.item.tax.conversion);   // Ejemplo: 100.00
-
-            if (this.localConfiguration.item_tax_included === false) {
-            // Caso: El precio que llega ya incluye IVA y se debe extraer
-            // Para obtener el precio base: precio_base = precio_final / (1 + (taxRate / conversion))
-            row.price = row.price / (1 + (taxRate / conversion));
+            // Verificamos que exista la configuración avanzada y los datos del impuesto
+            if (this.localConfiguration && row.item.tax && row.item.tax.rate && row.item.tax.conversion) {
+                const taxRate = parseFloat(row.item.tax.rate);          // Ejemplo: 19.00
+                const conversion = parseFloat(row.item.tax.conversion);   // Ejemplo: 100.00
+                if (this.localConfiguration.item_tax_included === false) {
+                    // Caso: El precio que llega ya incluye IVA y se debe extraer
+                    // Para obtener el precio base: precio_base = precio_final / (1 + (taxRate / conversion))
+                    row.price = row.price / (1 + (taxRate / conversion));
+                }
+                // Si item_tax_included es true, no hacemos ningún ajuste aquí,
+                // porque el precio ya es la base y las demás funciones agregarán el IVA.
+            } else {
+                console.warn("Faltan datos de configuración avanzada o de impuesto.");
             }
-            // Si item_tax_included es true, no hacemos ningún ajuste aquí,
-            // porque el precio ya es la base y las demás funciones agregarán el IVA.
-        } else {
-            console.warn("Faltan datos de configuración avanzada o de impuesto.");
-        }
-
-        // Se agrega el ítem a la factura
-        if (this.recordItem) {
-            this.form.items[this.recordItem.indexi] = row;
-            this.recordItem = null;
-        } else {
-            this.form.items.push(JSON.parse(JSON.stringify(row)));
-        }
-
-        this.calculateTotal();
+            // Se agrega el ítem a la factura
+//            console.log(row)
+            if (this.recordItem) {
+                this.form.items[this.recordItem.indexi] = row;
+                this.recordItem = null;
+            }
+            else{
+                this.form.items.push(JSON.parse(JSON.stringify(row)));
+            }
+//            console.log(JSON.parse(JSON.stringify(row)))
+//            console.log(this.form.items)
+            this.calculateTotal();
         },
+
         addHealthData(health_fields) {
             this.form.health_fields = health_fields
         },
+
         addOrderReference(order_reference) {
             this.form.order_reference = order_reference
         },
+
         addRowHealthUser(row) {
             if (this.recordItemHealthUser)
                 this.form.health_users[this.recordItemHealthUser.indexi] = row
@@ -1156,6 +1160,7 @@ export default {
                 this.form.health_users.push(JSON.parse(JSON.stringify(row)));
             this.recordItemHealthUser = null
         },
+
         async addRowRetention(row) {
             await this.taxes.forEach(tax => {
                 if (tax.id == row.tax_id) {
@@ -1164,6 +1169,7 @@ export default {
             });
             await this.calculateTotal()
         },
+
         cleanTaxesRetention(tax_id) {
             this.taxes.forEach(tax => {
                 if (tax.id == tax_id) {
@@ -1172,6 +1178,7 @@ export default {
                 }
             })
         },
+
         async clickRemoveRetention(index) {
             // console.log(index, "w")
             this.form.taxes[index].apply = false
@@ -1179,13 +1186,16 @@ export default {
             await this.cleanTaxesRetention(this.form.taxes[index].id)
             await this.calculateTotal()
         },
+
         clickRemoveItem(index) {
             this.form.items.splice(index, 1)
             this.calculateTotal()
         },
+
         clickRemoveUser(index) {
             this.form.health_users.splice(index, 1)
         },
+
         changeCurrencyType() {
             // this.currency_type = _.find(this.currencies, {'id': this.form.currency_id})
             // let items = []
@@ -1195,12 +1205,14 @@ export default {
             // this.form.items = items
             // this.calculateTotal()
         },
+
         calculateTotal() {
             this.setDataTotals()
         },
+
         setDataTotals() {
             let val = this.form
-            //console.log(val.items)
+//            console.log(val.items)
             val.taxes = JSON.parse(JSON.stringify(this.taxes));
             val.items.forEach(item => {
                 item.tax = this.taxes.find(tax => tax.id == item.tax_id);
@@ -1231,10 +1243,11 @@ export default {
                         tax.total = Number(0).toFixed(4);
                     tax.total = (Number(tax.total) + Number(item.total_tax)).toFixed(4);
                 }
-                item.subtotal = (
+                item.subtotal = (Number(item.price) * Number(item.quantity) - Number(total_discount)).toFixed(4)
+/*                item.subtotal = (
                     Number(item.price * item.quantity) + Number(item.total_tax) -  Number(total_discount).toFixed(4)
-                ).toFixed(4);
-                this.$set(item, "total", (Number(item.subtotal) - Number(total_discount)).toFixed(4));
+                ).toFixed(4);   */
+                this.$set(item, "total", (Number(item.subtotal) + Number(item.total_tax)).toFixed(4));
             });
             val.total_tax = val.items.reduce((p, c) => Number(p) + Number(c.total_tax), 0).toFixed(4);
             let total = val.items.reduce((p, c) => Number(p) + Number(c.total), 0).toFixed(4);
@@ -1260,12 +1273,7 @@ export default {
                         this.$set(tax, "retention", Number(0).toFixed(4));
                     total -= Number(tax.retention).toFixed(4);
                 }
-                if (
-                    tax.is_retention &&
-                    !tax.in_base &&
-                    tax.in_tax != null &&
-                    tax.apply
-                ) {
+                if (tax.is_retention && !tax.in_base && tax.in_tax != null && tax.apply){
                     let row = val.taxes.find(row => row.id == tax.in_tax);
                     tax.retention = Number(
                         Number(row.total) * (tax.rate / tax.conversion)
@@ -1278,9 +1286,8 @@ export default {
                         total -= Number(tax.retention).toFixed(4);
                     }
                 });
-
+//                console.log(total)
                 val.total = Number(total).toFixed(4)
-
             },
 
             async preeliminarview() {
