@@ -462,9 +462,11 @@
 
             prepareItems(items){
                 return items.map(row => {
+                    console.log(row.item)
                     row.item = this.prepareIndividualItem(row)
 //                    row.price = row.unit_price
-                    row.price = row.item.price_amount
+                    console.log(row.item)
+                    row.price = row.item.price ? row.item.price : row.item.price_amount
                     row.id = row.item.id
                     return row
                 })
