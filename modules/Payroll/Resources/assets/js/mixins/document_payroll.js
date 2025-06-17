@@ -8,84 +8,151 @@ export const documentPayrollMixin = {
     methods: {
         // prima de servicio
         clickAddServiceBonus(){
-
             const salary_validation = this.salaryValidation()
             if(!salary_validation.success) return this.$message.warning(salary_validation.message)
-
             this.form.accrued.service_bonus.push({
                 quantity :  0,
                 payment :  0,
                 paymentNS :  undefined,
             })
-
         },
+
+        calculateTotalNSServiceBonus(){
+            let total = 0
+            this.form.accrued.service_bonus.forEach((element) => {
+                total += element.paymentNS || 0
+            })
+            return total
+        },
+
+        calculateTotalNSOtherConcepts(){
+            let total = 0
+            this.form.accrued.other_concepts.forEach((element) => {
+                total += element.non_salary_concept || 0
+            })
+            return total
+        },
+
+        calculateTotalNSBonuses(){
+            let total = 0
+            this.form.accrued.bonuses.forEach((element) => {
+                total += element.non_salary_bonus || 0
+            })
+            return total
+        },
+
+        calculateTotalNSEPCTVBonus(){
+            let total_payment_ns = 0
+            let total_non_salary_food_payment = 0
+            this.form.accrued.epctv_bonuses.forEach((element) => {
+                total_payment_ns += element.paymentNS || 0
+                total_non_salary_food_payment += element.non_salary_food_payment || 0
+            })
+            return total_payment_ns + total_non_salary_food_payment
+        },
+
+        calculateTotalNSAids(){
+            let total = 0
+            this.form.accrued.aid.forEach((element) => {
+                total += element.non_salary_assistance || 0
+            })
+            return total
+        },
+
         changePaymentNSServiceBonus(index){
             this.calculateTotal()
         },
+
         changePaymentServiceBonus(index){
             this.calculateTotal()
         },
-        changeQuantityServiceBonus(index){
 
+        changeQuantityServiceBonus(index){
             this.setPaymentServiceBonus(index)
             this.calculateTotal()
-
         },
+
+        changeQuantitySeverance(index){
+            this.setPaymentSeverance(index)
+            this.calculateInterestPayment(index)
+            this.calculateTotal()
+        },
+
         setPaymentServiceBonus(index){
             this.form.accrued.service_bonus[index].payment = this.roundNumber((this.form.accrued.total_base_salary / this.quantity_days_year) * this.form.accrued.service_bonus[index].quantity)
 //            this.form.accrued.service_bonus[index].payment = this.roundNumber((this.form.accrued.total_base_salary / this.quantity_days_year) * this.form.accrued.service_bonus[index].quantity)
+        },
+
+        setPaymentSeverance(index){
+            this.form.accrued.severance[index].payment = this.roundNumber((this.form.accrued.total_base_salary / this.quantity_days_year) * this.form.accrued.severance[index].quantity)
+            this.recalculateSeverance()
         },
 
         clickCancelServiceBonus(index){
             this.form.accrued.service_bonus.splice(index, 1)
             this.calculateTotal()
         },
-        recalculateServiceBonus(){
 
+        recalculateServiceBonus(){
             this.form.accrued.service_bonus.forEach((element, index) => {
                 this.setPaymentServiceBonus(index)
             })
-
         },
-        // prima de servicio
 
+        recalculateSeverance(){
+            this.form.accrued.severance.forEach((element, index) => {
+                this.setPaymentSeverance(index)
+                this.calculateInterestPayment(index)
+            })
+        },
+
+        // prima de servicio
         // cesantias
         clickAddSeverance(){
-
             const salary_validation = this.salaryValidation()
             if(!salary_validation.success) return this.$message.warning(salary_validation.message)
-
-            this.form.accrued.severance.push({
-                payment :  0,
-                percentage :  0,
-                interest_payment :  0,
-            })
-
+            const index = this.form.accrued.severance.length
+            if(this.form.accrued.service_bonus?.[index]?.quantity != null)
+                this.form.accrued.severance.push({
+                    quantity : this.form.accrued.service_bonus[index].quantity,
+                    payment : this.form.accrued.service_bonus[index].payment,
+                    percentage : 12,
+                    interest_payment : this.form.accrued.service_bonus[index].payment * this.form.accrued.service_bonus[index].quantity * this.percentageToFactor(12) / this.quantity_days_year,
+                })
+            else
+                this.form.accrued.severance.push({
+                    quantity : 0,
+                    payment :  0,
+                    percentage :  12,
+                    interest_payment :  0,
+                })
         },
+
         clickCancelSeverance(index){
             this.form.accrued.severance.splice(index, 1)
             this.calculateTotal()
         },
+
         calculateInterestPayment(index){
 //            this.form.accrued.severance[index].interest_payment = this.roundNumber(this.form.accrued.severance[index].payment * this.percentageToFactor(this.form.accrued.severance[index].percentage))
-            this.form.accrued.severance[index].interest_payment = this.roundNumber(this.form.accrued.severance[index].payment * this.percentageToFactor(this.form.accrued.severance[index].percentage))
+            this.form.accrued.severance[index].interest_payment = this.roundNumber(this.form.accrued.severance[index].payment * this.form.accrued.severance[index].quantity * this.percentageToFactor(this.form.accrued.severance[index].percentage) / this.quantity_days_year)
             this.calculateTotal()
         },
         // cesantias
 
         // bonificaciones
         clickAddBonuses(){
-
             this.form.accrued.bonuses.push({
                 salary_bonus :  undefined,
                 non_salary_bonus :  undefined,
             })
-
         },
+
         clickCancelBonuses(index){
             this.form.accrued.bonuses.splice(index, 1)
             this.calculateTotal()
         },
+
         changeSalaryBonus(index){
             this.calculateTotal()
         },

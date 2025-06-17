@@ -432,31 +432,25 @@
                                                     <tbody>
                                                         <tr v-for="(row, index) in form.accrued.service_bonus" :key="index">
                                                             <td>
-
                                                                 <div class="form-group" v-if="errors[`accrued.service_bonus.${index}.quantity`]"  :class="{'has-danger': errors[`accrued.service_bonus.${index}.quantity`]}">
                                                                     <small class="form-control-feedback"  v-text="errors[`accrued.service_bonus.${index}.quantity`][0]"></small>
                                                                 </div>
-
                                                                 <div class="form-group mb-2 mr-2"  >
                                                                     <el-input-number v-model="row.quantity" :min="0" controls-position="right" @change="changeQuantityServiceBonus(index)"></el-input-number>
                                                                 </div>
                                                             </td>
                                                             <td>
-
                                                                 <div class="form-group" v-if="errors[`accrued.service_bonus.${index}.payment`]"  :class="{'has-danger': errors[`accrued.service_bonus.${index}.payment`]}">
                                                                     <small class="form-control-feedback"  v-text="errors[`accrued.service_bonus.${index}.payment`][0]"></small>
                                                                 </div>
-
                                                                 <div class="form-group mb-2 mr-2"  >
                                                                     <el-input-number v-model="row.payment" :min="0" controls-position="right" @change="changePaymentServiceBonus(index)"></el-input-number>
                                                                 </div>
                                                             </td>
                                                             <td>
-
                                                                 <div class="form-group" v-if="errors[`accrued.service_bonus.${index}.paymentNS`]"  :class="{'has-danger': errors[`accrued.service_bonus.${index}.paymentNS`]}">
                                                                     <small class="form-control-feedback"  v-text="errors[`accrued.service_bonus.${index}.paymentNS`][0]"></small>
                                                                 </div>
-
                                                                 <div class="form-group mb-2 mr-2"  >
                                                                     <el-input-number v-model="row.paymentNS" :min="0" controls-position="right" @change="changePaymentNSServiceBonus(index)"></el-input-number>
                                                                 </div>
@@ -480,6 +474,7 @@
                                                     <thead>
                                                         <tr width="100%">
                                                             <template v-if="form.accrued.severance.length>0">
+                                                                <th class="pb-2">N° de días</th>
                                                                 <th class="pb-2">Pago cesantías</th>
                                                                 <th class="pb-2">% Interes</th>
                                                                 <th class="pb-2">Pago intereses</th>
@@ -491,11 +486,17 @@
                                                     <tbody>
                                                         <tr v-for="(row, index) in form.accrued.severance" :key="index">
                                                             <td>
-
+                                                                <div class="form-group" v-if="errors[`accrued.severance.${index}.quantity`]"  :class="{'has-danger': errors[`accrued.severance.${index}.quantity`]}">
+                                                                    <small class="form-control-feedback"  v-text="errors[`accrued.severance.${index}.quantity`][0]"></small>
+                                                                </div>
+                                                                <div class="form-group mb-2 mr-2"  >
+                                                                    <el-input-number v-model="row.quantity" :min="0" controls-position="right" @change="changeQuantitySeverance(index)"></el-input-number>
+                                                                </div>
+                                                            </td>
+                                                            <td>
                                                                 <div class="form-group" v-if="errors[`accrued.severance.${index}.payment`]"  :class="{'has-danger': errors[`accrued.severance.${index}.payment`]}">
                                                                     <small class="form-control-feedback"  v-text="errors[`accrued.severance.${index}.payment`][0]"></small>
                                                                 </div>
-
                                                                 <div class="form-group mb-2 mr-2"  >
                                                                     <el-input-number v-model="row.payment" :min="0" controls-position="right" @change="calculateInterestPayment(index)"></el-input-number>
                                                                 </div>
@@ -1031,13 +1032,11 @@
                                                     <tbody>
                                                         <tr v-for="(row, index) in form.accrued.other_concepts" :key="index">
                                                             <td>
-
                                                                 <template v-if="errors[`accrued.other_concepts.${index}.description_concept`]">
                                                                     <div class="form-group" :class="{'has-danger': errors[`accrued.other_concepts.${index}.description_concept`]}">
                                                                         <small class="form-control-feedback" v-text="errors[`accrued.other_concepts.${index}.description_concept`][0]"></small>
                                                                     </div>
                                                                 </template>
-
                                                                 <div class="form-group mb-2 mr-2"  >
                                                                     <el-input v-model="row.description_concept"></el-input>
                                                                 </div>
@@ -1744,56 +1743,62 @@
                 // deducciones
 
             },
-            async changeTotalBaseSalary(){
 
+            async changeTotalBaseSalary(){
                 this.form.accrued.salary = this.form.accrued.total_base_salary
                 //recalcular campos que utilizan el salario base del empleado para calculos, estos se ven afectados por el mismo
                 await this.recalculateData()
-
                 // await this.calculateTotal()
-
                 await this.changeWorkedDays()
-
             },
+
             getValueFromInputUndefined(value){
                 return value ? value : 0 //obtener el valor de un input que puede ser un campo undefined
             },
+
             getTypeLawDeduction(id){
                 return _.find(this.type_law_deductions, { id : id })
             },
+
             percentageToFactor(percentage){
                 return percentage / 100
             },
-            getTotalLawDeduction(type_law_deductions_id){
 
-                let type_law_deduction = this.getTypeLawDeduction(type_law_deductions_id)
-
-                // total devengados – subsidio transporte *  % deducciones por ley (type law deductions)
-                return _.round((this.form.accrued.accrued_total - this.getValueFromInputUndefined(this.form.accrued.transportation_allowance)) * this.percentageToFactor(type_law_deduction.percentage), 2)
-
+            getNSvalues(){
+                return this.getValueFromInputUndefined(this.calculateTotalNSServiceBonus()) +
+                       this.getValueFromInputUndefined(this.calculateTotalNSOtherConcepts()) +
+                       this.getValueFromInputUndefined(this.calculateTotalNSBonuses()) +
+                       this.getValueFromInputUndefined(this.calculateTotalNSEPCTVBonus()) +
+                       this.getValueFromInputUndefined(this.calculateTotalNSAids()) +
+                       this.getValueFromInputUndefined(this.form.accrued.compensation);
             },
+
+            getTotalLawDeduction(type_law_deductions_id){
+                let type_law_deduction = this.getTypeLawDeduction(type_law_deductions_id)
+                // total devengados – subsidio transporte *  % deducciones por ley (type law deductions)
+                return _.round((this.form.accrued.accrued_total - this.getNSvalues() - this.getValueFromInputUndefined(this.form.accrued.transportation_allowance)) * this.percentageToFactor(type_law_deduction.percentage), 2)
+            },
+
             changeEpsTypeLawDeduction(){
                 this.form.deduction.eps_deduction = this.getTotalLawDeduction(this.form.deduction.eps_type_law_deductions_id)
                 this.calculateTotalDeduction()
             },
+
             changePensionTypeLawDeduction(){
                 this.form.deduction.pension_deduction = this.getTotalLawDeduction(this.form.deduction.pension_type_law_deductions_id)
                 this.calculateTotalDeduction()
             },
-            changeFondosspTypeLawDeduction(){
 
-                if(this.form.deduction.fondossp_type_law_deductions_id)
-                {
+            changeFondosspTypeLawDeduction(){
+                if(this.form.deduction.fondossp_type_law_deductions_id){
                     this.form.deduction.fondosp_deduction_SP = this.getTotalLawDeduction(this.form.deduction.fondossp_type_law_deductions_id)
                 }
-                else
-                {
+                else{
                     this.form.deduction.fondosp_deduction_SP = undefined
                 }
-
                 this.calculateTotalDeduction()
-
             },
+
             changeFondosspSubTypeLawDeduction(){
 
                 if(this.form.deduction.fondossp_sub_type_law_deductions_id)
@@ -1808,20 +1813,16 @@
                 this.calculateTotalDeduction()
 
             },
+
             calculateTotalTypeLawDeduction(){
-
                 // si el tipo de trabajador es relacionado al sena, no tiene dscto de pension ni salud
-
                 if(this.form.select_worker.is_type_worker_sena)
                 {
                     this.form.deduction.eps_type_law_deductions_id = 1
                     this.form.deduction.pension_type_law_deductions_id = 5
-
                     this.form.deduction.eps_deduction = 0
                     this.form.deduction.pension_deduction = 0
-
                     this.form_disabled.inputs_type_worker_sena = true
-
                     this.form.deduction.fondossp_type_law_deductions_id = undefined
                     this.form.deduction.fondosp_deduction_SP = undefined
                     this.form.deduction.fondossp_sub_type_law_deductions_id = undefined
@@ -1843,12 +1844,11 @@
                     this.form_disabled.inputs_not_discount_pension = false
                     this.changeEpsTypeLawDeduction()
                     this.changePensionTypeLawDeduction()
-
                     this.changeFondosspTypeLawDeduction()
                     this.changeFondosspSubTypeLawDeduction()
                 }
-
             },
+
             clickAddExtraHours(){
 
                 if(parseFloat(this.form.accrued.salary) <= 0 || parseFloat(this.form.accrued.total_base_salary) <= 0){
@@ -2221,49 +2221,45 @@
                     this.changeWorker()
                 })
             },
+
             changePensionDeduction(){
                 // this.calculateTotal()
                 this.calculateTotalDeduction()
             },
+
             changeFondosspDeduction(){
                 this.calculateTotalDeduction()
             },
+
             changeFondosspSubDeduction(){
                 this.calculateTotalDeduction()
             },
+
             changeEpsDeduction(){
                 // this.calculateTotal()
                 this.calculateTotalDeduction()
             },
+
             calculateTotal(){
                 this.calculateTotalAccrued()
                 this.calculateTotalTypeLawDeduction()
                 this.calculateTotalDeduction()
             },
+
             calculateTotalDeductionOthers(){
                 this.calculateTotalDeduction()
             },
+
             calculateTotalDeduction(){
-
                 let total_labor_union = _.sumBy(this.form.deduction.labor_union, 'deduction')
-
                 let total_sanctions = this.sumValueFromArray(this.form.deduction.sanctions, 'private_sanction') + this.sumValueFromArray(this.form.deduction.sanctions, 'public_sanction')
-
                 let total_orders = this.sumValueFromArray(this.form.deduction.orders, 'deduction')
-
                 let total_third_party_payments = this.sumValueFromArray(this.form.deduction.third_party_payments, 'third_party_payment')
-
                 let total_advances = this.sumValueFromArray(this.form.deduction.advances, 'advance')
-
                 let total_other_deductions = this.sumValueFromArray(this.form.deduction.other_deductions, 'other_deduction')
-
                 let total_deduction_optional_inputs = this.getTotalDeductionOptionalInputs()
-
                 let fondosp_deduction_SP = this.getValueFromInputUndefined(this.form.deduction.fondosp_deduction_SP)
-
                 let fondosp_deduction_sub = this.getValueFromInputUndefined(this.form.deduction.fondosp_deduction_sub)
-
-
                 this.form.deduction.deductions_total = this.roundNumber(
                                                             parseFloat(this.form.deduction.eps_deduction)
                                                             + parseFloat(this.form.deduction.pension_deduction)
@@ -2277,56 +2273,41 @@
                                                             + fondosp_deduction_SP
                                                             + fondosp_deduction_sub
                                                         )
-
             },
+
             sumValueFromArray(array, property){
                 return _.sumBy(array, property)
             },
+
             sumValueArrayValidateProperty(array, property){
                 return _.sumBy(array, (row) => {
                     return this.getValueFromInputUndefined(row[property])
                 })
             },
+
             sumEpctvBonuses(){
                 return _.sumBy(this.form.accrued.epctv_bonuses, (row) => {
                     return this.getValueFromInputUndefined(row['paymentS']) + this.getValueFromInputUndefined(row['paymentNS']) + this.getValueFromInputUndefined(row['salary_food_payment']) + this.getValueFromInputUndefined(row['non_salary_food_payment'])
                 })
             },
+
             calculateTotalAccrued(){
-
                 // sum_accrued
-
                 let total_work_disability = this.sumValueFromArray(this.form.accrued.work_disabilities, 'payment')
-
                 let total_service_bonus = this.sumValueFromArray(this.form.accrued.service_bonus, 'payment') + this.sumValueArrayValidateProperty(this.form.accrued.service_bonus, 'paymentNS')
-
                 let total_severance = this.sumValueFromArray(this.form.accrued.severance, 'payment') + this.sumValueFromArray(this.form.accrued.severance, 'interest_payment')
-
                 let total_common_vacation = this.sumValueFromArray(this.form.accrued.common_vacation, 'payment')
-
                 let total_paid_vacation = this.sumValueFromArray(this.form.accrued.paid_vacation, 'payment')
-
                 let total_bonuses = this.sumValueArrayValidateProperty(this.form.accrued.bonuses, 'salary_bonus') + this.sumValueArrayValidateProperty(this.form.accrued.bonuses, 'non_salary_bonus')
-
                 let total_aid = this.sumValueArrayValidateProperty(this.form.accrued.aid, 'salary_assistance') + this.sumValueArrayValidateProperty(this.form.accrued.aid, 'non_salary_assistance')
-
                 let total_other_concepts = this.sumValueArrayValidateProperty(this.form.accrued.other_concepts, 'salary_concept') + this.sumValueArrayValidateProperty(this.form.accrued.other_concepts, 'non_salary_concept')
-
                 let total_commissions = this.sumValueFromArray(this.form.accrued.commissions, 'commission')
-
                 let total_epctv_bonuses = this.sumEpctvBonuses()
-
                 let total_third_party_payments = this.sumValueArrayValidateProperty(this.form.accrued.third_party_payments, 'third_party_payment')
-
                 let total_advances = this.sumValueFromArray(this.form.accrued.advances, 'advance')
-
                 let total_compensations = this.sumValueFromArray(this.form.accrued.compensations, 'ordinary_compensation') + this.sumValueFromArray(this.form.accrued.compensations, 'extraordinary_compensation')
-
                 // let total_legal_strike = this.sumValueFromArray(this.form.accrued.legal_strike, 'payment')
-
                 let total_optional_inputs = this.getTotalOptionalInputs()
-
-
                 this.form.accrued.accrued_total = this.roundNumber(
                                                     parseFloat(this.form.accrued.salary)
                                                     + (this.form.accrued.transportation_allowance ? parseFloat(this.form.accrued.transportation_allowance) : 0)
@@ -2348,13 +2329,13 @@
                                                     // + total_legal_strike
                                                     + total_optional_inputs
                                                 )
-
             },
+
             changeOptionalInputs(){
                 this.calculateTotal()
             },
-            getTotalOptionalInputs(){
 
+            getTotalOptionalInputs(){
                 return this.getValueFromInputUndefined(this.form.accrued.endowment)
                         + this.getValueFromInputUndefined(this.form.accrued.sustenance_support)
                         + this.getValueFromInputUndefined(this.form.accrued.withdrawal_bonus)
@@ -2363,13 +2344,13 @@
                         + this.getValueFromInputUndefined(this.form.accrued.salary_viatics)
                         + this.getValueFromInputUndefined(this.form.accrued.non_salary_viatics)
                         + this.getValueFromInputUndefined(this.form.accrued.refund)
-
             },
+
             changeDeductionOptionalInputs(){
                 this.calculateTotalDeduction()
             },
-            getTotalDeductionOptionalInputs(){
 
+            getTotalDeductionOptionalInputs(){
                 return this.getValueFromInputUndefined(this.form.deduction.afc)
                         + this.getValueFromInputUndefined(this.form.deduction.refund)
                         - this.getValueFromInputUndefined(this.form.deduction.debt) // resta a deducciones
@@ -2380,11 +2361,12 @@
                         + this.getValueFromInputUndefined(this.form.deduction.cooperative)
                         + this.getValueFromInputUndefined(this.form.deduction.tax_liens)
                         + this.getValueFromInputUndefined(this.form.deduction.supplementary_plan)
-
             },
+
             sumTotalLincese(){
                 this.calculateTotal()
             },
+
             sumTotalsExtraHoursForm(){
                 // this.calculateTotalAccrued()
                 this.calculateTotal()
