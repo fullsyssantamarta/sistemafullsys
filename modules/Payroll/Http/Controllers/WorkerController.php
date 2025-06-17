@@ -30,7 +30,6 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class WorkerController extends Controller
 {
-
     public function index()
     {
         return view('payroll::workers.index');
@@ -58,18 +57,15 @@ class WorkerController extends Controller
         ];
     }
 
-
     public function records(Request $request)
     {
         $records = Worker::where($request->column, 'like', "%{$request->value}%")->latest();
-
         return new WorkerCollection($records->paginate(config('tenant.items_per_page')));
     }
 
     public function record($id)
     {
         $record = new WorkerResource(Worker::findOrFail($id));
-
         return $record;
     }
 
@@ -97,7 +93,6 @@ class WorkerController extends Controller
             'message' => 'Empleado eliminado con éxito'
         ];
     }
-
 
     public function searchWorkers(Request $request)
     {

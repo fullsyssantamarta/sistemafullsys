@@ -33,7 +33,9 @@ export const documentPayrollMixin = {
         },
         setPaymentServiceBonus(index){
             this.form.accrued.service_bonus[index].payment = this.roundNumber((this.form.accrued.total_base_salary / this.quantity_days_year) * this.form.accrued.service_bonus[index].quantity)
+//            this.form.accrued.service_bonus[index].payment = this.roundNumber((this.form.accrued.total_base_salary / this.quantity_days_year) * this.form.accrued.service_bonus[index].quantity)
         },
+
         clickCancelServiceBonus(index){
             this.form.accrued.service_bonus.splice(index, 1)
             this.calculateTotal()

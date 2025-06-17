@@ -71,10 +71,9 @@ class DocumentPayrollController extends Controller
 
     public function table($table)
     {
-
         if($table == 'workers')
         {
-            return Worker::take(20)->get()->transform(function($row){
+            return Worker::where('state', 1)->take(20)->get()->transform(function($row){
                 return $row->getSearchRowResource();
             });
         }
@@ -83,10 +82,8 @@ class DocumentPayrollController extends Controller
         {
             return TypeOvertimeSurcharge::get();
         }
-
         return [];
     }
-
 
     public function record($id)
     {

@@ -294,7 +294,13 @@ class DocumentPosController extends Controller
 //                            'taxable_amount' => $taxable_amount,
 //                        ];
 //                    }
-                    $tax_exclusive_amount += $tax_totals[count($tax_totals) - 1]['taxable_amount'];
+///                    $tax_exclusive_amount += $tax_totals[count($tax_totals) - 1]['taxable_amount'];
+                    // Sumar taxable_amount de los tax_totals de cada línea
+                    if(isset($invoice_lines[count($invoice_lines) - 1]['tax_totals'])) {
+                        foreach($invoice_lines[count($invoice_lines) - 1]['tax_totals'] as $tax_total) {
+                            $tax_exclusive_amount += floatval($tax_total['taxable_amount']);
+                        }
+                    }
                 }
             }
             if(isset($data['allowance_charges'])){
@@ -1236,6 +1242,7 @@ class DocumentPosController extends Controller
         $document_type = TypeDocument::where('code', 26)->first();
         $data_consecutive = $this->getNextNumber($document_type->code, $document_type->prefix);
         $request_api = json_decode($document->request_api);
+        $request_api->legal_monetary_totals->tax_exclusive_amount = $request_api->legal_monetary_totals->line_extension_amount;
         $json = [
             'prefix' => $document_type->prefix,
             'resolution_number' => $document_type->resolution_number,

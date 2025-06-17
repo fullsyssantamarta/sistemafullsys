@@ -14,7 +14,6 @@ use Modules\Factcolombia1\Models\TenantService\{
 
 class Worker extends PayrollBaseModel
 {
-
     protected $table = 'co_workers';
 
     /**
@@ -37,7 +36,7 @@ class Worker extends PayrollBaseModel
         'high_risk_pension',
         'integral_salarary',
         'salary',
-
+        'state',
         'cellphone',
         'email',
         'position',
@@ -46,46 +45,42 @@ class Worker extends PayrollBaseModel
         'payment',
     ];
 
-        
     protected $casts = [
         'high_risk_pension' => 'boolean',
-        'integral_salarary' => 'boolean', 
+        'integral_salarary' => 'boolean',
+        'state' => 'boolean',
     ];
 
-
     //se agrega servicio domestico
-    public const ID_TYPE_WORKERS_SENA = [2, 4, 6]; 
-
-    public const ID_SUB_TYPE_WORKERS_NOT_PENSION = [2]; 
-
-
+    public const ID_TYPE_WORKERS_SENA = [2, 4, 6];
+    public const ID_SUB_TYPE_WORKERS_NOT_PENSION = [2];
 
     public function type_worker()
     {
         return $this->belongsTo(TypeWorker::class);
     }
-    
+
     public function sub_type_worker()
     {
         return $this->belongsTo(SubTypeWorker::class);
     }
-    
+
     public function payroll_type_document_identification()
     {
         return $this->belongsTo(PayrollTypeDocumentIdentification::class);
     }
-    
+
     public function type_contract()
     {
         return $this->belongsTo(TypeContract::class);
     }
-    
+
     public function municipality()
     {
         return $this->belongsTo(Municipality::class);
     }
 
-    public function payroll_period() 
+    public function payroll_period()
     {
         return $this->belongsTo(PayrollPeriod::class);
     }
@@ -101,15 +96,15 @@ class Worker extends PayrollBaseModel
     }
 
     public function getSearchFullNameAttribute()
-    { 
+    {
         return "{$this->identification_number} - {$this->second_surname} {$this->surname} {$this->first_name}";
     }
- 
+
     public function getFullNameAttribute()
-    { 
+    {
         return "{$this->second_surname} {$this->surname} {$this->first_name}";
     }
-    
+
     /**
      * Retorna data cuando el campo payment es null
      *
@@ -124,7 +119,7 @@ class Worker extends PayrollBaseModel
             'account_number' => null,
         ];
     }
-    
+
     /**
      * Determinar si el tipo de trabajador esta relacionado al SENA, para no considerar subsidio de transporte, descuento salud  y pension.
      *
@@ -146,8 +141,7 @@ class Worker extends PayrollBaseModel
     }
 
     public function getSearchRowResource()
-    { 
-
+    {
         return [
             'id' => $this->id,
             'search_fullname' => $this->search_fullname,
@@ -159,7 +153,7 @@ class Worker extends PayrollBaseModel
             'discount_pension' => $this->discount_pension,
         ];
     }
- 
+
 
     /**
      * Use in resource and collection
@@ -167,7 +161,6 @@ class Worker extends PayrollBaseModel
      * @return array
      */
     public function getRowResource(){
-
         return [
             'id' => $this->id,
             'code' => $this->code,
@@ -184,8 +177,8 @@ class Worker extends PayrollBaseModel
             'high_risk_pension' => $this->high_risk_pension,
             'integral_salarary' => $this->integral_salarary,
             'salary' => $this->salary,
+            'state' => $this->state,
             'fullname' => $this->fullname,
-            
             'cellphone' => $this->cellphone,
             'email' => $this->email,
             'position' => $this->position,
@@ -193,9 +186,8 @@ class Worker extends PayrollBaseModel
             'payroll_period_id' => $this->payroll_period_id,
             'payment' => $this->payment ?? $this->getDefaultDataPayment()
         ];
-
     }
-    
+
     /**
      * Filtro para busqueda de empleados
      *
@@ -204,13 +196,11 @@ class Worker extends PayrollBaseModel
      * @return void
      */
     public function scopeWhereFilterSearch($query, $request)
-    { 
+    {
         return $query->where('identification_number','like', "%{$request->input}%")
-                    ->orWhere('surname','like', "%{$request->input}%") 
-                    ->orWhere('second_surname','like', "%{$request->input}%") 
-                    ->orWhere('first_name','like', "%{$request->input}%") 
+                    ->orWhere('surname','like', "%{$request->input}%")
+                    ->orWhere('second_surname','like', "%{$request->input}%")
+                    ->orWhere('first_name','like', "%{$request->input}%")
                     ->orderBy('surname');
     }
-
-
 }

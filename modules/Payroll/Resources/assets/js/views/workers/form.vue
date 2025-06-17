@@ -3,7 +3,7 @@
         <form autocomplete="off" @submit.prevent="submit">
             <div class="form-body">
 
-                
+
                 <el-tabs v-model="activeName">
                     <el-tab-pane label="Información general" name="general">
 
@@ -96,12 +96,16 @@
                                     <small class="form-control-feedback" v-if="errors.address" v-text="errors.address[0]"></small>
                                 </div>
                             </div>
+
+                            <div class="col-md-3 mt-4">
+                                <div class="form-group" :class="{'has-danger': errors.state}">
+                                    <el-checkbox v-model="form.state">Empleado activo</el-checkbox>
+                                </div>
+                            </div>
                         </div>
-
                     </el-tab-pane>
-                    
-                    <el-tab-pane label="Información laboral" name="working">
 
+                    <el-tab-pane label="Información laboral" name="working">
                         <div class="row">
                             <div class="col-md-3">
                                 <div class="form-group" :class="{'has-danger': errors.type_worker_id}">
@@ -122,7 +126,6 @@
                                     <small class="form-control-feedback" v-if="errors.sub_type_worker_id" v-text="errors.sub_type_worker_id[0]"></small>
                                 </div>
                             </div>
-
 
                             <div class="col-md-3">
                                 <div class="form-group" :class="{'has-danger': errors.type_contract_id}">
@@ -181,11 +184,9 @@
                                 </div>
                             </div>
                         </div>
-
                     </el-tab-pane>
-                    
+
                     <el-tab-pane label="Método de pago" name="payment_method">
-                
                         <div class="row">
                             <div class="col-md-3">
                                 <div class="form-group" :class="{'has-danger': errors['payment.payment_method_id']}">
@@ -196,7 +197,7 @@
                                     <small class="form-control-feedback" v-if="errors['payment.payment_method_id']" v-text="errors['payment.payment_method_id'][0]"></small>
                                 </div>
                             </div>
-                                
+
                             <template v-if="show_inputs_payment_method">
                                 <div class="col-md-3">
                                     <div class="form-group" :class="{'has-danger': errors['payment.bank_name']}">
@@ -220,17 +221,12 @@
                                     </div>
                                 </div>
                             </template>
-
                         </div>
-
                     </el-tab-pane>
-
                 </el-tabs>
-
 
                 <div class="row">
 
- 
                 </div>
             </div>
             <div class="form-actions text-right mt-4">
@@ -242,7 +238,6 @@
 </template>
 
 <script>
-
     export default {
         props: ['showDialog', 'recordId', 'external'],
         data() {
@@ -257,8 +252,8 @@
                 payroll_type_document_identifications: [],
                 type_contracts: [],
                 payroll_periods: [],
-                municipalities: [], 
-                payment_methods: [], 
+                municipalities: [],
+                payment_methods: [],
                 loading_search: false,
                 show_inputs_payment_method: true,
                 activeName: 'general',
@@ -269,38 +264,34 @@
             await this.getTables()
 
         },
-        computed: { 
+
+        computed: {
         },
+
         methods: {
             async getTables(){
-
                 await this.$http.get(`/${this.resource}/tables`)
-                    .then(response => { 
-
-                        this.type_workers = response.data.type_workers 
-                        this.sub_type_workers = response.data.sub_type_workers 
-                        this.payroll_type_document_identifications = response.data.payroll_type_document_identifications 
-                        this.type_contracts = response.data.type_contracts 
-                        this.municipalities = response.data.municipalities 
-                        this.payroll_periods = response.data.payroll_periods 
-                        this.payment_methods = response.data.payment_methods 
-
+                    .then(response => {
+                        this.type_workers = response.data.type_workers
+                        this.sub_type_workers = response.data.sub_type_workers
+                        this.payroll_type_document_identifications = response.data.payroll_type_document_identifications
+                        this.type_contracts = response.data.type_contracts
+                        this.municipalities = response.data.municipalities
+                        this.payroll_periods = response.data.payroll_periods
+                        this.payment_methods = response.data.payment_methods
                         this.form.type_worker_id = this.type_workers.length > 0 ? this.type_workers[0].id : null
                         this.form.sub_type_worker_id = this.sub_type_workers.length > 0 ? this.sub_type_workers[0].id : null
                         this.form.type_contract_id = this.type_contracts.length > 0 ? this.type_contracts[0].id : null
-
                     })
             },
-            changePaymentMethod(){
 
+            changePaymentMethod(){
                 //mostrar campos adicionales, si el metodo de pago es el definido en el arreglo/obligatorio
                 this.show_inputs_payment_method = [2,3,4,5,6,7,21,22,30,31,42,45,46,47].includes(this.form.payment.payment_method_id)
-
             },
+
             initForm() {
-
                 this.errors = {}
-
                 this.form = {
                     id: null,
                     code: null,
@@ -317,7 +308,7 @@
                     high_risk_pension: false,
                     integral_salarary: false,
                     salary: null,
-
+                    state: true,
                     email: null,
                     cellphone: null,
                     position: null,
@@ -328,38 +319,38 @@
                         bank_name: null,
                         account_type: null,
                         account_number: null,
-                    }, 
+                    },
                 }
+            },
 
-            }, 
             async opened() {
 
             },
-            create() {
 
+            create() {
                 this.titleDialog = this.recordId ? 'Editar empleado' : 'Nuevo empleado'
                 this.getRecord()
-            }, 
-            getRecord(){
+            },
 
+            getRecord(){
                 if (this.recordId) {
                     this.$http.get(`/${this.resource}/record/${this.recordId}`)
                         .then(response => {
                             this.form = response.data.data
                             this.changePaymentMethod()
                         })
-                
-                }else{
 
+                }else{
                     this.setInitialData()
                 }
             },
-            setInitialData(){
 
+            setInitialData(){
                 const payroll_month = _.find(this.payroll_periods, {id:5})
                 this.form.payroll_period_id = payroll_month ? payroll_month.id : null
-                 
+                this.form.state = true
             },
+
             submit() {
                 this.loading_submit = true
                 this.$http.post(`/${this.resource}`, this.form)
@@ -386,12 +377,12 @@
                     .then(() => {
                         this.loading_submit = false
                     })
-            }, 
+            },
             close() {
                 this.$eventHub.$emit('initInputPerson')
                 this.$emit('update:showDialog', false)
                 this.initForm()
-            }, 
+            },
         }
     }
 </script>
