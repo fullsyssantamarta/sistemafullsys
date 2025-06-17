@@ -65,6 +65,15 @@
                             <small class="form-control-feedback" v-if="errors.fe_resolution_id" v-text="errors.fe_resolution_id[0]"></small>
                         </div>
                     </div>
+                    <div class="col-md-4" v-if="typeUser != 'integrator'">
+                        <div class="form-group" :class="{'has-danger': errors.ni_resolution_id}">
+                            <label class="control-label">Resolucion Nomina</label>
+                            <el-select v-model="form.ni_resolution_id" clearable>
+                                <el-option v-for="option in ni_resolutions" :key="option.id" :value="option.id" :label="option.description"></el-option>
+                            </el-select>
+                            <small class="form-control-feedback" v-if="errors.ni_resolution_id" v-text="errors.ni_resolution_id[0]"></small>
+                        </div>
+                    </div>
                     <div class="col-md-12" v-if="typeUser != 'integrator'">
                         <div class="form-group">
                             <label class="control-label">Módulos</label>
@@ -109,6 +118,7 @@
                 form: {},
                 modules: [],
                 fe_resolutions: [],
+                ni_resolutions: [],
                 establishments: [],
                 types: [],
                 show_levels:false
@@ -122,6 +132,7 @@
                     this.establishments = response.data.establishments
                     this.types = response.data.types
                     this.fe_resolutions = response.data.fe_resolutions
+                    this.ni_resolutions = response.data.ni_resolutions
                 })
             await this.initForm()
         },
@@ -140,6 +151,7 @@
                     locked:false,
                     type:null,
                     fe_resolution_id: null,
+                    ni_resolution_id: null,
                     modules: [],
                     levels: [],
                 }
@@ -193,13 +205,23 @@
             submit() {
                 // console.log(this.form)
                 this.loading_submit = true
-                // Buscar la resolución seleccionada
-                const selectedResolution = this.fe_resolutions.find(
+                // Buscar la resolución fe seleccionada
+                const selectedResolutionfe = this.fe_resolutions.find(
                     r => r.id === this.form.fe_resolution_id
                 );
-                // Validar si está vencida
-                if (selectedResolution && selectedResolution.vencida) {
-                    this.$message.warning('No puedes seleccionar una resolución vencida.');
+                // Validar si resolucion fe si está vencida
+                if (selectedResolutionfe && selectedResolutionfe.vencida) {
+                    this.$message.warning('No puedes seleccionar una resolución FE vencida.');
+                    this.loading_submit = false;
+                    return;
+                }
+                // Buscar la resolución fe seleccionada
+                const selectedResolutionni = this.ni_resolutions.find(
+                    r => r.id === this.form.ni_resolution_id
+                );
+                // Validar si resolucion fe si está vencida
+                if (selectedResolutionni && selectedResolutionni.vencida) {
+                    this.$message.warning('No puedes seleccionar una resolución FE vencida.');
                     this.loading_submit = false;
                     return;
                 }
@@ -209,6 +231,7 @@
                             this.form.password = null
                             this.form.password_confirmation = null
                             this.form.fe_resolution_id = null
+                            this.form.ni_resolution_id = null
                             this.$message.success(response.data.message)
                             this.$eventHub.$emit('reloadData')
                             this.close()

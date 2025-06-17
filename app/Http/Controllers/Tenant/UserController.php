@@ -38,11 +38,15 @@ class UserController extends Controller
         $establishments = Establishment::orderBy('description')->get();
         $types = [['type' => 'admin', 'description'=>'Administrador'], ['type' => 'seller', 'description'=>'Vendedor']];
         $fe_resolutions = TypeDocument::where('code', 1)->where('id', '!=', 1)->selectRaw("*, CONCAT(prefix, ' / ', resolution_number, ' / ', `from`, ' / ', `to`, ' / ', resolution_date_end) as description")->orderBy('prefix')->get();
+        $ni_resolutions = TypeDocument::where('code', 9)->selectRaw("*, CONCAT(prefix, ' / ', resolution_number, ' / ', `from`, ' / ', `to`, ' / ', resolution_date_end) as description")->orderBy('prefix')->get();
         $today = date('Y-m-d');
         $fe_resolutions->each(function($item) use ($today) {
             $item->vencida = ($item->resolution_date_end < $today);
         });
-        return compact('modules', 'establishments','types', 'fe_resolutions');
+        $ni_resolutions->each(function($item) use ($today) {
+            $item->vencida = ($item->resolution_date_end < $today);
+        });
+        return compact('modules', 'establishments','types', 'fe_resolutions', 'ni_resolutions');
     }
 
     public function store(UserRequest $request)
@@ -64,6 +68,7 @@ class UserController extends Controller
         $user->email = $request->input('email');
         $user->establishment_id = $request->input('establishment_id');
         $user->fe_resolution_id = $request->input('fe_resolution_id');
+        $user->ni_resolution_id = $request->input('ni_resolution_id');
         $user->type = $request->input('type');
         if (!$id) {
             $user->api_token = str_random(50);

@@ -13,7 +13,6 @@
                             </div>
                         </div>
                         <div class="row mt-4">
-
                             <div class="col-md-6 pb-2">
                                 <div class="form-group" :class="{'has-danger': errors.worker_id}">
                                     <label class="control-label">
@@ -25,7 +24,6 @@
                                         <template v-if="!isAdjustNote">
                                             <a href="#" @click.prevent="showDialogNewWorker = true">[+ Nuevo]</a>
                                         </template>
-
                                     </label>
                                     <el-select
                                         v-model="form.worker_id"
@@ -46,13 +44,12 @@
                                 </div>
                             </div>
 
-
                             <div class="col-md-3 pb-2">
                                 <div class="form-group" :class="{'has-danger': errors.type_document_id}">
                                     <label class="control-label">Resolución
                                         <span class="text-danger"> *</span>
                                     </label>
-                                    <el-select @change="changeResolution" v-model="form.type_document_id" class="border-left rounded-left border-info">
+                                    <el-select @change="changeResolution" v-model="form.type_document_id" class="border-left rounded-left border-info" :disabled="ni_resolution_id !== null">
                                         <el-option v-for="option in resolutions" :key="option.id" :value="option.id" :label="`${option.prefix}`"></el-option>
                                     </el-select>
                                     <small class="form-control-feedback" v-if="errors.type_document_id" v-text="errors.type_document_id[0]"></small>
@@ -1580,6 +1577,7 @@
                 loading_search: false,
                 errors: {},
                 form: {},
+                ni_resolution_id: null,
                 all_workers: [],
                 workers: [],
                 payroll_periods: [],
@@ -1605,35 +1603,44 @@
                 loading: false
             }
         },
-        async created() {
 
+        async created() {
             await this.initForm()
             await this.getTables()
             await this.events()
             await this.checkDocumentPayrollAdjustNote()
-
             this.loading_form = true
+            if(this.ni_resolution_id){
+                this.form.type_document_id = this.ni_resolution_id
+            }
         },
+
         computed: {
             getPercentageEpsTypeLawDeduction: function () {
                 return this.getTypeLawDeduction(this.form.deduction.eps_type_law_deductions_id)
             },
+
             getPercentagePensionTypeLawDeduction: function () {
                 return this.getTypeLawDeduction(this.form.deduction.pension_type_law_deductions_id)
             },
+
             getPercentageFondosspTypeLawDeduction: function () {
                 return this.getTypeLawDeduction(this.form.deduction.fondossp_type_law_deductions_id)
             },
+
             getPercentageFondosspSubTypeLawDeduction: function () {
                 return this.getTypeLawDeduction(this.form.deduction.fondossp_sub_type_law_deductions_id)
             },
+
             percentageWorkDisability: function() {
                 return 66.67
             },
+
             isAdjustNote: function() {
                 return !_.isEmpty(this.affected_document_payroll_id)
             }
         },
+
         methods: {
             async checkDocumentPayrollAdjustNote(){
 
@@ -1850,11 +1857,9 @@
             },
 
             clickAddExtraHours(){
-
                 if(parseFloat(this.form.accrued.salary) <= 0 || parseFloat(this.form.accrued.total_base_salary) <= 0){
                     return this.$message.warning('El campo Salario debe ser mayor a 0')
                 }
-
                 this.showDialogDocumentPayrollExtraHours = true
             },
 
@@ -1864,21 +1869,17 @@
             },
 
             changePeriodSettlement(){
-
                 this.form.period.worked_time = moment(this.form.period.settlement_end_date).diff(moment(this.form.period.settlement_start_date), 'days', true)
-
             },
+
             setInitialDataPeriod(){
-
                 let last_month = moment().subtract(1, 'months')
-
                 this.form.period.settlement_start_date = last_month.startOf('month').format('YYYY-MM-DD')
                 this.form.period.settlement_end_date = last_month.endOf('month').format('YYYY-MM-DD')
                 this.form.period.worked_time = this.quantity_days_month
-
             },
-            initForm() {
 
+            initForm() {
                 this.form = {
                     type_document_id: null,
                     prefix: null,
@@ -1912,11 +1913,9 @@
                         sustenance_support: undefined,
                         withdrawal_bonus: undefined,
                         compensation: undefined,
-
                         salary_viatics: undefined,
                         non_salary_viatics: undefined,
                         refund: undefined,
-
                         work_disabilities: [],
                         service_bonus: [],
                         severance: [],
@@ -1944,29 +1943,26 @@
                         total_extra_hours: 0, //usado para controlar los totales de horas extras en vista y sumar al total devengados
                         total_license: 0, //usado para controlar los totales de licencias en vista y sumar al total devengados
                     },
+
                     deduction: {
                         eps_type_law_deductions_id: 1,
                         eps_deduction: 0,
                         pension_type_law_deductions_id: 5,
                         pension_deduction: 0,
                         deductions_total: 0,
-
                         fondossp_type_law_deductions_id: undefined,
                         fondosp_deduction_SP: undefined,
                         fondossp_sub_type_law_deductions_id: undefined,
                         fondosp_deduction_sub: undefined,
-
                         afc: undefined,
                         refund: undefined,
                         debt: undefined,
                         education: undefined,
-
                         voluntary_pension: undefined,
                         withholding_at_source: undefined,
                         cooperative: undefined,
                         tax_liens: undefined,
                         supplementary_plan: undefined,
-
                         labor_union: [],
                         sanctions: [],
                         orders: [],
@@ -1975,10 +1971,7 @@
                         other_deductions: [],
                     },
                 }
-
                 this.errors = {}
-
-
                 this.form_disabled = {
                     payroll_period_id : false,
                     admision_date : false,
@@ -1986,53 +1979,49 @@
                     inputs_type_worker_sena : false,
                     inputs_not_discount_pension: false,
                 }
-
                 this.setInitialDataPeriod()
             },
+
             roundNumber(number, decimals = 2){
                 return _.round(number, decimals)
             },
-            salaryValidation(){
 
+            salaryValidation(){
                 if(parseFloat(this.form.accrued.salary) <= 0 || parseFloat(this.form.accrued.total_base_salary) <= 0){
                     return {
                         success : false,
                         message : 'El campo Salario debe ser mayor a 0'
                     }
                 }
-
                 return {
                     success : true
                 }
             },
             // sindicatos
             recalculateLaborUnion(){
-
                 this.form.deduction.labor_union.forEach((element, index) => {
                     this.setDeductionLaborUnion(index)
                 })
-
             },
-            changePercentageLaborUnion(index){
 
+            changePercentageLaborUnion(index){
                 this.setDeductionLaborUnion(index)
                 this.calculateTotalDeduction()
-
             },
+
             setDeductionLaborUnion(index){
                 this.form.deduction.labor_union[index].deduction = this.roundNumber(this.form.accrued.total_base_salary * this.percentageToFactor(this.form.deduction.labor_union[index].percentage))
             },
-            clickAddLaborUnion(){
 
+            clickAddLaborUnion(){
                 const salary_validation = this.salaryValidation()
                 if(!salary_validation.success) return this.$message.warning(salary_validation.message)
-
                 this.form.deduction.labor_union.push({
                     percentage :  0,
                     deduction :  0,
                 })
-
             },
+
             clickCancelLaborUnion(index){
                 this.form.deduction.labor_union.splice(index, 1)
                 this.calculateTotalDeduction()
@@ -2042,14 +2031,14 @@
             changeSanction(index){
                 this.calculateTotalDeduction()
             },
-            clickAddSanction(){
 
+            clickAddSanction(){
                 this.form.deduction.sanctions.push({
                     public_sanction :  0,
                     private_sanction :  0,
                 })
-
             },
+
             clickCancelSanction(index){
                 this.form.deduction.sanctions.splice(index, 1)
                 this.calculateTotalDeduction()
@@ -2058,55 +2047,49 @@
 
             // incapacidades
             recalculateWorkDisability(){
-
                 this.form.accrued.work_disabilities.forEach((element, index) => {
-
                     let payment = this.getPaymentWorkDisability(element.quantity, element.is_complete)
                     this.form.accrued.work_disabilities[index].payment =  payment
-
                 })
-
             },
+
             changeWDisabilityStartEndDate(index){
                 this.calculateWDisabilityStartEndDate(index)
             },
+
             changeCompleteWorkDisability(index){
                 this.calculateWDisabilityStartEndDate(index)
             },
-            calculateWDisabilityStartEndDate(index){
 
+            calculateWDisabilityStartEndDate(index){
                 const start_end_date = this.form.accrued.work_disabilities[index].start_end_date
                 const start_date = start_end_date[0]
                 const end_date = start_end_date[1]
                 const quantity = this.roundNumber(moment(end_date, "YYYY-MM-DD").diff(moment(start_date, "YYYY-MM-DD"), 'days', true))
                 let payment = this.getPaymentWorkDisability(quantity, this.form.accrued.work_disabilities[index].is_complete)
-
                 //calcular valores finales
                 this.form.accrued.work_disabilities[index].start_date = start_date
                 this.form.accrued.work_disabilities[index].end_date = end_date
                 this.form.accrued.work_disabilities[index].quantity = quantity
                 this.form.accrued.work_disabilities[index].payment =  payment
-
                 this.calculateTotal()
-
             },
+
             getPaymentWorkDisability(quantity, is_complete = false){
 
                 let payment = is_complete ? (this.getPaymentPerDay() * quantity) : (this.getPaymentPerDay() * this.percentageToFactor(this.percentageWorkDisability) * quantity)
 
                 return this.roundNumber(payment)
             },
-            clickAddWorkDisability(){
 
+            clickAddWorkDisability(){
                 const salary_validation = this.salaryValidation()
                 if(!salary_validation.success) return this.$message.warning(salary_validation.message)
-
                 const quantity = 1
                 const start_date = moment().format('YYYY-MM-DD')
                 const end_date = moment().add(quantity, 'days').format('YYYY-MM-DD')
                 const type = (this.type_disabilities.length > 0) ? this.type_disabilities[0].id : null
                 let payment = this.getPaymentWorkDisability(quantity)
-
                 this.form.accrued.work_disabilities.push({
                     is_complete :  false,
                     start_date :  start_date,
@@ -2119,10 +2102,9 @@
                         end_date
                     ]
                 })
-
                 this.calculateTotal()
-
             },
+
             clickCancelWorkDisability(index){
                 this.form.accrued.work_disabilities.splice(index, 1)
                 this.calculateTotal()
@@ -2130,52 +2112,45 @@
             // incapacidades
 
             clickAddPaymentDate(param_payment_date = null) {
-
                 let payment_date = param_payment_date ? param_payment_date : moment().format('YYYY-MM-DD')
-
                 this.form.payment_dates.push({
                     payment_date: payment_date
                 })
-
             },
+
             clickCancelPaymentDate(index) {
                 this.form.payment_dates.splice(index, 1)
             },
-            events(){
 
+            events(){
                 this.$eventHub.$on('reloadDataWorkers', (worker_id) => {
                     this.reloadDataWorkers(worker_id)
                 })
-
             },
+
             async getTables(){
-
                 const url = (this.isAdjustNote) ? `/${this.resource_adjust_note}/tables/${this.type_payroll_adjust_note_id}` : `/${this.resource}/tables`
-
                 this.loading = true
-
                 await this.$http.get(`${url}`)
                     .then(response => {
-
                         this.all_workers = response.data.workers
                         this.workers = response.data.workers
-
                         this.payroll_periods = response.data.payroll_periods
                         this.payment_methods = response.data.payment_methods
                         this.type_law_deductions = response.data.type_law_deductions
                         // this.type_documents = response.data.type_documents
                         this.resolutions = response.data.resolutions
+                        this.ni_resolution_id = response.data.ni_resolution_id
                         this.type_disabilities = response.data.type_disabilities
                         this.advanced_configuration = response.data.advanced_configuration
-
                         this.filterWorkers();
                     })
                     .then(()=> {
                         this.loading = false
                     })
             },
-            changeResolution(){
 
+            changeResolution(){
                 let resolution = _.find(this.resolutions, {id : this.form.type_document_id})
                 if(resolution) {
                     this.form.prefix = resolution.prefix

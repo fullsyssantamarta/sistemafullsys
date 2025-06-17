@@ -57,6 +57,7 @@ class DocumentPayrollController extends Controller
 
     public function tables()
     {
+        $ni_resolution_id = auth()->user()->ni_resolution_id;
         return [
             'workers' => $this->table('workers'),
             'payroll_periods' => PayrollPeriod::get(),
@@ -64,8 +65,8 @@ class DocumentPayrollController extends Controller
             'payment_methods' => PaymentMethod::get(),
             'type_law_deductions' => TypeLawDeductions::whereTypeLawDeductionsWorker()->get(),
             'advanced_configuration' => AdvancedConfiguration::first(),
-            // 'type_documents' => TypeDocument::get(),
-            'resolutions' => TypeDocument::select('id','prefix', 'resolution_number')->where('code', 9)->get()
+            'resolutions' => TypeDocument::select('id','prefix', 'resolution_number')->where('code', 9)->get(),
+            'ni_resolution_id' => $ni_resolution_id,
         ];
     }
 
