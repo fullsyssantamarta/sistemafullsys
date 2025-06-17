@@ -56,6 +56,15 @@
                             <small class="form-control-feedback" v-if="errors.type" v-text="errors.type[0]"></small>
                         </div>
                     </div>
+                    <div class="col-md-4" v-if="typeUser != 'integrator'">
+                        <div class="form-group" :class="{'has-danger': errors.fe_resolution_id}">
+                            <label class="control-label">Resolucion FE</label>
+                            <el-select v-model="form.fe_resolution_id" clearable>
+                                <el-option v-for="option in fe_resolutions" :key="option.id" :value="option.id" :label="option.description"></el-option>
+                            </el-select>
+                            <small class="form-control-feedback" v-if="errors.fe_resolution_id" v-text="errors.fe_resolution_id[0]"></small>
+                        </div>
+                    </div>
                     <div class="col-md-12" v-if="typeUser != 'integrator'">
                         <div class="form-group">
                             <label class="control-label">Módulos</label>
@@ -84,11 +93,9 @@
             </div>
         </form>
     </el-dialog>
-
 </template>
 
 <script>
-
     import {EventBus} from '../../../helpers/bus'
 
     export default {
@@ -101,20 +108,24 @@
                 errors: {},
                 form: {},
                 modules: [],
+                fe_resolutions: [],
                 establishments: [],
                 types: [],
                 show_levels:false
             }
         },
+
         async created() {
             await this.$http.get(`/${this.resource}/tables`)
                 .then(response => {
                     this.modules = response.data.modules
                     this.establishments = response.data.establishments
                     this.types = response.data.types
+                    this.fe_resolutions = response.data.fe_resolutions
                 })
             await this.initForm()
         },
+
         methods: {
             initForm() {
                 this.errors = {}
@@ -128,6 +139,7 @@
                     password_confirmation: null,
                     locked:false,
                     type:null,
+                    fe_resolution_id: null,
                     modules: [],
                     levels: [],
                 }
@@ -139,29 +151,26 @@
                         checked: false
                     })
                 })
-
                 this.show_levels = false
-
                 // console.log(this.form.levels)
             },
+
             create() {
-                this.titleDialog = (this.recordId)? 'Editar Usuario':'Nuevo Usuario'
+                this.titleDialog = (this.recordId) ? 'Editar Usuario' : 'Nuevo Usuario'
                 if (this.recordId) {
                     this.$http.get(`/${this.resource}/record/${this.recordId}`)
                         .then(response => {
                             this.form = response.data.data
-                            this.show_levels = (this.form.levels.length > 0) ? true:false
+                            this.show_levels = (this.form.levels.length > 0) ? true : false
                         })
                 }
             },
+
             async changeModule(module_id, checked){
-
                 if(module_id == 1){
-
                     if(checked){
                         // console.log(mdl)
                         if(this.form.levels.length == 0 ){
-
                             let mdl = await _.find(this.modules, {'id':module_id})
                             mdl.levels.forEach(level => {
                                 this.form.levels.push({
@@ -173,23 +182,33 @@
                                 })
                             })
                             this.show_levels = true
-
                         }
                     }else{
                         this.form.levels = []
                         this.show_levels = false
                     }
-
                 }
             },
+
             submit() {
                 // console.log(this.form)
                 this.loading_submit = true
+                // Buscar la resolución seleccionada
+                const selectedResolution = this.fe_resolutions.find(
+                    r => r.id === this.form.fe_resolution_id
+                );
+                // Validar si está vencida
+                if (selectedResolution && selectedResolution.vencida) {
+                    this.$message.warning('No puedes seleccionar una resolución vencida.');
+                    this.loading_submit = false;
+                    return;
+                }
                 this.$http.post(`/${this.resource}`, this.form)
                     .then(response => {
                         if (response.data.success) {
                             this.form.password = null
                             this.form.password_confirmation = null
+                            this.form.fe_resolution_id = null
                             this.$message.success(response.data.message)
                             this.$eventHub.$emit('reloadData')
                             this.close()
@@ -209,6 +228,7 @@
                         this.loading_submit = false
                     })
             },
+
             close() {
                 this.$emit('update:showDialog', false)
                 this.initForm()

@@ -1965,8 +1965,9 @@ class DocumentController extends Controller
         $type_invoices = TypeInvoice::all();
         $currencies = Currency::all();
         $taxes = $this->table('taxes');
-        $resolutions = TypeDocument::select('id','prefix', 'code', 'resolution_number', 'from', 'to', 'description', 'resolution_date_end')->whereNotNull('resolution_number')->whereIn('code', [1,2,3])->where('resolution_date_end', '>', Carbon::now())->get();
-        return compact('customers','payment_methods','payment_forms','type_invoices','currencies', 'taxes', 'type_documents', 'resolutions');
+        $resolutions = TypeDocument::select('id', 'prefix', 'code', 'resolution_number', 'from', 'to', 'description', 'resolution_date_end')->whereNotNull('resolution_number')->whereIn('code', [1, 2, 3])->where('resolution_date_end', '>', Carbon::now())->get();
+        $fe_resolution_id = auth()->user()->fe_resolution_id;
+        return compact('customers','payment_methods','payment_forms','type_invoices','currencies', 'taxes', 'type_documents', 'resolutions', 'fe_resolution_id');
     }
 
     public function item_tables()

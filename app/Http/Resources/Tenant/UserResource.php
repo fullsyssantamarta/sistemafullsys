@@ -21,12 +21,10 @@ class UserResource extends JsonResource
             }])
             ->orderBy('description')
             ->get();
-
         $modules_in_user = $this->modules->pluck('id')->toArray();
         $levels_in_user = $this->levels->pluck('id')->toArray();
         $modules = [];
         $levels = [];
-
         foreach ($all_modules as $module)
         {
             $modules[] = [
@@ -57,7 +55,7 @@ class UserResource extends JsonResource
             'modules' => $modules,
             'levels' => $levels,
             'locked' => (bool) $this->locked,
-
+            'fe_resolution_id' => $this->fe_resolution_id,
         ];
     }
 }

@@ -8,7 +8,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Modules\LevelAccess\Models\ModuleLevel;
 use Modules\Sale\Models\UserCommission;
-
+use Modules\Factcolombia1\Models\Tenant\TypeDocument;
 
 class User extends Authenticatable
 {
@@ -21,7 +21,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'establishment_id','type','locked', 'identity_document_type_id', 'number', 'address', 'telephone'
+        'name', 'email', 'password', 'establishment_id', 'type', 'locked', 'identity_document_type_id', 'number', 'address', 'telephone', 'fe_resolution_id', 'phone', 'fe_resolution', 'fe_resolution_date', 'fe_resolution_number', 'fe_resolution_prefix', 'fe_resolution_from', 'fe_resolution_to', 'fe_resolution_active', 'fe_resolution_status', 'fe_resolution_type',
     ];
 
     /**
@@ -41,6 +41,11 @@ class User extends Authenticatable
     public function levels()
     {
         return $this->belongsToMany(ModuleLevel::class);
+    }
+
+    public function fe_resolution()
+    {
+        return $this->belongsTo(TypeDocument::class, 'fe_resolution_id');
     }
 
     public function authorizeModules($modules)
@@ -76,8 +81,6 @@ class User extends Authenticatable
         return false;
     }
 
-
-
     public function getModule()
     {
         $module = $this->modules()->orderBy('id')->first();
@@ -96,7 +99,6 @@ class User extends Authenticatable
         return null;
     }
 
-
     public function searchModule($module)
     {
         if ($this->modules()->where('value', $module)->first()) {
@@ -105,12 +107,10 @@ class User extends Authenticatable
         return false;
     }
 
-
     public function establishment()
     {
         return $this->belongsTo(Establishment::class);
     }
-
 
     public function documents()
     {
@@ -127,8 +127,6 @@ class User extends Authenticatable
         $user = auth()->user();
         return ($user->type == 'seller') ? $query->where('id', $user->id) : null;
     }
-
-
 
     public function getLevel()
     {
@@ -148,10 +146,9 @@ class User extends Authenticatable
         return null;
     }
 
-
-    public function searchLevel($Level)
+    public function searchLevel($level)
     {
-        if ($this->levels()->where('value', $Level)->first()) {
+        if ($this->levels()->where('value', $level)->first()) {
             return true;
         }
         return false;
@@ -185,12 +182,10 @@ class User extends Authenticatable
         return [1,2,4,5,6,7,8,10,12,13,20,21];
     }
 
-
     public function scopeFilterWithOutRelations($query)
     {
         return $query->withOut(['establishment']);
     }
-
 
     /**
      *
@@ -205,6 +200,4 @@ class User extends Authenticatable
                     ->whereIn('type', ['admin', 'seller'])
                     ->get();
     }
-
-
 }

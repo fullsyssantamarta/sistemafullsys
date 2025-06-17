@@ -46,7 +46,7 @@
                                     <label class="control-label">Resolución</label>
                                     <el-select @change="changeResolution" v-model="form.resolution_id"
                                         popper-class="el-select-document_type" dusk="type_invoice_id"
-                                        class="border-left rounded-left border-info">
+                                        class="border-left rounded-left border-info" :disabled="fe_resolution_id !== null">
                                         <el-option
                                             v-for="option in filteredResolutions"
                                             :key="option.id"
@@ -538,6 +538,7 @@ export default {
                 loading_form: false,
                 errors: {format_print: null},
                 form: {},
+                fe_resolution_id: null,
                 type_invoices: [],
                 currencies: [],
                 all_customers: [],
@@ -588,9 +589,9 @@ export default {
                     this.taxes = response.data.taxes
 //                    console.log(this.customers)
                     this.type_invoices = response.data.type_invoices;
-                    if (Array.isArray(response.data.type_documents)) {
-                            this.typeDocuments = response.data.type_documents;
-                        }
+                    if (Array.isArray(response.data.type_documents)){
+                        this.typeDocuments = response.data.type_documents;
+                    }
                     this.currencies = response.data.currencies
                     this.payment_methods = response.data.payment_methods
                     this.payment_forms = response.data.payment_forms
@@ -599,7 +600,7 @@ export default {
                     //his.form.payment_form_id = (this.payment_forms.length > 0)?this.payment_forms[0].id:null;
                     this.form.payment_method_id = 10;//(this.payment_methods.length > 0)?this.payment_methods[0].id:null;
                     this.resolutions = response.data.resolutions
-                    //ordenar resolicones por cristian
+                    this.fe_resolution_id = response.data.fe_resolution_id
                     // Ordenar por 'id' de forma descendente
                     this.resolutions.sort((a, b) => b.id - a.id);
                     this.form.payment_form_id = 1
@@ -611,9 +612,8 @@ export default {
                     // this.changeCurrencyType()
                     this.load_duplicate_invoice();
                 })
-
-            this.loading_form = true
-            this.$eventHub.$on('reloadDataPersons', (customer_id) => {
+                this.loading_form = true
+                this.$eventHub.$on('reloadDataPersons', (customer_id) => {
                 this.reloadDataCustomers(customer_id)
             })
             this.$eventHub.$on('initInputPerson', () => {
@@ -621,14 +621,16 @@ export default {
             })
 //            console.log(this.customers)
             await this.generatedFromExternalDocument()
-
             // Realiza la petición a la configuración avanzada
             const response = await this.$http.get('/co-advanced-configuration/record');
             // Guarda la configuración en la propiedad local
             this.localConfiguration = response.data.data;
+            if(this.fe_resolution_id){
+                this.form.resolution_id = this.fe_resolution_id
+            }
         },
-        computed: {
 
+        computed: {
             // Filtra las resoluciones para incluir únicamente aquellas que cumplan la condición
             filteredResolutions() {
                 return this.resolutions.filter(option => this.shouldShowResolution(option));
@@ -794,6 +796,7 @@ export default {
 
                 return new_item
             },
+
             calculate_time_days_credit() {
                 var f1 = moment(this.form.date_issue)
                 var f2 = moment(this.form.date_expiration)
@@ -809,6 +812,7 @@ export default {
                     else
                         this.form.payment_form_id = 2
             },
+
             async fetchCorrelative() {
                 const typeService = 1; // Por ejemplo: Id del tipo de documento, como factura de venta
                 if (this.currentPrefix) {
@@ -824,6 +828,7 @@ export default {
                     }
                 }
             },
+
             async changeResolution() {
                 if (typeof this.invoice !== 'undefined') {
                     this.form.type_document_id = this.invoice.type_document_id;

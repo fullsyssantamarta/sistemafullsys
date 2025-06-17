@@ -9,6 +9,7 @@ use App\Models\Tenant\Module;
 use App\Models\Tenant\User;
 use App\Http\Resources\Tenant\UserCollection;
 use Modules\LevelAccess\Models\ModuleLevel;
+use Modules\Factcolombia1\Models\Tenant\TypeDocument;
 
 class UserController extends Controller
 {
@@ -17,19 +18,16 @@ class UserController extends Controller
         return view('tenant.users.index');
     }
 
-    public function record(User $user = null) 
+    public function record(User $user = null)
     {
         if (!$user) {
             $user = auth()->user(); // Devuelve el usuario autenticado si no se proporciona un usuario específico
         }
         return new UserResource($user);
-    }    
-    
-    
+    }
 
     public function tables()
     {
-
         $modules = Module::whereIn('id', auth()->user()->getAllowedModulesForSystem())
             ->with(['levels' => function($query){
                 $query->whereIn('id', [1,2,5,7,8,9,10]);
@@ -39,14 +37,17 @@ class UserController extends Controller
 
         $establishments = Establishment::orderBy('description')->get();
         $types = [['type' => 'admin', 'description'=>'Administrador'], ['type' => 'seller', 'description'=>'Vendedor']];
-
-        return compact('modules', 'establishments','types');
+        $fe_resolutions = TypeDocument::where('code', 1)->where('id', '!=', 1)->selectRaw("*, CONCAT(prefix, ' / ', resolution_number, ' / ', `from`, ' / ', `to`, ' / ', resolution_date_end) as description")->orderBy('prefix')->get();
+        $today = date('Y-m-d');
+        $fe_resolutions->each(function($item) use ($today) {
+            $item->vencida = ($item->resolution_date_end < $today);
+        });
+        return compact('modules', 'establishments','types', 'fe_resolutions');
     }
 
     public function store(UserRequest $request)
     {
         $id = $request->input('id');
-
         if(!$id)  //VALIDAR EMAIL DISPONIBLE
         {
             $verify = User::where('email', $request->input('email'))->first();
@@ -57,13 +58,12 @@ class UserController extends Controller
                     'message' => 'Email no disponible. Ingrese otro Email'
                 ];
             }
-
         }
-
         $user = User::firstOrNew(['id' => $id]);
         $user->name = $request->input('name');
         $user->email = $request->input('email');
         $user->establishment_id = $request->input('establishment_id');
+        $user->fe_resolution_id = $request->input('fe_resolution_id');
         $user->type = $request->input('type');
         if (!$id) {
             $user->api_token = str_random(50);
@@ -75,34 +75,27 @@ class UserController extends Controller
             }
         }
         $user->save();
-
         $modules = collect($request->input('modules'))->where('checked', true)->pluck('id')->toArray();
         $user->modules()->sync($modules);
-
-
         $levels = collect($request->input('levels'))->where('checked', true)->pluck('id')->toArray();
         $user->levels()->sync($levels);
-
         // dd($user->getModules()->transform(function($row, $key) {
         //     return [
         //         'id' => $row->id,
         //         'privot_id' => $row->pivot,
         //         'privot_user' => $row->pivot->user_id,
         //         'privot_module' => $row->pivot->module_id,
-
         //     ];
         // }));
-
         return [
             'success' => true,
-            'message' => ($id)?'Usuario actualizado':'Usuario registrado'
+            'message' => ($id) ? 'Usuario actualizado' : 'Usuario registrado'
         ];
     }
 
     public function records()
     {
         $records = User::all();
-
         return new UserCollection($records);
     }
 
@@ -116,7 +109,6 @@ class UserController extends Controller
             'message' => 'Usuario eliminado con éxito'
         ];
     }
-
 
     /**
      *
