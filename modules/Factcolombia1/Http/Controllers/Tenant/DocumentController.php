@@ -1393,31 +1393,28 @@ class DocumentController extends Controller
         try {
             $note_service = $request->note_service;
             $url_name_note = '';
-            $type_document_service = $note_service['type_document_id'];
+            $resolution = TypeDocument::where('id', $request['type_document_id'])->first();
+            $type_document_service = $resolution['code'];
             if( $type_document_service == 4){
                 $url_name_note = 'credit-note';
             }
             elseif($type_document_service == 5){
                 $url_name_note = 'debit-note';
             }
-
-            $this->company = Company::query()
-                ->with('country', 'version_ubl', 'type_identity_document')
-                ->firstOrFail();
-
+            $note_service['type_document_id'] = $type_document_service;
+            $this->company = Company::query()->with('country', 'version_ubl', 'type_identity_document')->firstOrFail();
             if (($this->company->limit_documents != 0) && (Document::count() >= $this->company->limit_documents))
                 return [
                         'success' => false,
                         'message' => '"Has excedido el límite de documentos de tu cuenta."'
                 ];
-
-                // $correlative_api = $this->getCorrelativeInvoice($type_document_service);
+            // $correlative_api = $this->getCorrelativeInvoice($type_document_service);
             $company = ServiceTenantCompany::firstOrFail();
-
             //si la empresa esta en habilitacion, envio el parametro ignore_state_document_id en true
             //  para buscar el correlativo en api sin filtrar por el campo state_document_id=1
             $ignore_state_document_id = ($company->type_environment_id === 2);
-            $correlative_api = $this->getCorrelativeInvoice($type_document_service, null, $ignore_state_document_id);
+//            \Log::debug($request->all());
+            $correlative_api = $this->getCorrelativeInvoice($type_document_service, $resolution['prefix'], $ignore_state_document_id);
             // dd($correlative_api);
 
             if(!is_numeric($correlative_api)){
@@ -1428,12 +1425,12 @@ class DocumentController extends Controller
             }
 
             $note_service['number'] = $correlative_api;
+            $note_service['prefix'] = $resolution['prefix'];
+            $note_service['resolution_number'] = $resolution['resolution_number'];
             $note_service['date'] = date('Y-m-d', strtotime($request->date_issue));
             $note_service['time'] = date('H:i:s');
-
             $datoscompany = Company::with('type_regime', 'type_identity_document')->firstOrFail();
             // $company = ServiceTenantCompany::firstOrFail();
-
             $note_concept_id = NoteConcept::query()->where('id', $request->note_concept_id)->get();
             $note_service['discrepancyresponsecode'] = $note_concept_id[0]->code;
             $note_service['ivaresponsable'] = $datoscompany->type_regime->name;
@@ -1442,7 +1439,6 @@ class DocumentController extends Controller
             $note_service['actividadeconomica'] = $datoscompany->economic_activity_code;
             $note_service['notes'] = $request->observation;
             $sucursal = \App\Models\Tenant\Establishment::where('id', auth()->user()->establishment_id)->first();
-
             if(file_exists(storage_path('sendmail.api')))
                 $note_service['sendmail'] = true;
             $note_service['ivaresponsable'] = $datoscompany->type_regime->name;
@@ -1454,7 +1450,6 @@ class DocumentController extends Controller
             $note_service['establishment_email'] = $sucursal->email;
             $note_service['customer']['dv'] = $this->validarDigVerifDIAN($note_service['customer']['identification_number']);
             $note_service['foot_note'] = "Modo de operación: Software Propio - by ".env('APP_NAME', 'TORRE SOFTWARE');
-
             $id_test = $company->test_id;
             $base_url = config('tenant.service_fact');
             if($company->type_environment_id == 2 && $company->test_id != 'no_test_set_id')
@@ -1463,6 +1458,12 @@ class DocumentController extends Controller
                 $ch = curl_init("{$base_url}ubl2.1/{$url_name_note}");
             $data_document = json_encode($note_service);
 
+//\Log::debug("{$base_url}ubl2.1/{$url_name_note}");
+//\Log::debug($company->api_token);
+//\Log::debug($correlative_api);
+//\Log::debug($data_document);
+//            return $data_document;
+//            return "";
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
             curl_setopt($ch, CURLOPT_POSTFIELDS,($data_document));
@@ -1475,11 +1476,6 @@ class DocumentController extends Controller
             ));
             $response = curl_exec($ch);
             curl_close($ch);
-//\Log::debug("{$base_url}ubl2.1/invoice");
-//\Log::debug($company->api_token);
-//\Log::debug($correlative_api);
-//\Log::debug($data_document);
-//            return $data_document;
 //\Log::debug($response);
 //return "";
 
@@ -1593,8 +1589,6 @@ class DocumentController extends Controller
                 ->firstOrFail();
 
             if (($this->company->limit_documents != 0) && (Document::count() >= $this->company->limit_documents)) throw new \Exception("Has excedido el límite de documentos de tu cuenta.");
-
-
             $this->document = DocumentHelper::createDocument($request, $nextConsecutive, $correlative_api, $this->company, $response, $response_status, $company->type_environment_id);
             $this->document->update([
                 'xml' => $this->getFileName(),
@@ -1959,6 +1953,7 @@ class DocumentController extends Controller
                                     ->whereBetween('number', [$typeDocument->from, $typeDocument->to])
                                     ->max('number') ?? $typeDocument->from));
                                 $typeDocument->alert_date = ($typeDocument->resolution_date_end == null) ? false : Carbon::parse($typeDocument->resolution_date_end)->subMonth(1)->lt(Carbon::now());
+                                $typeDocument->name_description = "{$typeDocument->name} / {$typeDocument->prefix} / {$typeDocument->resolution_number} / {$typeDocument->from} / {$typeDocument->to} / {$typeDocument->resolution_date_end}";
                             });
         $payment_methods = PaymentMethod::all();
         $payment_forms = PaymentForm::all();

@@ -146,9 +146,10 @@ class ConfigurationController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function concepts(TypeDocument $typeDocument) {
-        return NoteConcept::query()
-            ->where('type_document_id', $typeDocument->id)
-            ->get();
+        if($typeDocument->code == "4")
+            return NoteConcept::query()->where('type_document_id', 3)->get();
+        else
+            return NoteConcept::query()->where('type_document_id', 2)->get();
     }
 
     /**
@@ -952,9 +953,7 @@ class ConfigurationController extends Controller
 
     public function storeResolutionNote()
     {
-
         $response = [];
-
         DB::connection('tenant')->beginTransaction();
         try {
             $company = ServiceCompany::firstOrFail();
@@ -966,6 +965,7 @@ class ConfigurationController extends Controller
                 "from"=> 1,
                 "to"=> 99999999,
                 "prefix"=> "NC",
+                "resolution" => "12345",
             ];
 
             $data_resolution = json_encode($data_c);
@@ -981,6 +981,7 @@ class ConfigurationController extends Controller
             ));
 
             $response_credit = curl_exec($ch5);
+//            \Log::debug($response_credit);
             $response["credit"] = $response_credit;
             curl_close($ch5);
             $company->response_resolution_credit = $response_credit;
@@ -991,6 +992,7 @@ class ConfigurationController extends Controller
                 'resolution_date' => NULL,
                 'resolution_date_end' => NULL,
                 'prefix' => "NC",
+                "resolution_number" => "12345",
                 'from' => 1,
                 'to' => 99999999
             ]);
@@ -1002,6 +1004,7 @@ class ConfigurationController extends Controller
                 "from"=> 1,
                 "to"=> 99999999,
                 "prefix"=> "ND",
+                "resolution" => "12345",
             ];
             $data_resolution_de = json_encode($data_d);
             curl_setopt($ch4, CURLOPT_RETURNTRANSFER, true);
@@ -1021,6 +1024,7 @@ class ConfigurationController extends Controller
                 'resolution_date' => NULL,
                 'resolution_date_end' => NULL,
                 'prefix' => "ND",
+                "resolution_number" => "12345",
                 'from' => 1,
                 'to' => 99999999
             ]);

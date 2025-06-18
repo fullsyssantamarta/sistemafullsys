@@ -12,13 +12,14 @@
                         <div class="row mt-4">
                             <div class="col-md-4 col-lg-4 pb-2">
                                 <div class="form-group" :class="{'has-danger': errors.type_document_id}">
-                                    <label class="control-label">Tipo de nota</label>
+                                    <label class="control-label">Tipo de nota/Resolucion</label>
                                     <el-select v-model="form.type_document_id" filterable @change="changeDocumentType" popper-class="el-select-document_type" dusk="type_document_id" class="border-left rounded-left border-info">
-                                        <el-option v-for="option in type_documents" :key="option.id" :value="option.id" :label="option.name"></el-option>
+                                        <el-option v-for="option in type_documents" :key="option.id" :value="option.id" :label="option.name_description"></el-option>
                                     </el-select>
                                     <small class="form-control-feedback" v-if="errors.type_document_id" v-text="errors.type_document_id[0]"></small>
                                 </div>
                             </div>
+
                             <div class="col-md-4 col-lg-4 pb-2">
                                 <div class="form-group" :class="{'has-danger': errors.note_concept_id}">
                                     <label class="control-label">Concepto</label>
@@ -462,10 +463,10 @@
 
             prepareItems(items){
                 return items.map(row => {
-                    console.log(row.item)
+//                    console.log(row.item)
                     row.item = this.prepareIndividualItem(row)
 //                    row.price = row.unit_price
-                    console.log(row.item)
+//                    console.log(row.item)
                     row.price = row.item.price ? row.item.price : row.item.price_amount
                     row.id = row.item.id
                     return row
@@ -838,21 +839,23 @@
                 });
             },
 
-            getTypeDocumentService()
+/*            getTypeDocumentService()
             {
                 let id = this.form.type_document_id
                 let id_service = 0
-
-                if(id == 2)
-                {
+                if(id == 2){
                     id_service = 5
                 }
-                else if(id == 3)
-                {
-                    id_service = 4
-                }
-
+                else
+                    if(id == 3){
+                        id_service = 4
+                    }
                 return id_service
+            },      */
+
+            getTypeDocumentService() {
+                const doc = this.type_documents.find(d => d.id === this.form.type_document_id);
+                return doc ? doc.code : 0;
             },
 
             async generateNoteService() {
