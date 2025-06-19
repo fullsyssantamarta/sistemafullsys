@@ -37,16 +37,24 @@ class UserController extends Controller
 
         $establishments = Establishment::orderBy('description')->get();
         $types = [['type' => 'admin', 'description'=>'Administrador'], ['type' => 'seller', 'description'=>'Vendedor']];
-        $fe_resolutions = TypeDocument::where('code', 1)->where('id', '!=', 1)->selectRaw("*, CONCAT(prefix, ' / ', resolution_number, ' / ', `from`, ' / ', `to`, ' / ', resolution_date_end) as description")->orderBy('prefix')->get();
-        $ni_resolutions = TypeDocument::where('code', 9)->selectRaw("*, CONCAT(prefix, ' / ', resolution_number, ' / ', `from`, ' / ', `to`, ' / ', resolution_date_end) as description")->orderBy('prefix')->get();
+        $fe_resolutions = TypeDocument::where('code', 1)->where('id', '!=', 1)->selectRaw("*, CONCAT(COALESCE(prefix, ''), ' / ', COALESCE(resolution_number, ''), ' / ', COALESCE(`from`, ''), ' / ', COALESCE(`to`, ''), ' / ', COALESCE(resolution_date_end, '')) as description")->orderBy('prefix')->get();
+        $nc_resolutions = TypeDocument::where('code', 4)->selectRaw("*, CONCAT(COALESCE(prefix, ''), ' / ', COALESCE(resolution_number, ''), ' / ', COALESCE(`from`, ''), ' / ', COALESCE(`to`, ''), ' / ', COALESCE(resolution_date_end, '')) as description")->orderBy('prefix')->get();
+        $nd_resolutions = TypeDocument::where('code', 5)->selectRaw("*, CONCAT(COALESCE(prefix, ''), ' / ', COALESCE(resolution_number, ''), ' / ', COALESCE(`from`, ''), ' / ', COALESCE(`to`, ''), ' / ', COALESCE(resolution_date_end, '')) as description")->orderBy('prefix')->get();
+        $ni_resolutions = TypeDocument::where('code', 9)->selectRaw("*, CONCAT(COALESCE(prefix, ''), ' / ', COALESCE(resolution_number, ''), ' / ', COALESCE(`from`, ''), ' / ', COALESCE(`to`, ''), ' / ', COALESCE(resolution_date_end, '')) as description")->orderBy('prefix')->get();
         $today = date('Y-m-d');
         $fe_resolutions->each(function($item) use ($today) {
-            $item->vencida = ($item->resolution_date_end < $today);
+            $item->vencida = ($item->resolution_date_end === null) ? false : ($item->resolution_date_end < $today);
+        });
+        $nc_resolutions->each(function($item) use ($today) {
+            $item->vencida = ($item->resolution_date_end === null) ? false : ($item->resolution_date_end < $today);
+        });
+        $nd_resolutions->each(function($item) use ($today) {
+            $item->vencida = ($item->resolution_date_end === null) ? false : ($item->resolution_date_end < $today);
         });
         $ni_resolutions->each(function($item) use ($today) {
-            $item->vencida = ($item->resolution_date_end < $today);
+            $item->vencida = ($item->resolution_date_end === null) ? false : ($item->resolution_date_end < $today);
         });
-        return compact('modules', 'establishments','types', 'fe_resolutions', 'ni_resolutions');
+        return compact('modules', 'establishments','types', 'fe_resolutions', 'nc_resolutions', 'nd_resolutions', 'ni_resolutions');
     }
 
     public function store(UserRequest $request)
@@ -68,6 +76,8 @@ class UserController extends Controller
         $user->email = $request->input('email');
         $user->establishment_id = $request->input('establishment_id');
         $user->fe_resolution_id = $request->input('fe_resolution_id');
+        $user->nc_resolution_id = $request->input('nc_resolution_id');
+        $user->nd_resolution_id = $request->input('nd_resolution_id');
         $user->ni_resolution_id = $request->input('ni_resolution_id');
         $user->type = $request->input('type');
         if (!$id) {

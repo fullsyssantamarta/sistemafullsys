@@ -17,6 +17,8 @@ if($current_hostname) {
                 Route::get('', 'Tenant\DocumentController@index')->name('tenant.co-documents.index');
                 Route::get('records', 'Tenant\DocumentController@records');
                 Route::get('note/{id}', 'Tenant\DocumentController@note');
+                Route::get('note/credito/{id}', 'Tenant\DocumentController@credit_note');
+                Route::get('note/debito/{id}', 'Tenant\DocumentController@debit_note');
                 Route::get('duplicate-invoice/{id}', 'Tenant\DocumentController@duplicate_invoice');
                 Route::get('edit-invoice/{id}', 'Tenant\DocumentController@edit_invoice');
                 Route::get('record/{id}', 'Tenant\DocumentController@record');

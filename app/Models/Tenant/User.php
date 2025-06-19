@@ -21,7 +21,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'establishment_id', 'type', 'locked', 'identity_document_type_id', 'number', 'address', 'telephone', 'fe_resolution_id', 'ni_resolution_id',
+        'name', 'email', 'password', 'establishment_id', 'type', 'locked', 'identity_document_type_id', 'number', 'address', 'telephone', 'fe_resolution_id', 'nc_resolution_id', 'nd_resolution_id', 'ni_resolution_id',
     ];
 
     /**
@@ -46,6 +46,16 @@ class User extends Authenticatable
     public function fe_resolution()
     {
         return $this->belongsTo(TypeDocument::class, 'fe_resolution_id');
+    }
+
+    public function nc_resolution()
+    {
+        return $this->belongsTo(TypeDocument::class, 'nc_resolution_id');
+    }
+
+    public function nd_resolution()
+    {
+        return $this->belongsTo(TypeDocument::class, 'nd_resolution_id');
     }
 
     public function ni_resolution()

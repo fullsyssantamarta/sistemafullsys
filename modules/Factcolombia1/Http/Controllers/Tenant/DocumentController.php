@@ -145,12 +145,6 @@ class DocumentController extends Controller
         return new DocumentCollection($records->paginate(config('tenant.items_per_page')));
     }
 
-
-
-
-
-
-
     public function record($id)
     {
         $record = new DocumentResource(Document::findOrFail($id));
@@ -161,7 +155,8 @@ class DocumentController extends Controller
     public function create_unreferenced_note() {
         $note = null;
         $invoice = null;
-        return view('factcolombia1::document.tenant.note', compact('note', 'invoice'));
+        $command = null;
+        return view('factcolombia1::document.tenant.note', compact('note', 'invoice', 'command'));
     }
 
     public function create() {
@@ -191,11 +186,24 @@ class DocumentController extends Controller
         return view('factcolombia1::document.tenant.create_aiu');
     }
 
-
-    public function note($id) {
+    public function credit_note($id){
         $note = Document::with(['items'])->findOrFail($id);
         $invoice = Document::with(['items'])->findOrFail($id);
-        return view('factcolombia1::document.tenant.note', compact('note', 'invoice'));
+        $command = "credito";
+        return view('factcolombia1::document.tenant.note', compact('note', 'invoice', 'command'));
+    }
+
+    public function debit_note($id){
+        $note = Document::with(['items'])->findOrFail($id);
+        $invoice = Document::with(['items'])->findOrFail($id);
+        $command = "debito";
+        return view('factcolombia1::document.tenant.note', compact('note', 'invoice', 'command'));
+    }
+
+    public function note($id, $command = null) {
+        $note = Document::with(['items'])->findOrFail($id);
+        $invoice = Document::with(['items'])->findOrFail($id);
+        return view('factcolombia1::document.tenant.note', compact('note', 'invoice', 'command'));
     }
 
     public function duplicate_invoice($id){
@@ -1962,7 +1970,9 @@ class DocumentController extends Controller
         $taxes = $this->table('taxes');
         $resolutions = TypeDocument::select('id', 'prefix', 'code', 'resolution_number', 'from', 'to', 'description', 'resolution_date_end')->whereNotNull('resolution_number')->whereIn('code', [1, 2, 3])->where('resolution_date_end', '>', Carbon::now())->get();
         $fe_resolution_id = auth()->user()->fe_resolution_id;
-        return compact('customers','payment_methods','payment_forms','type_invoices','currencies', 'taxes', 'type_documents', 'resolutions', 'fe_resolution_id');
+        $nc_resolution_id = auth()->user()->nc_resolution_id;
+        $nd_resolution_id = auth()->user()->nd_resolution_id;
+        return compact('customers','payment_methods','payment_forms','type_invoices','currencies', 'taxes', 'type_documents', 'resolutions', 'fe_resolution_id', 'nc_resolution_id', 'nd_resolution_id');
     }
 
     public function item_tables()

@@ -56,6 +56,8 @@ class UserResource extends JsonResource
             'levels' => $levels,
             'locked' => (bool) $this->locked,
             'fe_resolution_id' => $this->fe_resolution_id,
+            'nc_resolution_id' => $this->nc_resolution_id,
+            'nd_resolution_id' => $this->nd_resolution_id,
             'ni_resolution_id' => $this->ni_resolution_id,
         ];
     }

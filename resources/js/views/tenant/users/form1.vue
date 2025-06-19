@@ -56,7 +56,7 @@
                             <small class="form-control-feedback" v-if="errors.type" v-text="errors.type[0]"></small>
                         </div>
                     </div>
-                    <div class="col-md-4" v-if="typeUser != 'integrator'">
+                    <div class="col-md-4" v-if="typeUser != 'integrator' && form.modules.some(m => m.description === 'Ventas' && m.checked)">
                         <div class="form-group" :class="{'has-danger': errors.fe_resolution_id}">
                             <label class="control-label">Resolucion FE</label>
                             <el-select v-model="form.fe_resolution_id" clearable>
@@ -65,7 +65,25 @@
                             <small class="form-control-feedback" v-if="errors.fe_resolution_id" v-text="errors.fe_resolution_id[0]"></small>
                         </div>
                     </div>
-                    <div class="col-md-4" v-if="typeUser != 'integrator'">
+                    <div class="col-md-4" v-if="typeUser != 'integrator' && form.modules.some(m => m.description === 'Ventas' && m.checked)">
+                        <div class="form-group" :class="{'has-danger': errors.nc_resolution_id}">
+                            <label class="control-label">Resolucion NC</label>
+                            <el-select v-model="form.nc_resolution_id" clearable>
+                                <el-option v-for="option in nc_resolutions" :key="option.id" :value="option.id" :label="option.description"></el-option>
+                            </el-select>
+                            <small class="form-control-feedback" v-if="errors.nc_resolution_id" v-text="errors.nc_resolution_id[0]"></small>
+                        </div>
+                    </div>
+                    <div class="col-md-4" v-if="typeUser != 'integrator' && form.modules.some(m => m.description === 'Ventas' && m.checked)">
+                        <div class="form-group" :class="{'has-danger': errors.nd_resolution_id}">
+                            <label class="control-label">Resolucion ND</label>
+                            <el-select v-model="form.nd_resolution_id" clearable>
+                                <el-option v-for="option in nd_resolutions" :key="option.id" :value="option.id" :label="option.description"></el-option>
+                            </el-select>
+                            <small class="form-control-feedback" v-if="errors.nd_resolution_id" v-text="errors.nd_resolution_id[0]"></small>
+                        </div>
+                    </div>
+                    <div class="col-md-4" v-if="typeUser != 'integrator' && form.modules.some(m => m.description === 'Nóminas' && m.checked)">
                         <div class="form-group" :class="{'has-danger': errors.ni_resolution_id}">
                             <label class="control-label">Resolucion Nomina</label>
                             <el-select v-model="form.ni_resolution_id" clearable>
@@ -115,9 +133,13 @@
                 titleDialog: null,
                 resource: 'users',
                 errors: {},
-                form: {},
+                form: {
+                    modules: [],
+                },
                 modules: [],
                 fe_resolutions: [],
+                nc_resolutions: [],
+                nd_resolutions: [],
                 ni_resolutions: [],
                 establishments: [],
                 types: [],
@@ -132,6 +154,8 @@
                     this.establishments = response.data.establishments
                     this.types = response.data.types
                     this.fe_resolutions = response.data.fe_resolutions
+                    this.nc_resolutions = response.data.nc_resolutions
+                    this.nd_resolutions = response.data.nd_resolutions
                     this.ni_resolutions = response.data.ni_resolutions
                 })
             await this.initForm()
@@ -151,6 +175,8 @@
                     locked:false,
                     type:null,
                     fe_resolution_id: null,
+                    nc_resolution_id: null,
+                    nd_resolution_id: null,
                     ni_resolution_id: null,
                     modules: [],
                     levels: [],
@@ -211,17 +237,37 @@
                 );
                 // Validar si resolucion fe si está vencida
                 if (selectedResolutionfe && selectedResolutionfe.vencida) {
-                    this.$message.warning('No puedes seleccionar una resolución FE vencida.');
+                    this.$message.warning('No puede seleccionar una resolución FE vencida.');
                     this.loading_submit = false;
                     return;
                 }
-                // Buscar la resolución fe seleccionada
+                // Buscar la resolución nc seleccionada
+                const selectedResolutionnc = this.nc_resolutions.find(
+                    r => r.id === this.form.nc_resolution_id
+                );
+                // Validar si resolucion nc si está vencida
+                if (selectedResolutionnc && selectedResolutionnc.vencida) {
+                    this.$message.warning('No puede seleccionar una resolución NC vencida.');
+                    this.loading_submit = false;
+                    return;
+                }
+                // Buscar la resolución nc seleccionada
+                const selectedResolutionnd = this.nd_resolutions.find(
+                    r => r.id === this.form.nd_resolution_id
+                );
+                // Validar si resolucion nc si está vencida
+                if (selectedResolutionnd && selectedResolutionnd.vencida) {
+                    this.$message.warning('No puede seleccionar una resolución ND vencida.');
+                    this.loading_submit = false;
+                    return;
+                }
+                // Buscar la resolución ni seleccionada
                 const selectedResolutionni = this.ni_resolutions.find(
                     r => r.id === this.form.ni_resolution_id
                 );
-                // Validar si resolucion fe si está vencida
+                // Validar si resolucion ni si está vencida
                 if (selectedResolutionni && selectedResolutionni.vencida) {
-                    this.$message.warning('No puedes seleccionar una resolución FE vencida.');
+                    this.$message.warning('No puede seleccionar una resolución Nomina vencida.');
                     this.loading_submit = false;
                     return;
                 }
@@ -231,6 +277,8 @@
                             this.form.password = null
                             this.form.password_confirmation = null
                             this.form.fe_resolution_id = null
+                            this.form.nc_resolution_id = null
+                            this.form.nd_resolution_id = null
                             this.form.ni_resolution_id = null
                             this.$message.success(response.data.message)
                             this.$eventHub.$emit('reloadData')

@@ -15,7 +15,6 @@ class UserCollection extends ResourceCollection
     public function toArray($request)
     {
         return $this->collection->transform(function($row, $key) {
-
             $type = '';
             switch ($row->type) {
                 case 'admin':
@@ -31,7 +30,6 @@ class UserCollection extends ResourceCollection
                     # code...
                     break;
             }
-
             return [
                 'id' => $row->id,
                 'email' => $row->email,
@@ -40,7 +38,10 @@ class UserCollection extends ResourceCollection
                 'establishment_description' => optional($row->establishment)->description,
                 'type' => $type,
                 'locked' => (bool) $row->locked,
-
+                'fe_resolution_id' => $row->fe_resolution_id,
+                'nc_resolution_id' => $row->nc_resolution_id,
+                'nd_resolution_id' => $row->nd_resolution_id,
+                'ni_resolution_id' => $row->ni_resolution_id,
             ];
         });
     }

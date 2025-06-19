@@ -13,7 +13,7 @@
                             <div class="col-md-4 col-lg-4 pb-2">
                                 <div class="form-group" :class="{'has-danger': errors.type_document_id}">
                                     <label class="control-label">Tipo de nota/Resolucion</label>
-                                    <el-select v-model="form.type_document_id" filterable @change="changeDocumentType" popper-class="el-select-document_type" dusk="type_document_id" class="border-left rounded-left border-info">
+                                    <el-select v-model="form.type_document_id" filterable @change="changeDocumentType" popper-class="el-select-document_type" dusk="type_document_id" class="border-left rounded-left border-info" :disabled="(nc_resolution_id !== null && command === 'credito') || (nd_resolution_id !== null && command === 'debito')">
                                         <el-option v-for="option in type_documents" :key="option.id" :value="option.id" :label="option.name_description"></el-option>
                                     </el-select>
                                     <small class="form-control-feedback" v-if="errors.type_document_id" v-text="errors.type_document_id[0]"></small>
@@ -273,7 +273,7 @@
     import DocumentOptions from './partials/options.vue'
 
     export default {
-        props: ['typeUser', 'note', 'invoice'],
+        props: ['typeUser', 'note', 'invoice', 'command'],
         components: {PersonForm, DocumentFormItem, DocumentFormRetention, DocumentOptions},
         // mixins: [Helper],
         data() {
@@ -296,6 +296,8 @@
                 loading_form: false,
                 errors: {},
                 form: {},
+                nc_resolution_id: null,
+                nc_resolution_id: null,
                 note_concepts: [],
                 type_invoices: [],
                 currencies: [],
@@ -318,6 +320,7 @@
         },
 
         async created() {
+//            console.log(this.command)
             await this.initForm()
             await this.$http.get(`/${this.resource}/tables`)
                 .then(response => {
@@ -329,6 +332,8 @@
                     this.currencies = response.data.currencies
                     this.payment_methods = response.data.payment_methods
                     this.payment_forms = response.data.payment_forms
+                    this.nc_resolution_id = response.data.nc_resolution_id
+                    this.nd_resolution_id = response.data.nd_resolution_id
                     this.filterCustomers();
                     this.typeNoteDocuments()
                     this.load_invoice();
@@ -346,6 +351,14 @@
             this.$eventHub.$on('initInputPerson', () => {
                 this.initInputPerson()
             })
+            if(this.nc_resolution_id && this.command === "credito"){
+                this.form.type_document_id = this.nc_resolution_id
+                this.changeDocumentType()
+            }
+            if(this.nd_resolution_id && this.command === "debito"){
+                this.form.type_document_id = this.nd_resolution_id
+                this.changeDocumentType()
+            }
         },
 
         methods: {
@@ -358,7 +371,14 @@
 
             typeNoteDocuments() {
 //                console.log(this.all_type_documents)
-                this.type_documents = this.all_type_documents.filter(row => row.code === "4" || row.code === "5");
+                if(this.command === null)
+                    this.type_documents = this.all_type_documents.filter(row => row.code === "4" || row.code === "5");
+                else
+                    if(this.command === "credito")
+                        this.type_documents = this.all_type_documents.filter(row => row.code === "4");
+                    else
+                        if(this.command === "debito")
+                            this.type_documents = this.all_type_documents.filter(row => row.code === "5");
             },
 
             ratePrefix(tax = null) {
@@ -367,17 +387,13 @@
             },
 
             keyupCustomer(){
-
                 if(this.input_person.number){
-
                     if(!isNaN(parseInt(this.input_person.number))){
-
                         switch (this.input_person.number.length) {
                             case 8:
                                 this.input_person.identity_type_document_id = '1'
                                 this.showDialogNewPerson = true
                                 break;
-
                             case 11:
                                 this.input_person.identity_type_document_id = '6'
                                 this.showDialogNewPerson = true
@@ -390,10 +406,12 @@
                     }
                 }
             },
+
             clickAddItemInvoice(){
                 this.recordItem = null
                 this.showDialogAddItem = true
             },
+
             clickAddRetention(){
                 this.showDialogAddRetention = true
             },
@@ -903,7 +921,7 @@
 
             getCustomer() {
                 let customer = this.customers.find(x => x.id == this.form.customer_id);
-                console.log(customer)
+//                console.log(customer)
                 let obj = {
                     identification_number: customer.number,
                     name: customer.name,

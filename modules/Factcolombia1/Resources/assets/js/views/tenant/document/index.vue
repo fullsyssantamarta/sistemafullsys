@@ -89,8 +89,19 @@
                                 </el-tooltip>
                             </template>
 
-                            <template v-if="(row.type_document_name=='Factura de Venta Nacional' || row.type_document_name=='Factura de Exportación' || row.type_document_name=='Factura de Contingencia' || row.type_document_name=='Factura electrónica de Venta - tipo 04') && (row.state_document_id==5 || row.state_document_id==1)">
+<!--                            <template v-if="(row.type_document_name=='Factura de Venta Nacional' || row.type_document_name=='Factura de Exportación' || row.type_document_name=='Factura de Contingencia' || row.type_document_name=='Factura electrónica de Venta - tipo 04') && (row.state_document_id==5 || row.state_document_id==1)">
                                 <a :href="`/${resource}/note/${row.id}`" class="btn waves-effect waves-light btn-xs btn-warning m-1__2">Nota</a>
+                            </template>     -->
+
+                            <template v-if="(row.type_document_name=='Factura de Venta Nacional' || row.type_document_name=='Factura de Exportación' || row.type_document_name=='Factura de Contingencia' || row.type_document_name=='Factura electrónica de Venta - tipo 04') && (row.state_document_id==5 || row.state_document_id==1)">
+                                <el-dropdown @command="(command) => handleNoteCommand(command, row)">
+                                    <el-button type="warning" size="mini">Nota <i class="el-icon-arrow-down el-icon--right"></i></el-button>
+                                    <el-dropdown-menu slot="dropdown">
+                                        <el-dropdown-item command="elegir">Elegir en el formulario</el-dropdown-item>
+                                        <el-dropdown-item command="credito">Nota crédito</el-dropdown-item>
+                                        <el-dropdown-item command="debito">Nota débito</el-dropdown-item>
+                                    </el-dropdown-menu>
+                                </el-dropdown>
                             </template>
 
                             <button type="button" class="btn waves-effect waves-light btn-xs btn-info m-1__2"
@@ -149,24 +160,37 @@
         created() {
         },
         methods: {
+            handleNoteCommand(command, row){
+                console.log(command)
+                if (command === 'elegir') {
+                    // Acción Elegir en el formulario
+                    window.location.href = `/${this.resource}/note/${row.id}`
+                }
+                else
+                    if (command === 'credito') {
+                        // Acción para Nota crédito
+                        window.location.href = `/${this.resource}/note/credito/${row.id}`
+                    }
+                    else
+                        if (command === 'debito') {
+                            // Acción para Nota débito
+                            window.location.href = `/${this.resource}/note/debito/${row.id}`
+                        }
+            },
+
             async clickQueryZipKey(recordId) {
-
                 this.loading = true
-
                 await this.$http.post(`/${this.resource}/query-zipkey`, {
                     id : recordId
                 }).then(response => {
                     // console.log(response)
-
                     if (response.data.success) {
                         this.$message.success(response.data.message)
                     }
                     else {
                         this.$message.error(response.data.message)
                     }
-
                     this.$eventHub.$emit('reloadData')
-
                 }).catch(error => {
 
                     if (error.response.status === 422) {
@@ -175,8 +199,6 @@
                     else {
                         this.$message.error(error.response.data.message)
                     }
-
-
                 }).then(() => {
                     this.loading = false
                 })
